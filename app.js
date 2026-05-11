@@ -610,6 +610,35 @@ function renderPlanTable(plan, actuals) {
       </details>
     `;
   }).join("");
+  updateWeekToggleLabel();
+}
+
+function updateWeekToggleLabel() {
+  const button = document.getElementById("toggleWeeks");
+  const rows = Array.from(document.querySelectorAll(".week-row"));
+  if (!button || !rows.length) return;
+  const allOpen = rows.every((row) => row.open);
+  button.textContent = allOpen ? "Close all" : "Open all";
+  button.setAttribute("aria-expanded", String(allOpen));
+}
+
+function setupWeekToggle() {
+  const button = document.getElementById("toggleWeeks");
+  const planTable = document.getElementById("planTable");
+  if (!button || !planTable) return;
+
+  button.addEventListener("click", () => {
+    const rows = Array.from(document.querySelectorAll(".week-row"));
+    const shouldOpen = rows.some((row) => !row.open);
+    rows.forEach((row) => {
+      row.open = shouldOpen;
+    });
+    updateWeekToggleLabel();
+  });
+
+  planTable.addEventListener("toggle", (event) => {
+    if (event.target.matches(".week-row")) updateWeekToggleLabel();
+  }, true);
 }
 
 function renderRunNoteControl(activity, runNotes) {
@@ -1164,6 +1193,7 @@ function setupResponsiveCharts() {
 
 setupReturnTop();
 setupActiveNav();
+setupWeekToggle();
 setupRunNotesForms();
 setupWellnessTracker();
 setupResponsiveCharts();

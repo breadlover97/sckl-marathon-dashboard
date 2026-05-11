@@ -910,6 +910,20 @@ main > .panel:first-child {
   font-weight: 700;
 }
 
+.plan-heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.compact-action {
+  min-height: 30px;
+  padding: 7px 10px;
+  font-size: 0.7rem;
+}
+
 .week-detail {
   display: grid;
   gap: 14px;
@@ -2103,6 +2117,11 @@ html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
 
   .section-heading {
     display: block;
+  }
+
+  .plan-heading-actions {
+    justify-content: flex-start;
+    margin-top: 10px;
   }
 
   .status-pill {

@@ -57,7 +57,10 @@
             <h2>Week-by-week plan</h2>
             <p>Daily dates, planned sessions, and estimated kilometres from the Google Sheet.</p>
           </div>
-          <span id="planSyncStatus" class="status-pill">Sheet sync loading</span>
+          <div class="plan-heading-actions">
+            <span id="planSyncStatus" class="status-pill">Sheet sync loading</span>
+            <button id="toggleWeeks" class="action-button secondary compact-action" type="button">Open all</button>
+          </div>
         </div>
         <div id="planTable" class="plan-list"></div>
       </section>
