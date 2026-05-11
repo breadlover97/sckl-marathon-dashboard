@@ -632,6 +632,7 @@ function renderBarChart(containerId, weeks, valueKey, options = {}) {
     hoverPoints.push({
       date: week.week_start_date,
       label: `Week ${week.week_number}`,
+      phase: week.phase,
       value,
       actualValue: actualValues[index],
       x: x + barWidth / 2,
@@ -701,6 +702,7 @@ function renderLineChart(containerId, weeks, valueKey, options = {}) {
       week,
       date: week.week_start_date,
       label: `Week ${week.week_number}`,
+      phase: week.phase,
       value: Number(week[valueKey] || 0),
       actualValue: actualValues[index]
     };
@@ -756,10 +758,11 @@ function chartHoverMarkup(left, top, plotWidth, plotHeight, baseline) {
       <line class="chart-crosshair" data-hover-h x1="${left}" y1="${top}" x2="${left + plotWidth}" y2="${top}"></line>
       <circle class="chart-hover-dot" data-hover-dot cx="${left}" cy="${top}" r="5"></circle>
       <g class="chart-tooltip" data-hover-tip>
-        <rect width="190" height="68" rx="8"></rect>
+        <rect width="190" height="86" rx="8"></rect>
         <text data-hover-date x="10" y="20"></text>
-        <text data-hover-value x="10" y="40"></text>
-        <text data-hover-actual x="10" y="58"></text>
+        <text data-hover-phase x="10" y="40"></text>
+        <text data-hover-value x="10" y="60"></text>
+        <text data-hover-actual x="10" y="78"></text>
       </g>
     </g>
     <rect class="chart-hit-area" x="${left}" y="${top}" width="${plotWidth}" height="${plotHeight}"></rect>
@@ -777,6 +780,7 @@ function setupChartHover(container, points, dims) {
   const dot = container.querySelector("[data-hover-dot]");
   const tip = container.querySelector("[data-hover-tip]");
   const dateText = container.querySelector("[data-hover-date]");
+  const phaseText = container.querySelector("[data-hover-phase]");
   const valueText = container.querySelector("[data-hover-value]");
   const actualText = container.querySelector("[data-hover-actual]");
 
@@ -797,7 +801,7 @@ function setupChartHover(container, points, dims) {
     const x = Math.min(Math.max(rawX, dims.left), dims.left + dims.plotWidth);
     const point = nearestPoint(x);
     const tooltipX = x > dims.width - 230 ? x - 202 : x + 12;
-    const tooltipY = Math.max(dims.top + 4, Math.min(point.y - 78, dims.baseline - 82));
+    const tooltipY = Math.max(dims.top + 4, Math.min(point.y - 96, dims.baseline - 100));
 
     hover.style.opacity = "1";
     vLine.setAttribute("x1", x);
@@ -810,6 +814,7 @@ function setupChartHover(container, points, dims) {
     dot.setAttribute("cy", point.y);
     tip.setAttribute("transform", `translate(${tooltipX}, ${tooltipY})`);
     dateText.textContent = `${point.label} · ${prettyDate(point.date)}`;
+    phaseText.textContent = `Phase: ${point.phase || "-"}`;
     valueText.textContent = `Planned: ${oneDecimalKm(point.value)}`;
     actualText.textContent = `Actual: ${point.actualValue === null || point.actualValue === undefined ? "-" : oneDecimalKm(point.actualValue)}`;
   };
@@ -829,33 +834,11 @@ function niceMax(value) {
   return Math.ceil(value / 25) * 25;
 }
 
-function renderPhaseBreakdown(plan) {
-  const segments = plan.weeks.reduce((result, week) => {
-    const key = phaseClass(week.phase);
-    const last = result[result.length - 1];
-    if (last && last.key === key && last.phase === week.phase) {
-      last.weeks += 1;
-    } else {
-      result.push({
-        key,
-        phase: week.phase,
-        weeks: 1
-      });
-    }
-    return result;
-  }, []);
-
-  const phaseItems = segments.map((segment) => {
-    return `<span class="phase-segment ${segment.key}" style="flex-grow: ${segment.weeks}" title="${escapeHtml(segment.phase)} · ${segment.weeks} week${segment.weeks === 1 ? "" : "s"}">${escapeHtml(segment.phase)}</span>`;
-  }).join("");
-
+function renderMileageLegend() {
   document.getElementById("phaseBreakdown").innerHTML = `
     <div class="chart-legend">
       <span><i class="legend-bar"></i>Planned target</span>
       <span><i class="legend-line actual"></i>Actual logged</span>
-    </div>
-    <div class="phase-strip" aria-label="Training phase timeline">
-      ${phaseItems}
     </div>
   `;
 }
@@ -991,7 +974,7 @@ function render({ plan, actuals, runNotes }) {
   renderPlanTable(plan, actuals);
   renderBarChart("mileageChart", plan.weeks, "target_weekly_mileage_km", { actuals, actualMetric: "distance_km", label: "Planned and actual weekly mileage", valueLabel: "Mileage" });
   renderLineChart("longRunChart", plan.weeks, "long_run_distance_km", { actuals, actualMetric: "longest_run_km", label: "Planned and actual long run distance", valueLabel: "Long run" });
-  renderPhaseBreakdown(plan);
+  renderMileageLegend();
   renderActivityFeed(actuals, runNotes);
   document.getElementById("syncStatus").textContent =
     `${plan.loaded_from === "google-sheet" ? "Google Sheet plan" : "Mock plan"} loaded · ${plan.weeks.length} training weeks`;

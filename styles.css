@@ -1468,47 +1468,6 @@ main > .panel:first-child {
   background: var(--teal);
 }
 
-.phase-strip {
-  display: flex;
-  min-height: 26px;
-  overflow: hidden;
-  margin-top: 12px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--soft);
-}
-
-.phase-segment {
-  display: inline-flex;
-  min-width: 54px;
-  align-items: center;
-  justify-content: center;
-  padding: 5px 8px;
-  color: var(--inverse);
-  font-size: 0.66rem;
-  font-weight: 900;
-  line-height: 1;
-  text-align: center;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.phase-segment.base {
-  background: var(--orange);
-}
-
-.phase-segment.build {
-  background: var(--teal);
-}
-
-.phase-segment.recovery {
-  background: var(--amber);
-}
-
-.phase-segment.taper {
-  background: var(--ink);
-}
-
 .empty-state {
   padding: 18px;
   border: 1px dashed rgba(252, 76, 2, 0.42);
@@ -2002,17 +1961,6 @@ main > .panel:first-child {
   .chart-legend {
     gap: 8px 12px;
     font-size: 0.72rem;
-  }
-
-  .phase-strip {
-    min-height: 22px;
-    border-radius: 12px;
-  }
-
-  .phase-segment {
-    min-width: 34px;
-    padding: 5px 4px;
-    font-size: 0.54rem;
   }
 
   .actual-links {
