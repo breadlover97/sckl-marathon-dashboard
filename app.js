@@ -123,7 +123,8 @@ function currentWeek(plan) {
 
 function phaseClass(phase) {
   const value = String(phase || "").toLowerCase();
-  if (value.includes("taper") || value.includes("race")) return "taper";
+  if (value.includes("taper") || value.includes("race week")) return "taper";
+  if (value.includes("recovery")) return "recovery";
   if (value.includes("build") || value.includes("specific") || value.includes("peak")) return "build";
   return "base";
 }
@@ -176,9 +177,21 @@ function normalizePlan(plan) {
         return result;
       }, {}),
       target_weekly_mileage_km: Number(week.target_weekly_mileage_km || sessions.reduce((sum, session) => sum + Number(session.planned_km || 0), 0)),
+      week_summary: week.week_summary || summarizeWeekText(week, sessions),
     };
   });
   return plan;
+}
+
+function summarizeWeekText(week, sessions = dailySessions(week)) {
+  const target = Number(week.target_weekly_mileage_km || sessions.reduce((sum, session) => sum + Number(session.planned_km || 0), 0));
+  const runCount = sessions.filter((session) => Number(session.planned_km || 0) > 0).length;
+  const longRun = Number(week.long_run_distance_km || 0);
+  const phase = week.phase || "Training";
+  if (String(phase).toLowerCase() === "race week") {
+    return `Race week includes ${oneDecimalKm(target)} across ${runCount} planned runs, anchored by the SCKL Marathon.`;
+  }
+  return `${phase} week with ${oneDecimalKm(target)} across ${runCount} planned runs, anchored by ${week.key_workout || "the key workout"} and a ${oneDecimalKm(longRun)} long run.`;
 }
 
 function dailySessions(week) {
@@ -260,6 +273,17 @@ function duration(seconds) {
   return hours ? `${hours}h ${minutes}m` : `${minutes}m`;
 }
 
+function syncTime(value) {
+  if (!value) return "Not synced yet";
+  return new Date(value).toLocaleString("en-SG", {
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    month: "short",
+    timeZone: "Asia/Singapore"
+  });
+}
+
 function heartRate(value) {
   return value ? `${Math.round(Number(value))} bpm` : "-";
 }
@@ -292,10 +316,13 @@ function renderTrainingDayProgress(plan) {
 function renderCurrentWeek(plan, actuals) {
   const week = currentWeek(plan);
   const actual = summarizeWeekActual(week, actuals);
-  const inWeek = isCurrentWeek(week);
   const status = document.getElementById("trackStatus");
-  status.textContent = inWeek ? "Current week" : "Next planned week";
-  status.className = `status-pill ${inWeek ? "good" : "watch"}`;
+  status.textContent = actuals.metadata?.generated_at
+    ? `Strava synced ${syncTime(actuals.metadata.generated_at)}`
+    : "Strava not synced";
+  status.className = `status-pill ${actuals.loaded_from === "strava" ? "good" : "watch"}`;
+  const planned = Number(week.target_weekly_mileage_km || 0);
+  const progress = planned > 0 ? Math.min((actual.distance_km / planned) * 100, 140) : 0;
 
   document.getElementById("currentWeekLabel").textContent =
     `Week ${week.week_number}: ${prettyDate(week.week_start_date)} to ${prettyDate(weekEndDate(week))} · ${week.phase}`;
@@ -318,11 +345,20 @@ function renderCurrentWeek(plan, actuals) {
   }).join("");
 
   document.getElementById("currentWeekPlan").innerHTML = `
+    <div class="week-progress">
+      <div>
+        <span>This week progress</span>
+        <strong>${oneDecimalKm(actual.distance_km)} / ${km(week.target_weekly_mileage_km)}</strong>
+      </div>
+      <div class="progress-track" aria-label="This week mileage progress">
+        <span style="width: ${progress}%"></span>
+      </div>
+    </div>
     <div class="week-summary">
-      <div class="week-metric"><span>Target mileage</span><strong>${km(week.target_weekly_mileage_km)}</strong></div>
-      <div class="week-metric"><span>Actual mileage</span><strong>${oneDecimalKm(actual.distance_km)}</strong></div>
       <div class="week-metric"><span>Key workout</span><strong>${escapeHtml(week.key_workout)}</strong></div>
+      <div class="week-metric"><span>Planned long run</span><strong>${oneDecimalKm(week.long_run_distance_km)}</strong></div>
       <div class="week-metric"><span>Longest actual</span><strong>${oneDecimalKm(actual.longest_run_km)}</strong></div>
+      <div class="week-metric"><span>Runs logged</span><strong>${actual.run_count}</strong></div>
     </div>
     <div class="daily-grid">${dayCards}</div>
     <div class="note-grid">
@@ -335,6 +371,13 @@ function renderCurrentWeek(plan, actuals) {
 
 function renderPlanTable(plan) {
   const table = document.getElementById("planTable");
+  const planStatus = document.getElementById("planSyncStatus");
+  if (planStatus) {
+    planStatus.textContent = plan.metadata?.generated_at
+      ? `Sheet synced ${syncTime(plan.metadata.generated_at)}`
+      : "Sheet not synced";
+    planStatus.className = `status-pill ${plan.loaded_from === "google-sheet" ? "good" : "watch"}`;
+  }
   table.innerHTML = plan.weeks.map((week) => {
     const current = isCurrentWeek(week);
     const details = week.daily_sessions.map((session) => {
@@ -355,38 +398,13 @@ function renderPlanTable(plan) {
             <strong>${escapeHtml(week.phase)}</strong>
             <span>${prettyDate(week.week_start_date)} to ${prettyDate(weekEndDate(week))}</span>
           </span>
-          <span class="metric-pill mobile-hide">${km(week.target_weekly_mileage_km)}</span>
-          <span class="metric-pill mobile-hide">${oneDecimalKm(week.long_run_distance_km)} long</span>
-          <span class="metric-pill mobile-hide desktop-only">${escapeHtml(week.key_workout)}</span>
-          <span class="metric-pill mobile-hide desktop-only">${escapeHtml(week.strength_training)}</span>
+          <span class="row-summary-text">${escapeHtml(week.week_summary)}</span>
         </summary>
         <div class="week-row-body">
           <div class="daily-grid">${details}</div>
           <p class="week-notes-line"><strong>Notes:</strong> ${escapeHtml(week.notes || "No notes for this week.")}</p>
         </div>
       </details>
-    `;
-  }).join("");
-}
-
-function renderComparison(plan, actuals) {
-  const status = document.getElementById("actualStatus");
-  status.textContent = actuals.loaded_from === "strava" ? "Strava connected" : actuals.loaded_from === "mock" ? "Mock actuals" : "No actuals";
-  status.className = `status-pill ${actuals.loaded_from === "strava" ? "good" : "watch"}`;
-
-  document.getElementById("comparisonGrid").innerHTML = plan.weeks.map((week) => {
-    const actual = summarizeWeekActual(week, actuals);
-    const planned = Number(week.target_weekly_mileage_km || 0);
-    const diff = actual.distance_km - planned;
-    const adherence = planned > 0 ? Math.round((actual.distance_km / planned) * 100) : 0;
-    const statusText = actual.run_count === 0 ? "No actuals yet" : adherence < 85 ? "Behind plan" : adherence <= 115 ? "On range" : "Over target";
-    return `
-      <article class="comparison-card ${isCurrentWeek(week) ? "current" : ""}">
-        <span>Week ${week.week_number} · ${escapeHtml(week.phase)}</span>
-        <strong>${oneDecimalKm(actual.distance_km)} / ${km(planned)}</strong>
-        <p>${escapeHtml(statusText)} · ${adherence}% · ${diff >= 0 ? "+" : ""}${diff.toFixed(1)} km</p>
-        <small>${actual.run_count} runs · longest ${oneDecimalKm(actual.longest_run_km)} · ${pace(actual.average_pace_seconds)}</small>
-      </article>
     `;
   }).join("");
 }
@@ -400,10 +418,16 @@ function renderActivityFeed(actuals) {
   }
   const totalDistance = activities.reduce((sum, activity) => sum + Number(activity.distance_km || 0), 0);
   const totalMoving = activities.reduce((sum, activity) => sum + Number(activity.moving_time_seconds || 0), 0);
+  const athlete = actuals.metadata?.athlete || {};
+  const athleteName = [athlete.firstname, athlete.lastname].filter(Boolean).join(" ") || "Tai Zhi";
+  const profileImage = athlete.profile_medium || athlete.profile || "";
   feed.innerHTML = `
     <div class="activity-table-shell">
       <div class="activity-table-summary">
-        <strong>Tai Zhi</strong>
+        <div class="athlete-summary">
+          ${profileImage ? `<img src="${escapeHtml(profileImage)}" alt="">` : `<span class="athlete-avatar-fallback">TZ</span>`}
+          <strong>${escapeHtml(athleteName)}</strong>
+        </div>
         <span>${activities.length} runs · ${oneDecimalKm(totalDistance)} · ${duration(totalMoving)}</span>
       </div>
       <div class="activity-table-scroll">
@@ -628,33 +652,25 @@ function niceMax(value) {
 
 function renderPhaseBreakdown(plan) {
   const groups = plan.weeks.reduce((result, week) => {
-    if (!result[week.phase]) {
-      result[week.phase] = {
+    const key = phaseClass(week.phase);
+    if (!result[key]) {
+      result[key] = {
+        key,
         phase: week.phase,
         weeks: 0,
         mileage: 0
       };
     }
-    result[week.phase].weeks += 1;
-    result[week.phase].mileage += Number(week.target_weekly_mileage_km || 0);
+    result[key].weeks += 1;
+    result[key].mileage += Number(week.target_weekly_mileage_km || 0);
     return result;
   }, {});
   const rows = Object.values(groups);
-  const maxMileage = Math.max(...rows.map((row) => row.mileage), 1);
 
   document.getElementById("phaseBreakdown").innerHTML = rows.map((row) => {
-    const width = Math.round((row.mileage / maxMileage) * 100);
+    const average = Math.round(row.mileage / row.weeks);
     return `
-      <div class="phase-row">
-        <div>
-          <span class="phase-label">${escapeHtml(row.phase)}</span>
-          <small>${row.weeks} week${row.weeks === 1 ? "" : "s"} · ${km(row.mileage)} planned</small>
-        </div>
-        <div class="phase-meter" aria-label="${escapeHtml(row.phase)} ${width}% of largest phase load">
-          <span style="width: ${width}%"></span>
-        </div>
-        <strong>${Math.round(row.mileage / row.weeks)} km/wk avg</strong>
-      </div>
+      <span><i class="legend-dot ${row.key}"></i>${escapeHtml(row.phase)} · ${row.weeks} wk · ${average} km/wk avg</span>
     `;
   }).join("");
 }
@@ -736,7 +752,6 @@ function setupActiveNav() {
 function render({ plan, actuals }) {
   renderTrainingDayProgress(plan);
   renderCurrentWeek(plan, actuals);
-  renderComparison(plan, actuals);
   renderPlanTable(plan);
   renderBarChart("mileageChart", plan.weeks, "target_weekly_mileage_km", { label: "Planned weekly mileage", valueLabel: "Mileage" });
   renderLineChart("longRunChart", plan.weeks, "long_run_distance_km", { label: "Planned long run distance", valueLabel: "Long run" });

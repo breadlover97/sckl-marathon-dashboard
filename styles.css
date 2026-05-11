@@ -114,7 +114,7 @@ button {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   min-height: 72px;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
   padding: 14px min(7vw, 86px);
   border-bottom: 1px solid rgba(232, 229, 223, 0.86);
@@ -132,7 +132,7 @@ button {
 
 .site-mark {
   color: var(--ink);
-  font-size: 0.9rem;
+  font-size: 0.86rem;
   font-weight: 900;
 }
 
@@ -153,7 +153,7 @@ button {
   align-items: center;
   padding-left: 19px;
   color: var(--muted);
-  font-size: 0.74rem;
+  font-size: 0.7rem;
   font-weight: 800;
 }
 
@@ -304,53 +304,11 @@ main {
   background: #fff;
 }
 
-.comparison-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 12px;
-}
-
-.comparison-card,
-.activity-feed-row {
-  min-width: 0;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #fff;
-}
-
-.comparison-card.current {
-  border-color: rgba(252, 76, 2, 0.3);
-  background: var(--orange-soft);
-}
-
-.comparison-card span,
-.comparison-card small,
-.activity-feed-row span,
 .actual-line {
   display: block;
   color: var(--muted);
   font-size: 0.76rem;
   font-weight: 850;
-}
-
-.comparison-card > span {
-  margin-bottom: 10px;
-  text-transform: uppercase;
-}
-
-.comparison-card strong {
-  display: block;
-  font-size: 1.18rem;
-  font-weight: 900;
-  line-height: 1.08;
-}
-
-.comparison-card p {
-  margin: 8px 0 6px;
-  color: var(--muted);
-  font-size: 0.88rem;
-  font-weight: 750;
 }
 
 .day-card strong {
@@ -389,6 +347,32 @@ main {
 .activity-table-summary strong {
   font-size: 1rem;
   font-weight: 900;
+}
+
+.athlete-summary {
+  display: flex;
+  min-width: 0;
+  gap: 10px;
+  align-items: center;
+}
+
+.athlete-summary img,
+.athlete-avatar-fallback {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 2px solid var(--orange);
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.athlete-summary img {
+  object-fit: cover;
 }
 
 .activity-table-summary span {
@@ -518,6 +502,48 @@ main > .panel:first-child {
   gap: 14px;
 }
 
+.week-progress {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid rgba(252, 76, 2, 0.22);
+  border-radius: 16px;
+  background: var(--orange-soft);
+}
+
+.week-progress span,
+.week-progress strong {
+  display: block;
+}
+
+.week-progress span {
+  color: var(--orange-dark);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.week-progress strong {
+  margin-top: 3px;
+  font-size: clamp(1.45rem, 3vw, 2.25rem);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.progress-track {
+  height: 11px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(252, 76, 2, 0.16);
+}
+
+.progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--orange);
+}
+
 .week-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -627,7 +653,7 @@ main > .panel:first-child {
 
 .week-row summary {
   display: grid;
-  grid-template-columns: 82px minmax(180px, 1.2fr) repeat(4, minmax(108px, 0.7fr)) 34px;
+  grid-template-columns: 82px minmax(170px, 0.55fr) minmax(260px, 1.45fr) 34px;
   gap: 12px;
   align-items: center;
   min-height: 72px;
@@ -683,6 +709,13 @@ main > .panel:first-child {
   font-weight: 800;
 }
 
+.row-summary-text {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
 .week-row-body {
   padding: 0 16px 16px;
 }
@@ -701,7 +734,7 @@ main > .panel:first-child {
 
 .trend-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 18px;
 }
 
@@ -773,8 +806,12 @@ main > .panel:first-child {
   fill: var(--teal);
 }
 
-.chart-bar.taper {
+.chart-bar.recovery {
   fill: var(--amber);
+}
+
+.chart-bar.taper {
+  fill: var(--ink);
 }
 
 .chart-line {
@@ -810,42 +847,49 @@ main > .panel:first-child {
   font-weight: 900;
 }
 
-.phase-list {
-  display: grid;
-  gap: 10px;
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
 }
 
-.phase-row {
-  display: grid;
-  grid-template-columns: minmax(150px, 0.7fr) minmax(0, 1fr) auto;
-  gap: 12px;
+.chart-legend span {
+  display: inline-flex;
+  gap: 7px;
   align-items: center;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #fff;
 }
 
-.phase-meter {
-  height: 10px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--soft);
-}
-
-.phase-meter span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
+.legend-dot,
+.legend-line {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  flex: 0 0 auto;
+  border-radius: 50%;
   background: var(--orange);
 }
 
-.phase-row:nth-child(2n) .phase-meter span {
+.legend-dot.build {
   background: var(--teal);
 }
 
-.phase-row:nth-child(3n) .phase-meter span {
+.legend-dot.recovery {
   background: var(--amber);
+}
+
+.legend-dot.taper {
+  background: var(--ink);
+}
+
+.legend-line {
+  width: 22px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--teal);
 }
 
 .empty-state {
@@ -937,7 +981,7 @@ main > .panel:first-child {
   }
 
   .week-row summary {
-    grid-template-columns: 72px minmax(180px, 1fr) repeat(2, minmax(96px, 0.6fr)) 34px;
+    grid-template-columns: 72px minmax(160px, 0.7fr) minmax(220px, 1fr) 34px;
   }
 
   .week-row summary .desktop-only {
@@ -954,11 +998,11 @@ main > .panel:first-child {
 
   body {
     background: #faf9f7;
-    padding-top: 174px;
+    padding-top: 128px;
   }
 
   html {
-    scroll-padding-top: 188px;
+    scroll-padding-top: 140px;
   }
 
   .top-nav {
@@ -966,15 +1010,15 @@ main > .panel:first-child {
     right: 0;
     left: 0;
     width: 100%;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
     min-height: 66px;
-    gap: 8px;
+    gap: 6px 10px;
     align-items: start;
     padding: 8px 12px;
   }
 
   .anchor-section {
-    scroll-margin-top: 188px;
+    scroll-margin-top: 140px;
   }
 
   .site-brand {
@@ -982,18 +1026,21 @@ main > .panel:first-child {
   }
 
   .site-mark {
-    font-size: 0.84rem;
+    font-size: 0.78rem;
   }
 
   .nav-date {
-    gap: 5px;
-    padding-left: 18px;
-    font-size: 0.68rem;
+    padding-left: 17px;
+    font-size: 0.64rem;
     line-height: 1.15;
   }
 
+  .nav-date > span:first-child {
+    display: none;
+  }
+
   .nav-tabs {
-    grid-column: auto;
+    grid-column: 1 / -1;
     width: 100%;
     padding: 4px;
     border-radius: 14px;
@@ -1005,18 +1052,16 @@ main > .panel:first-child {
   }
 
   .nav-tabs a {
-    min-height: 30px;
-    padding: 6px 10px;
-    font-size: 0.72rem;
+    min-height: 28px;
+    padding: 5px 9px;
+    font-size: 0.68rem;
     white-space: nowrap;
   }
 
-  .nav-actions {
-    width: 100%;
-  }
-
   .nav-sync {
-    width: 100%;
+    min-height: 30px;
+    padding: 7px 10px;
+    font-size: 0.7rem;
   }
 
   main {
@@ -1061,7 +1106,8 @@ main > .panel:first-child {
     padding: 13px 14px;
   }
 
-  .week-row summary .mobile-hide {
+  .week-row summary .mobile-hide,
+  .week-row summary .row-summary-text {
     display: none;
   }
 

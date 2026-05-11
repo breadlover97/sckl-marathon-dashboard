@@ -51,6 +51,7 @@ Strength Training
 Fuel Practice
 Sleep / Recovery Focus
 Notes
+Week Summary
 ```
 
 1. In Google Cloud, enable the Google Sheets API.
@@ -68,7 +69,7 @@ pip install -r requirements.txt
 
 ```bash
 export GOOGLE_SHEET_ID=1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo
-export GOOGLE_SHEET_RANGE=A:AF
+export GOOGLE_SHEET_RANGE=A:AG
 export GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/google-service-account.json
 python scripts/fetch_google_sheet.py
 ```
@@ -141,7 +142,7 @@ If the optional variables are not set, the workflow uses:
 
 ```text
 GOOGLE_SHEET_ID=1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo
-GOOGLE_SHEET_RANGE=A:AF
+GOOGLE_SHEET_RANGE=A:AG
 ```
 
 To enable Pages:

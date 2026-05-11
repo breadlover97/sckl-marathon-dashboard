@@ -14,7 +14,7 @@ from typing import Any
 
 
 DEFAULT_SHEET_ID = "1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo"
-DEFAULT_RANGE = "A:AF"
+DEFAULT_RANGE = "A:AG"
 DEFAULT_OUTPUT = "data/training-plan.json"
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
@@ -30,6 +30,7 @@ EXPECTED_COLUMNS = {
     "fuel_practice": "Fuel Practice",
     "sleep_recovery_focus": "Sleep / Recovery Focus",
     "notes": "Notes",
+    "week_summary": "Week Summary",
 }
 
 DAY_COLUMNS = [
@@ -145,32 +146,59 @@ def normalize_training_week(row: dict[str, str], row_number: int) -> dict[str, A
             "planned_km": parse_number(session_km, f"{day_label} Estimated KM", row_number),
         })
 
+    target_mileage = parse_number(
+        row_value(row, "target_weekly_mileage_km"),
+        "Target Weekly Mileage KM",
+        row_number,
+    )
+    long_run_distance = parse_number(
+        row_value(row, "long_run_distance_km"),
+        "Long Run Distance KM",
+        row_number,
+    )
+    planned_runs = sum(1 for session in daily_sessions if number_like(session["planned_km"]) > 0)
+    key_workout = row_value(row, "key_workout")
+    phase = row_value(row, "phase") or "Unassigned"
+
     return {
         "week_number": parse_int(row_value(row, "week_number"), "Week Number", row_number),
         "week_start_date": week_start,
-        "phase": row_value(row, "phase") or "Unassigned",
-        "target_weekly_mileage_km": parse_number(
-            row_value(row, "target_weekly_mileage_km"),
-            "Target Weekly Mileage KM",
-            row_number,
-        ),
+        "phase": phase,
+        "target_weekly_mileage_km": target_mileage,
         "daily_sessions": daily_sessions,
         "daily_plan": {
             day_key: daily_sessions[index]["plan"]
             for index, (day_key, _day_label) in enumerate(DAY_COLUMNS)
         },
-        "key_workout": row_value(row, "key_workout"),
-        "long_run_distance_km": parse_number(
-            row_value(row, "long_run_distance_km"),
-            "Long Run Distance KM",
-            row_number,
-        ),
+        "key_workout": key_workout,
+        "long_run_distance_km": long_run_distance,
         "long_run_notes": row_value(row, "long_run_notes"),
         "strength_training": row_value(row, "strength_training"),
         "fuel_practice": row_value(row, "fuel_practice"),
         "sleep_recovery_focus": row_value(row, "sleep_recovery_focus"),
         "notes": row_value(row, "notes"),
+        "week_summary": row_value(row, "week_summary") or summarize_week(phase, target_mileage, planned_runs, key_workout, long_run_distance),
     }
+
+
+def number_like(value: Any) -> float:
+    try:
+        return float(value or 0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def summarize_week(phase: str, target_mileage: float, planned_runs: int, key_workout: str, long_run_distance: float) -> str:
+    if phase.lower() == "race week":
+        return (
+            f"Race week includes {target_mileage:g} km across {planned_runs} planned runs, "
+            f"anchored by the SCKL Marathon and the {long_run_distance:g} km race."
+        )
+    key_text = key_workout or "the key workout"
+    return (
+        f"{phase} week with {target_mileage:g} km across {planned_runs} planned runs, "
+        f"anchored by {key_text} and a {long_run_distance:g} km long run."
+    )
 
 
 def build_plan(values: list[list[Any]], source: str) -> dict[str, Any]:
@@ -262,6 +290,7 @@ def values_from_plan_json(path: Path) -> list[list[Any]]:
         "Fuel Practice",
         "Sleep / Recovery Focus",
         "Notes",
+        "Week Summary",
     ])
     rows = [header]
     for week in plan.get("weeks", []):
@@ -297,6 +326,7 @@ def values_from_plan_json(path: Path) -> list[list[Any]]:
             week.get("fuel_practice", ""),
             week.get("sleep_recovery_focus", ""),
             week.get("notes", ""),
+            week.get("week_summary", ""),
         ])
     return rows
 

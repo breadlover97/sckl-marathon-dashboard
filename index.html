@@ -18,7 +18,6 @@
       </a>
       <div class="nav-tabs" aria-label="Dashboard sections">
         <a href="#week">This Week</a>
-        <a href="#compare">Compare</a>
         <a href="#plan">Weekly Plan</a>
         <a href="#trends">Trends</a>
         <a href="#activity">Activities</a>
@@ -36,20 +35,9 @@
             <h2>This Week</h2>
             <p id="currentWeekLabel">Loading current training week...</p>
           </div>
-          <span id="trackStatus" class="status-pill">Mock plan</span>
+          <span id="trackStatus" class="status-pill">Strava sync loading</span>
         </div>
         <div id="currentWeekPlan" class="week-detail"></div>
-      </section>
-
-      <section id="compare" class="panel anchor-section">
-        <div class="section-heading">
-          <div>
-            <h2>Planned vs Actual</h2>
-            <p>Planned kilometres come from Google Sheets. Actual runs come from Strava JSON when connected.</p>
-          </div>
-          <span id="actualStatus" class="status-pill">Loading actuals</span>
-        </div>
-        <div id="comparisonGrid" class="comparison-grid"></div>
       </section>
 
       <section id="plan" class="panel anchor-section">
@@ -58,6 +46,7 @@
             <h2>Week-by-week plan</h2>
             <p>Daily dates, planned sessions, and estimated kilometres from the Google Sheet.</p>
           </div>
+          <span id="planSyncStatus" class="status-pill">Sheet sync loading</span>
         </div>
         <div id="planTable" class="plan-list"></div>
       </section>
@@ -71,6 +60,7 @@
             </div>
           </div>
           <div id="mileageChart" class="chart-shell" aria-label="Planned weekly mileage chart"></div>
+          <div id="phaseBreakdown" class="chart-legend"></div>
         </article>
 
         <article class="panel">
@@ -81,16 +71,9 @@
             </div>
           </div>
           <div id="longRunChart" class="chart-shell" aria-label="Planned long run progression chart"></div>
-        </article>
-
-        <article class="panel phase-panel">
-          <div class="section-heading compact-heading">
-            <div>
-              <h2>Phase breakdown</h2>
-              <p>Simple view of the training blocks before race week.</p>
-            </div>
+          <div class="chart-legend">
+            <span><i class="legend-line long-run"></i>Planned long run distance</span>
           </div>
-          <div id="phaseBreakdown" class="phase-list"></div>
         </article>
       </section>
 

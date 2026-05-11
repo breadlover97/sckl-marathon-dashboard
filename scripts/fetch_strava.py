@@ -16,6 +16,7 @@ import requests
 
 STRAVA_TOKEN_URL = "https://www.strava.com/oauth/token"
 STRAVA_ACTIVITIES_URL = "https://www.strava.com/api/v3/athlete/activities"
+STRAVA_ATHLETE_URL = "https://www.strava.com/api/v3/athlete"
 DEFAULT_OUTPUT = "data/strava-activities.json"
 PER_PAGE = 200
 
@@ -81,6 +82,20 @@ def fetch_activities(session: requests.Session, access_token: str, after: int | 
     return activities
 
 
+def fetch_athlete(session: requests.Session, access_token: str) -> dict[str, Any]:
+    response = session.get(
+        STRAVA_ATHLETE_URL,
+        headers={"Authorization": f"Bearer {access_token}"},
+        timeout=30,
+    )
+    if response.status_code != 200:
+        raise StravaApiError(f"Athlete request failed with HTTP {response.status_code}: {response.text[:200]}")
+    payload = response.json()
+    if not isinstance(payload, dict):
+        raise StravaApiError("Athlete response was not an object")
+    return payload
+
+
 def local_date(activity: dict[str, Any]) -> str:
     value = activity.get("start_date_local") or activity.get("start_date") or ""
     if not value:
@@ -132,6 +147,7 @@ def main() -> int:
         refresh_token = require_env("STRAVA_REFRESH_TOKEN")
         session = requests.Session()
         token_payload = refresh_access_token(session, client_id, client_secret, refresh_token)
+        athlete = fetch_athlete(session, token_payload["access_token"])
         raw_activities = fetch_activities(session, token_payload["access_token"], args.after, args.before)
         runs = [
             sanitize_activity(activity)
@@ -144,6 +160,12 @@ def main() -> int:
                 "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
                 "included_activities": len(runs),
                 "rotated_refresh_token": bool(token_payload.get("refresh_token") and token_payload.get("refresh_token") != refresh_token),
+                "athlete": {
+                    "firstname": athlete.get("firstname"),
+                    "lastname": athlete.get("lastname"),
+                    "profile": athlete.get("profile"),
+                    "profile_medium": athlete.get("profile_medium"),
+                },
             },
             "activities": runs,
         }

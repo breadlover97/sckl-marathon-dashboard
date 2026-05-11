@@ -8,21 +8,21 @@
     "goal_time": "2h 50m",
     "goal_pace": "4:02 /km",
     "tropical_marathon_pace_estimate": "4:15 /km",
-    "source": "google-sheet:1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo:A:AF",
-    "generated_at": "2026-05-11T17:48:46+08:00"
+    "source": "google-sheet:1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo:A:AG",
+    "generated_at": "2026-05-11T18:56:46+08:00"
   },
   "weeks": [
     {
       "week_number": 1,
       "week_start_date": "2026-05-11",
       "phase": "Base",
-      "target_weekly_mileage_km": 58.0,
+      "target_weekly_mileage_km": 61.0,
       "daily_sessions": [
         {
           "day": "Monday",
           "date": "2026-05-11",
-          "plan": "Workout night: 8 x 2 min steady hills, easy jog recoveries",
-          "planned_km": 10.0
+          "plan": "20min warmup + 10x400m @ 82-85s R200m + 30min cooldown",
+          "planned_km": 13.0
         },
         {
           "day": "Tuesday",
@@ -62,7 +62,7 @@
         }
       ],
       "daily_plan": {
-        "monday": "Workout night: 8 x 2 min steady hills, easy jog recoveries",
+        "monday": "20min warmup + 10x400m @ 82-85s R200m + 30min cooldown",
         "tuesday": "Easy 8-10 km if Monday completed; workout backup if Monday unavailable",
         "wednesday": "PT strength session, optional 6 km recovery jog",
         "thursday": "Easy 10 km with relaxed strides",
@@ -76,7 +76,8 @@
       "strength_training": "Wednesday PT",
       "fuel_practice": "Start noting breakfast timing and fluid intake.",
       "sleep_recovery_focus": "Minimum two early nights after the workout and long run.",
-      "notes": "Opening week from current 50-60 km baseline."
+      "notes": "Opening week from current 50-60 km baseline.",
+      "week_summary": "Base week with 61 km across 5 planned runs, anchored by Hill reps and a 22 km long run."
     },
     {
       "week_number": 2,
@@ -142,7 +143,8 @@
       "strength_training": "Wednesday PT",
       "fuel_practice": "Carry fluids on the long run.",
       "sleep_recovery_focus": "Watch calf and shin tightness after reps.",
-      "notes": "Small mileage lift only."
+      "notes": "Small mileage lift only.",
+      "week_summary": "Base week with 62 km across 5 planned runs, anchored by threshold 1 km reps and a 23 km long run."
     },
     {
       "week_number": 3,
@@ -208,7 +210,8 @@
       "strength_training": "Wednesday PT",
       "fuel_practice": "Test one gel late in the long run.",
       "sleep_recovery_focus": "Keep Wednesday strength moderate.",
-      "notes": "Build aerobic durability."
+      "notes": "Build aerobic durability.",
+      "week_summary": "Base week with 66 km across 5 planned runs, anchored by tempo blocks and a 24 km long run."
     },
     {
       "week_number": 4,
@@ -274,7 +277,8 @@
       "strength_training": "Wednesday PT, reduced load",
       "fuel_practice": "No aggressive fueling test needed.",
       "sleep_recovery_focus": "Reset sleep debt.",
-      "notes": "Absorb first three weeks."
+      "notes": "Absorb first three weeks.",
+      "week_summary": "Recovery week with 54 km across 5 planned runs, anchored by light fartlek and a 20 km long run."
     },
     {
       "week_number": 5,
@@ -340,7 +344,8 @@
       "strength_training": "Wednesday PT",
       "fuel_practice": "One gel plus fluids during long run.",
       "sleep_recovery_focus": "No late-night work before Saturday.",
-      "notes": "Return to building."
+      "notes": "Return to building.",
+      "week_summary": "Build week with 70 km across 5 planned runs, anchored by threshold 1 km reps and a 25 km long run."
     },
     {
       "week_number": 6,
@@ -406,7 +411,8 @@
       "strength_training": "Wednesday PT",
       "fuel_practice": "Try 2 gels across the long run.",
       "sleep_recovery_focus": "Monitor shin response to added volume.",
-      "notes": "First mid-70 km week."
+      "notes": "First mid-70 km week.",
+      "week_summary": "Build week with 75 km across 5 planned runs, anchored by 2 km tempo reps and a 26 km long run."
     },
     {
       "week_number": 7,
@@ -472,7 +478,8 @@
       "strength_training": "Wednesday PT",
       "fuel_practice": "Test fluid volume in humid conditions.",
       "sleep_recovery_focus": "Keep the easy days honest.",
-      "notes": "Mileage moves toward marathon-specific load."
+      "notes": "Mileage moves toward marathon-specific load.",
+      "week_summary": "Build week with 80 km across 6 planned runs, anchored by a progression run and a 27 km long run."
     },
     {
       "week_number": 8,
@@ -538,7 +545,8 @@
       "strength_training": "Wednesday PT, reduced load",
       "fuel_practice": "Review what has worked so far.",
       "sleep_recovery_focus": "Prioritise sleep consistency.",
-      "notes": "Cut back before the specific block."
+      "notes": "Cut back before the specific block.",
+      "week_summary": "Recovery week with 64 km across 5 planned runs, anchored by steady intervals and a 22 km long run."
     },
     {
       "week_number": 9,
@@ -604,7 +612,8 @@
       "strength_training": "Wednesday PT",
       "fuel_practice": "2 gels plus fluids; note stomach response.",
       "sleep_recovery_focus": "Watch total fatigue after Monday workout.",
-      "notes": "Specific work starts."
+      "notes": "Specific work starts.",
+      "week_summary": "Marathon Specific week with 84 km across 6 planned runs, anchored by marathon effort blocks and a 28 km long run."
     },
     {
       "week_number": 10,
@@ -670,7 +679,8 @@
       "strength_training": "Wednesday PT",
       "fuel_practice": "Aim for 40-50 g carbs/hour.",
       "sleep_recovery_focus": "Guard Friday night sleep.",
-      "notes": "First 30 km long run."
+      "notes": "First 30 km long run.",
+      "week_summary": "Marathon Specific week with 90 km across 6 planned runs, anchored by steady marathon effort and a 30 km long run."
     },
     {
       "week_number": 11,
@@ -736,7 +746,8 @@
       "strength_training": "Wednesday PT",
       "fuel_practice": "Test gels at 30-35 minute spacing.",
       "sleep_recovery_focus": "Shin check after long run.",
-      "notes": "Approaching 100 km."
+      "notes": "Approaching 100 km.",
+      "week_summary": "Marathon Specific week with 96 km across 6 planned runs, anchored by 2 km threshold reps and a 31 km long run."
     },
     {
       "week_number": 12,
@@ -802,7 +813,8 @@
       "strength_training": "Wednesday PT, reduced load",
       "fuel_practice": "Keep routine simple.",
       "sleep_recovery_focus": "Extra sleep where possible.",
-      "notes": "Down week after three-week push."
+      "notes": "Down week after three-week push.",
+      "week_summary": "Recovery week with 76 km across 6 planned runs, anchored by steady aerobic work and a 24 km long run."
     },
     {
       "week_number": 13,
@@ -868,7 +880,8 @@
       "strength_training": "Wednesday PT",
       "fuel_practice": "50-60 g carbs/hour on long run.",
       "sleep_recovery_focus": "No hero sessions if sleep is poor.",
-      "notes": "First target 100 km week if healthy."
+      "notes": "First target 100 km week if healthy.",
+      "week_summary": "Peak Build week with 100 km across 6 planned runs, anchored by 10 km marathon effort and a 32 km long run."
     },
     {
       "week_number": 14,
@@ -934,7 +947,8 @@
       "strength_training": "Wednesday PT",
       "fuel_practice": "Full race fueling rehearsal, then review notes.",
       "sleep_recovery_focus": "Protect recovery before and after Saturday.",
-      "notes": "High-load week; back off if niggles appear."
+      "notes": "High-load week; back off if niggles appear.",
+      "week_summary": "Peak Build week with 106 km across 6 planned runs, anchored by 4 km marathon blocks and a 33 km long run."
     },
     {
       "week_number": 15,
@@ -1000,7 +1014,8 @@
       "strength_training": "Wednesday PT",
       "fuel_practice": "Race-like carbs and fluid practice.",
       "sleep_recovery_focus": "Immediate cutback if shin splints flare.",
-      "notes": "Highest planned load in the mock build."
+      "notes": "Highest planned load in the mock build.",
+      "week_summary": "Peak Build week with 112 km across 7 planned runs, anchored by 12 km marathon effort and a 34 km long run."
     },
     {
       "week_number": 16,
@@ -1066,7 +1081,8 @@
       "strength_training": "Wednesday PT, reduced load",
       "fuel_practice": "Use proven fuel only.",
       "sleep_recovery_focus": "Restore freshness.",
-      "notes": "Down week before final specific cycle."
+      "notes": "Down week before final specific cycle.",
+      "week_summary": "Recovery week with 86 km across 6 planned runs, anchored by relaxed steady reps and a 26 km long run."
     },
     {
       "week_number": 17,
@@ -1132,7 +1148,8 @@
       "strength_training": "Wednesday PT",
       "fuel_practice": "Lock in gel timing if stomach is settled.",
       "sleep_recovery_focus": "Avoid stacking stress around Monday.",
-      "notes": "Specific rehearsal block."
+      "notes": "Specific rehearsal block.",
+      "week_summary": "Race Specific week with 104 km across 6 planned runs, anchored by 6 km marathon blocks and a 32 km long run."
     },
     {
       "week_number": 18,
@@ -1198,7 +1215,8 @@
       "strength_training": "Wednesday PT, maintenance",
       "fuel_practice": "Full race fueling rehearsal.",
       "sleep_recovery_focus": "Begin reducing life-stress where possible.",
-      "notes": "Final high-specific week."
+      "notes": "Final high-specific week.",
+      "week_summary": "Race Specific week with 98 km across 6 planned runs, anchored by 2 x 5 km marathon effort and a 30 km long run."
     },
     {
       "week_number": 19,
@@ -1264,7 +1282,8 @@
       "strength_training": "Wednesday PT, light",
       "fuel_practice": "Use only proven products.",
       "sleep_recovery_focus": "Prioritise consistency and reduce late nights.",
-      "notes": "Taper begins."
+      "notes": "Taper begins.",
+      "week_summary": "Taper week with 78 km across 6 planned runs, anchored by short marathon effort and a 24 km long run."
     },
     {
       "week_number": 20,
@@ -1330,7 +1349,8 @@
       "strength_training": "Wednesday PT, activation",
       "fuel_practice": "Confirm breakfast, caffeine, gels, and fluids.",
       "sleep_recovery_focus": "Bank sleep early in the week.",
-      "notes": "Second taper week."
+      "notes": "Second taper week.",
+      "week_summary": "Taper week with 58 km across 5 planned runs, anchored by race rhythm touch and an 18 km long run."
     },
     {
       "week_number": 21,
@@ -1396,7 +1416,8 @@
       "strength_training": "Mobility only",
       "fuel_practice": "Race fueling plan only; nothing new.",
       "sleep_recovery_focus": "Protect sleep and stay off feet.",
-      "notes": "Race week target includes the marathon."
+      "notes": "Race week target includes the marathon.",
+      "week_summary": "Race week includes 66.195 km across 5 planned runs, anchored by the SCKL Marathon and the 42.195 km race."
     }
   ]
 }
