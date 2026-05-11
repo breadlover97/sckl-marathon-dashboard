@@ -2,22 +2,24 @@ const SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SHEETS_BASE_URL = "https://sheets.googleapis.com/v4/spreadsheets";
 const HEADER_ROW = ["Activity ID", "Date", "Activity", "Note", "Strava URL", "Updated At"];
+const MAX_NOTE_LENGTH = 500;
 
 export default {
   async fetch(request, env) {
-    const corsHeaders = cors(env);
+    const corsHeaders = cors(env, request);
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
     const url = new URL(request.url);
     try {
       if (url.pathname === "/notes" && request.method === "GET") {
+        requireAuth(request, env);
         const notes = await listNotes(env);
         return json({ notes }, corsHeaders);
       }
 
       if (url.pathname === "/notes" && request.method === "POST") {
         requireAuth(request, env);
-        const payload = await request.json();
+        const payload = await readJson(request);
         const note = await upsertNote(env, payload);
         return json({ ok: true, note }, corsHeaders);
       }
@@ -30,13 +32,16 @@ export default {
   }
 };
 
-function cors(env) {
-  const origin = env.ALLOWED_ORIGIN || "*";
+function cors(env, request) {
+  const requestOrigin = request.headers.get("Origin") || "";
+  const allowedOrigin = env.ALLOWED_ORIGIN || "*";
+  const origin = allowedOrigin === "*" || allowedOrigin === requestOrigin ? allowedOrigin : "null";
   return {
     "Access-Control-Allow-Headers": "Authorization, Content-Type",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Origin": origin,
-    "Access-Control-Max-Age": "86400"
+    "Access-Control-Max-Age": "86400",
+    "Vary": "Origin"
   };
 }
 
@@ -51,13 +56,38 @@ function json(body, headers, status = 200) {
 }
 
 function requireAuth(request, env) {
+  requireEnv(env, "RUN_NOTES_TOKEN");
   const token = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "")
     || request.headers.get("X-Run-Notes-Token")
     || "";
-  if (!env.RUN_NOTES_TOKEN || token !== env.RUN_NOTES_TOKEN) {
+  if (token !== env.RUN_NOTES_TOKEN) {
     const error = new Error("Unauthorized");
     error.status = 401;
     throw error;
+  }
+}
+
+function requireEnv(env, name) {
+  if (!env[name]) {
+    const error = new Error(`Missing Worker binding: ${name}`);
+    error.status = 500;
+    throw error;
+  }
+}
+
+async function readJson(request) {
+  const contentLength = Number(request.headers.get("Content-Length") || 0);
+  if (contentLength > 4096) {
+    const error = new Error("Request body too large");
+    error.status = 413;
+    throw error;
+  }
+  try {
+    return await request.json();
+  } catch (error) {
+    const parseError = new Error("Request body must be JSON");
+    parseError.status = 400;
+    throw parseError;
   }
 }
 
@@ -81,7 +111,7 @@ async function upsertNote(env, payload) {
     activity_id: String(payload.activity_id || "").trim(),
     date: String(payload.date || "").trim(),
     name: String(payload.name || "").trim(),
-    note: String(payload.note || "").trim(),
+    note: String(payload.note || "").trim().slice(0, MAX_NOTE_LENGTH),
     strava_url: String(payload.strava_url || "").trim(),
     updated_at: new Date().toISOString()
   };
@@ -156,6 +186,8 @@ async function sheetsAppend(env, range, values) {
 }
 
 async function sheetsFetch(env, path, init) {
+  requireEnv(env, "GOOGLE_SHEET_ID");
+  requireEnv(env, "GOOGLE_SERVICE_ACCOUNT_JSON");
   const accessToken = await getAccessToken(env);
   const url = `${SHEETS_BASE_URL}/${env.GOOGLE_SHEET_ID}${path}`;
   const response = await fetch(url, {

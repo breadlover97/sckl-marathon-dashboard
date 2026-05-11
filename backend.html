@@ -35,7 +35,7 @@
           </select>
         </label>
         <a class="action-button secondary nav-sync" href="race.html" title="Race execution">Race</a>
-        <a class="action-button primary nav-sync" href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noreferrer">Sync data</a>
+        <a class="action-button primary nav-sync" href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer">Sync data</a>
       </div>
     </nav>
 
@@ -55,7 +55,7 @@
           <div class="flow-step"><strong>3</strong><span>GitHub Actions runs the sync workflow on schedule, on code changes, or when you press the Sync data button and manually run the workflow.</span></div>
           <div class="flow-step"><strong>4</strong><span>The workflow reads private credentials from GitHub secrets, fetches Google Sheets and Strava data, then writes generated JSON files into the Pages artifact.</span></div>
           <div class="flow-step"><strong>5</strong><span>GitHub Pages hosts the static site. The browser loads <code>data/training-plan.json</code> and <code>data/strava-activities.json</code> to render the dashboard.</span></div>
-          <div class="flow-step"><strong>6</strong><span>Run notes go the other direction: the browser sends a note to the Cloudflare Worker, and the Worker writes it to the <code>Run Notes</code> tab in Google Sheets.</span></div>
+          <div class="flow-step"><strong>6</strong><span>Run notes go the other direction: after passcode auth, the browser sends a note to the Cloudflare Worker, and the Worker writes it to the <code>Run Notes</code> tab in Google Sheets.</span></div>
         </div>
       </section>
 
@@ -116,7 +116,7 @@
           </article>
           <article>
             <h3>Run notes</h3>
-            <p>The Cloudflare Worker writes notes to the <code>Run Notes</code> tab, keyed by Strava activity ID, after you enter the private passcode in the browser.</p>
+            <p>The Cloudflare Worker reads and writes notes in the <code>Run Notes</code> tab, keyed by Strava activity ID, after you enter the private passcode in the browser.</p>
           </article>
         </div>
       </section>
@@ -142,7 +142,7 @@
           </article>
           <article>
             <h3>Cloudflare Worker secrets</h3>
-            <p><code>GOOGLE_SERVICE_ACCOUNT_JSON</code> lets the Worker write to Sheets. <code>RUN_NOTES_TOKEN</code> is the private passcode for note saves.</p>
+            <p><code>GOOGLE_SERVICE_ACCOUNT_JSON</code> lets the Worker write to Sheets. <code>RUN_NOTES_TOKEN</code> is the private passcode for loading and saving notes.</p>
           </article>
         </div>
       </section>
@@ -168,13 +168,14 @@
       <section class="info-section">
         <h2>Privacy And Limits</h2>
         <p>The website is public, so anything written into generated JSON can be viewed by anyone with the site link. API secrets are private, but published activity metrics are public.</p>
+        <p>Run notes are different: they are served by the Cloudflare Worker and require the private passcode before the browser can load or save them.</p>
         <p>The dashboard is a training visibility tool, not a coaching or medical system. Risk flags and progress views should guide decisions, not replace judgement around injury, sleep, heat, or recovery.</p>
       </section>
 
       <section class="info-section">
         <h2>Technical Reference</h2>
-        <p>Source code and setup notes live in the <a href="https://github.com/breadlover97/sckl-marathon-dashboard" target="_blank" rel="noreferrer">GitHub repository</a>.</p>
-        <p>The manual sync workflow is available at <a href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noreferrer">deploy-pages.yml</a>.</p>
+        <p>Source code and setup notes live in the <a href="https://github.com/breadlover97/sckl-marathon-dashboard" target="_blank" rel="noopener noreferrer">GitHub repository</a>.</p>
+        <p>The manual sync workflow is available at <a href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer">deploy-pages.yml</a>.</p>
       </section>
     </main>
 

@@ -4,11 +4,7 @@ const ACTUAL_DATA_URL = "data/strava-activities.json";
 const MOCK_ACTUAL_DATA_URL = "data/mock-strava-activities.json";
 const RUN_NOTES_API_URL = String(window.SCKL_CONFIG?.runNotesApiUrl || "").replace(/\/$/, "");
 const RACE_DATE = "2026-10-04";
-const RACE_START_LOCAL = "2026-10-04T03:30:00+08:00";
-const GOAL_TIME = "2h 50m";
-const GOAL_PACE = "4:02 /km";
-const TROPICAL_MARATHON_PACE = "4:15 /km";
-const CURRENT_EASY_PACE = "5:15-5:30 /km";
+const RUN_NOTES_TOKEN_KEY = "sckl-run-notes-token";
 const WELLNESS_STORAGE_KEY = "sckl-wellness-checks";
 let latestRenderState = null;
 let resizeTimer = null;
@@ -50,6 +46,34 @@ function escapeHtml(value) {
   const div = document.createElement("div");
   div.textContent = text(value);
   return div.innerHTML;
+}
+
+function safeExternalUrl(value, allowedHosts = []) {
+  try {
+    const url = new URL(String(value || ""));
+    const isAllowedProtocol = url.protocol === "https:" || url.protocol === "http:";
+    const isAllowedHost = !allowedHosts.length || allowedHosts.some((host) => url.hostname === host || url.hostname.endsWith(`.${host}`));
+    return isAllowedProtocol && isAllowedHost ? url.href : "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function storedRunNotesToken() {
+  try {
+    return window.localStorage.getItem(RUN_NOTES_TOKEN_KEY) || "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function setStoredRunNotesToken(token) {
+  try {
+    if (token) window.localStorage.setItem(RUN_NOTES_TOKEN_KEY, token);
+    else window.localStorage.removeItem(RUN_NOTES_TOKEN_KEY);
+  } catch (error) {
+    // Run notes still save for this session even if localStorage is blocked.
+  }
 }
 
 function km(value) {
@@ -131,14 +155,6 @@ function currentWeek(plan) {
     || plan.weeks[plan.weeks.length - 1];
 }
 
-function phaseClass(phase) {
-  const value = String(phase || "").toLowerCase();
-  if (value.includes("taper") || value.includes("race week")) return "taper";
-  if (value.includes("recovery")) return "recovery";
-  if (value.includes("build") || value.includes("specific") || value.includes("peak")) return "build";
-  return "base";
-}
-
 async function fetchJson(url) {
   const response = await fetch(`${url}?v=${Date.now()}`, { cache: "no-store" });
   if (!response.ok) throw new Error(`Could not load ${url} (${response.status})`);
@@ -178,8 +194,19 @@ async function loadActuals() {
 
 async function loadRunNotes() {
   if (!RUN_NOTES_API_URL) return {};
+  const token = storedRunNotesToken();
+  if (!token) return {};
   try {
-    const payload = await fetchJson(`${RUN_NOTES_API_URL}/notes`);
+    const response = await fetch(`${RUN_NOTES_API_URL}/notes?v=${Date.now()}`, {
+      cache: "no-store",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    if (response.status === 401 || response.status === 403) {
+      setStoredRunNotesToken("");
+      return {};
+    }
+    if (!response.ok) throw new Error(`Could not load run notes (${response.status})`);
+    const payload = await response.json();
     return (payload.notes || []).reduce((result, note) => {
       if (note.activity_id) result[String(note.activity_id)] = note;
       return result;
@@ -258,14 +285,16 @@ function activitiesForDate(activities, date) {
 }
 
 function renderActualLine(dayActivities, actualText) {
-  const linkedActivities = dayActivities.filter((activity) => activity.strava_url);
+  const linkedActivities = dayActivities
+    .map((activity) => ({ ...activity, safe_url: safeExternalUrl(activity.strava_url, ["strava.com"]) }))
+    .filter((activity) => activity.safe_url);
   if (linkedActivities.length === 1) {
     const activity = linkedActivities[0];
-    return `<a href="${escapeHtml(activity.strava_url)}" target="_blank" rel="noreferrer" title="${escapeHtml(activity.name)}">${escapeHtml(actualText)}</a>`;
+    return `<a href="${escapeHtml(activity.safe_url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(activity.name)}">${escapeHtml(actualText)}</a>`;
   }
   if (linkedActivities.length > 1) {
     const links = linkedActivities.map((activity, index) => {
-      return `<a class="actual-link" href="${escapeHtml(activity.strava_url)}" target="_blank" rel="noreferrer" title="${escapeHtml(activity.name)}" aria-label="Open ${escapeHtml(activity.name)}">${index + 1}</a>`;
+      return `<a class="actual-link" href="${escapeHtml(activity.safe_url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(activity.name)}" aria-label="Open ${escapeHtml(activity.name)}">${index + 1}</a>`;
     }).join("");
     return `<span>${escapeHtml(actualText)}</span><span class="actual-links">${links}</span>`;
   }
@@ -501,9 +530,10 @@ function renderPlanTable(plan, actuals) {
 function renderRunNoteControl(activity, runNotes) {
   const note = runNotes[String(activity.id)]?.note || "";
   if (!RUN_NOTES_API_URL || !activity.id) return "-";
+  const stravaUrl = safeExternalUrl(activity.strava_url, ["strava.com"]);
   return `
-    <form class="run-note-form" data-run-note-form data-activity-id="${escapeHtml(activity.id)}" data-activity-date="${escapeHtml(activity.date)}" data-activity-name="${escapeHtml(activity.name)}" data-activity-url="${escapeHtml(activity.strava_url || "")}">
-      <textarea name="note" aria-label="Run note for ${escapeHtml(activity.name)}">${escapeHtml(note)}</textarea>
+    <form class="run-note-form" data-run-note-form data-activity-id="${escapeHtml(activity.id)}" data-activity-date="${escapeHtml(activity.date)}" data-activity-name="${escapeHtml(activity.name)}" data-activity-url="${escapeHtml(stravaUrl)}">
+      <textarea name="note" maxlength="500" aria-label="Run note for ${escapeHtml(activity.name)}">${escapeHtml(note)}</textarea>
       <button type="submit">Save</button>
     </form>
   `;
@@ -520,7 +550,25 @@ function renderActivityFeed(actuals, runNotes = {}) {
   const totalMoving = activities.reduce((sum, activity) => sum + Number(activity.moving_time_seconds || 0), 0);
   const athlete = actuals.metadata?.athlete || {};
   const athleteName = [athlete.firstname, athlete.lastname].filter(Boolean).join(" ") || "Tai Zhi";
-  const profileImage = athlete.profile_medium || athlete.profile || "";
+  const profileImage = safeExternalUrl(athlete.profile_medium || athlete.profile || "");
+  const activityRows = activities.map((activity) => {
+    const stravaUrl = safeExternalUrl(activity.strava_url, ["strava.com"]);
+    return `
+      <tr>
+        <td>${escapeHtml(prettyDate(activity.date))}</td>
+        <td><strong>${escapeHtml(activity.name)}</strong></td>
+        <td><strong>${oneDecimalKm(activity.distance_km)}</strong></td>
+        <td>${duration(activity.moving_time_seconds)}</td>
+        <td>${activityPace(activity)}</td>
+        <td>${duration(activity.elapsed_time_seconds)}</td>
+        <td>${heartRate(activity.average_heartrate)}</td>
+        <td>${cadence(activity.average_cadence)}</td>
+        <td>${Math.round(Number(activity.elevation_gain_m || 0))} m</td>
+        <td>${renderRunNoteControl(activity, runNotes)}</td>
+        <td>${stravaUrl ? `<a href="${escapeHtml(stravaUrl)}" target="_blank" rel="noopener noreferrer">Open</a>` : "-"}</td>
+      </tr>
+    `;
+  }).join("");
   feed.innerHTML = `
     <div class="activity-table-shell">
       <div class="activity-table-summary">
@@ -547,23 +595,7 @@ function renderActivityFeed(actuals, runNotes = {}) {
               <th>Link</th>
             </tr>
           </thead>
-          <tbody>
-            ${activities.map((activity) => `
-              <tr>
-                <td>${escapeHtml(prettyDate(activity.date))}</td>
-                <td><strong>${escapeHtml(activity.name)}</strong></td>
-                <td><strong>${oneDecimalKm(activity.distance_km)}</strong></td>
-                <td>${duration(activity.moving_time_seconds)}</td>
-                <td>${activityPace(activity)}</td>
-                <td>${duration(activity.elapsed_time_seconds)}</td>
-                <td>${heartRate(activity.average_heartrate)}</td>
-                <td>${cadence(activity.average_cadence)}</td>
-                <td>${Math.round(Number(activity.elevation_gain_m || 0))} m</td>
-                <td>${renderRunNoteControl(activity, runNotes)}</td>
-                <td>${activity.strava_url ? `<a href="${escapeHtml(activity.strava_url)}" target="_blank" rel="noreferrer">Open</a>` : "-"}</td>
-              </tr>
-            `).join("")}
-          </tbody>
+          <tbody>${activityRows}</tbody>
         </table>
       </div>
     </div>
@@ -898,11 +930,11 @@ function setupRunNotesForms() {
 
     const button = form.querySelector("button");
     const note = form.querySelector("textarea")?.value || "";
-    let token = window.localStorage.getItem("sckl-run-notes-token") || "";
+    let token = storedRunNotesToken();
     if (!token) {
       token = window.prompt("Enter run notes passcode") || "";
       if (!token) return;
-      window.localStorage.setItem("sckl-run-notes-token", token);
+      setStoredRunNotesToken(token);
     }
 
     button.disabled = true;
@@ -924,7 +956,7 @@ function setupRunNotesForms() {
         })
       });
       if (response.status === 401 || response.status === 403) {
-        window.localStorage.removeItem("sckl-run-notes-token");
+        setStoredRunNotesToken("");
         throw new Error("Passcode rejected");
       }
       if (!response.ok) throw new Error(`Save failed (${response.status})`);

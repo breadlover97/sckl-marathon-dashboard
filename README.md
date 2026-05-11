@@ -1,6 +1,16 @@
-# SCKL 2026 Marathon Training Dashboard
+# SCKL 2026 Sub-2:50 Build
 
-A simple static dashboard for the Standard Chartered Kuala Lumpur Marathon 2026 build.
+A lightweight static dashboard for the Standard Chartered Kuala Lumpur Marathon 2026 build.
+
+The site is intentionally simple: Google Sheets is the editable plan, Strava is the running log, GitHub Actions syncs private data into safe JSON, and GitHub Pages serves the dashboard.
+
+## What The Dashboard Shows
+
+- This week’s planned sessions, actual Strava mileage, and daily supplement checks.
+- Week-by-week marathon plan from Google Sheets.
+- Planned vs actual weekly mileage and long-run trends.
+- Recent Strava activity feed with pace, time, elevation, heart rate, cadence, links, and optional run notes.
+- Race execution draft page with pace calculator and split table.
 
 ## Local Preview
 
@@ -10,7 +20,26 @@ python3 -m http.server 8010
 
 Open `http://localhost:8010`.
 
-The dashboard loads `data/training-plan.json` when available. If that file is missing, it falls back to `data/mock-training-plan.json`.
+The dashboard loads `data/training-plan.json` and `data/strava-activities.json` when available. If live files are missing, it falls back to the mock JSON files in `data/`.
+
+## Repository Map
+
+```text
+index.html                         Main dashboard
+race.html                          Race execution page
+backend.html                       How-it-works page
+styles.css                         Shared visual system and themes
+app.js                             Dashboard rendering, charts, notes, and local checks
+race.js                            Pace calculator and race page interactions
+theme.js                           Theme persistence
+config.js                          Public frontend config
+data/mock-*.json                   Local fallback data
+scripts/fetch_google_sheet.py      Google Sheets -> dashboard JSON
+scripts/fetch_strava.py            Strava API -> dashboard JSON
+scripts/exchange_strava_code.py    One-time Strava OAuth helper
+cloudflare-worker/                 Optional run-note writeback API
+.github/workflows/deploy-pages.yml Scheduled/manual sync and GitHub Pages deploy
+```
 
 ## Google Sheets API Setup
 
@@ -89,7 +118,7 @@ The dashboard reads actual training from `data/strava-activities.json` when avai
 If your refresh token does not have activity permission, re-authorize the Strava app with:
 
 ```text
-https://www.strava.com/oauth/authorize?client_id=235397&redirect_uri=http://localhost&response_type=code&approval_prompt=force&scope=read,activity:read_all
+https://www.strava.com/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=http://localhost&response_type=code&approval_prompt=force&scope=read,activity:read_all
 ```
 
 After approving, copy the `code=...` value from the redirected URL and exchange it:
@@ -111,6 +140,8 @@ python scripts/fetch_strava.py
 
 The browser only reads sanitized run data. Strava secrets stay in your shell, local environment, or deployment secrets.
 
+Published Strava JSON intentionally includes public training metrics used by the dashboard: activity ID, name, date, distance, time, elevation, heart rate, cadence, and Strava link. Do not publish fields you would not want visible on the public GitHub Pages site.
+
 ## GitHub Pages Deployment
 
 GitHub Pages is deployed by `.github/workflows/deploy-pages.yml`.
@@ -120,7 +151,7 @@ The workflow:
 1. Installs the Python dependencies.
 2. Fetches the latest planned training from Google Sheets.
 3. Fetches Strava run activities from 1 May 2026 onward.
-4. Publishes `index.html`, `styles.css`, `app.js`, and the generated dashboard JSON files to GitHub Pages.
+4. Publishes the static site files and generated dashboard JSON files to GitHub Pages.
 
 Required repository secrets:
 
@@ -189,16 +220,35 @@ window.SCKL_CONFIG = {
 
 4. Commit and push `config.js`.
 
-The first time you save a note from the website, it asks for `RUN_NOTES_TOKEN` and stores it in browser localStorage.
+The first time you save a note from the website, it asks for `RUN_NOTES_TOKEN` and stores it in browser localStorage. Reading existing notes also requires that stored passcode, so notes are not exposed as a public unauthenticated API.
+
+## Security Notes
+
+- Never commit `.env`, Google service account JSON, generated Strava token JSON, or local credential files.
+- GitHub Actions secrets should hold `GOOGLE_SERVICE_ACCOUNT_JSON`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, and `STRAVA_REFRESH_TOKEN`.
+- The frontend must not contain Strava client secrets, Google credentials, or Worker secrets.
+- `config.js` is public. Only put public settings there, such as the Worker URL.
+- The Cloudflare Worker is scoped to the `Run Notes` tab and requires a bearer passcode for reading or writing notes.
+- The site is public on GitHub Pages, so generated JSON should be treated as public data.
 
 ## Checks
 
 ```bash
-python3 scripts/fetch_google_sheet.py --input-json data/mock-training-plan.json --dry-run
+python3 scripts/fetch_google_sheet.py --input-json data/training-plan.json --dry-run
 python3 -m py_compile scripts/fetch_google_sheet.py
 python3 -m py_compile scripts/fetch_strava.py
 python3 -m py_compile scripts/exchange_strava_code.py
 node --check app.js
+node --check race.js
 node --check theme.js
 node --check cloudflare-worker/src/index.js
 ```
+
+For a visual QC pass, run the local preview server and check:
+
+- Dashboard nav links: This Week, Weekly Plan, Trends, Activities.
+- Footer link to the backend page.
+- Race button and race page calculator.
+- Theme switching across Light, Dark, IDE editor, and Cyberpunk.
+- Chart hover popups on desktop and resized charts on mobile.
+- Activity links open Strava in a new tab.
