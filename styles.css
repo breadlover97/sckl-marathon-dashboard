@@ -77,6 +77,36 @@ button {
   font: inherit;
 }
 
+.action-button {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 13px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+  text-decoration: none;
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.action-button:hover {
+  transform: translateY(-1px);
+}
+
+.action-button.primary {
+  background: var(--ink);
+  color: #fff;
+}
+
+.action-button.secondary {
+  background: #fff;
+  color: var(--ink);
+}
+
 .top-nav {
   position: sticky;
   top: 0;
@@ -378,6 +408,18 @@ main {
   margin: 10px 0 0;
   font-size: 0.88rem;
   font-weight: 750;
+}
+
+.sync-card {
+  border-color: rgba(252, 76, 2, 0.24);
+  background: var(--orange-soft);
+}
+
+.setting-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
 }
 
 .panel {

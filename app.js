@@ -2,6 +2,7 @@ const LIVE_DATA_URL = "data/training-plan.json";
 const MOCK_DATA_URL = "data/mock-training-plan.json";
 const ACTUAL_DATA_URL = "data/strava-activities.json";
 const MOCK_ACTUAL_DATA_URL = "data/mock-strava-activities.json";
+const SYNC_WORKFLOW_URL = "https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml";
 const RACE_DATE = "2026-10-04";
 const RACE_START_LOCAL = "2026-10-04T03:30:00+08:00";
 const GOAL_TIME = "2h 50m";
@@ -565,6 +566,10 @@ function renderDataStatus(plan, actuals) {
   const generated = plan.metadata?.generated_at
     ? new Date(plan.metadata.generated_at).toLocaleString("en-SG", { timeZone: "Asia/Singapore" })
     : "Not generated yet";
+  const actualGenerated = actuals.metadata?.generated_at
+    ? new Date(actuals.metadata.generated_at).toLocaleString("en-SG", { timeZone: "Asia/Singapore" })
+    : "Not synced yet";
+  const actualCount = Number(actuals.metadata?.included_activities || actuals.activities?.length || 0);
 
   document.getElementById("settingsGrid").innerHTML = `
     <article class="setting-card">
@@ -580,9 +585,22 @@ function renderDataStatus(plan, actuals) {
     <article class="setting-card">
       <span>Strava status</span>
       <strong>${actuals.loaded_from === "strava" ? "Connected JSON" : actuals.loaded_from === "mock" ? "Mock actuals" : "Not connected"}</strong>
-      <p>${actuals.loaded_from === "strava" ? "Loaded from data/strava-activities.json." : "Run scripts/fetch_strava.py after adding Strava credentials."}</p>
+      <p>${actuals.loaded_from === "strava" ? `${actualCount} run${actualCount === 1 ? "" : "s"} loaded. Last sync: ${actualGenerated}.` : "Run the sync workflow after adding Strava credentials."}</p>
+    </article>
+    <article class="setting-card sync-card">
+      <span>Manual sync</span>
+      <strong>Strava + Sheet</strong>
+      <p>Opens GitHub Actions. Click Run workflow there, then refresh this dashboard when it finishes.</p>
+      <div class="setting-actions">
+        <a class="action-button primary" href="${SYNC_WORKFLOW_URL}" target="_blank" rel="noreferrer">Sync Strava</a>
+        <button id="refreshDashboard" class="action-button secondary" type="button">Refresh dashboard</button>
+      </div>
     </article>
   `;
+
+  document.getElementById("refreshDashboard")?.addEventListener("click", () => {
+    window.location.reload();
+  });
 }
 
 function setupReturnTop() {
