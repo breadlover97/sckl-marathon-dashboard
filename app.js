@@ -457,12 +457,6 @@ function renderCurrentWeek(plan, actuals) {
       </div>
     </div>
     ${renderWellnessTracker()}
-    <div class="week-summary">
-      <div class="week-metric"><span>Key workout</span><strong>${escapeHtml(week.key_workout)}</strong></div>
-      <div class="week-metric"><span>Planned long run</span><strong>${oneDecimalKm(week.long_run_distance_km)}</strong></div>
-      <div class="week-metric"><span>Longest actual</span><strong>${oneDecimalKm(actual.longest_run_km)}</strong></div>
-      <div class="week-metric"><span>Runs logged</span><strong>${actual.run_count}</strong></div>
-    </div>
     <div class="daily-grid">${dayCards}</div>
     <div class="note-grid">
       <article class="note-card"><span>Long run notes</span><p>${escapeHtml(week.long_run_notes)}</p></article>
