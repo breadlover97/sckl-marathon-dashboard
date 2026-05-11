@@ -559,10 +559,6 @@ function renderPhaseBreakdown(plan) {
 }
 
 function renderDataStatus(plan, actuals) {
-  const sourceLabel = plan.loaded_from === "google-sheet" ? "Google Sheet JSON" : "Local mock JSON";
-  const sourceDetail = plan.loaded_from === "google-sheet"
-    ? `Generated from ${text(plan.metadata?.source, "the configured Google Sheet")}.`
-    : "Run scripts/fetch_google_sheet.py to generate data/training-plan.json from the Sheet.";
   const generated = plan.metadata?.generated_at
     ? new Date(plan.metadata.generated_at).toLocaleString("en-SG", { timeZone: "Asia/Singapore" })
     : "Not generated yet";
@@ -570,30 +566,26 @@ function renderDataStatus(plan, actuals) {
     ? new Date(actuals.metadata.generated_at).toLocaleString("en-SG", { timeZone: "Asia/Singapore" })
     : "Not synced yet";
   const actualCount = Number(actuals.metadata?.included_activities || actuals.activities?.length || 0);
+  const planSource = plan.loaded_from === "google-sheet" ? "Google Sheets" : "Mock plan";
+  const actualSource = actuals.loaded_from === "strava" ? "Strava" : actuals.loaded_from === "mock" ? "Mock actuals" : "Not connected";
 
   document.getElementById("settingsGrid").innerHTML = `
     <article class="setting-card">
-      <span>Planned training source</span>
-      <strong>${escapeHtml(sourceLabel)}</strong>
-      <p>${escapeHtml(sourceDetail)}</p>
-    </article>
-    <article class="setting-card">
-      <span>Last plan sync</span>
+      <span>Plan sync</span>
       <strong>${escapeHtml(generated)}</strong>
-      <p>The browser reads safe JSON only; Google credentials stay server-side.</p>
+      <p>${escapeHtml(planSource)} · ${plan.weeks.length} training week${plan.weeks.length === 1 ? "" : "s"} loaded.</p>
     </article>
     <article class="setting-card">
-      <span>Strava status</span>
-      <strong>${actuals.loaded_from === "strava" ? "Connected JSON" : actuals.loaded_from === "mock" ? "Mock actuals" : "Not connected"}</strong>
-      <p>${actuals.loaded_from === "strava" ? `${actualCount} run${actualCount === 1 ? "" : "s"} loaded. Last sync: ${actualGenerated}.` : "Run the sync workflow after adding Strava credentials."}</p>
+      <span>Strava sync</span>
+      <strong>${escapeHtml(actualGenerated)}</strong>
+      <p>${escapeHtml(actualSource)} · ${actualCount} run${actualCount === 1 ? "" : "s"} loaded.</p>
     </article>
     <article class="setting-card sync-card">
       <span>Manual sync</span>
-      <strong>Strava + Sheet</strong>
-      <p>Opens GitHub Actions. Either sync button runs the secure workflow, then refresh this dashboard when it finishes.</p>
+      <strong>Update data</strong>
+      <p>Runs the secure GitHub Actions workflow for Google Sheets and Strava.</p>
       <div class="setting-actions">
-        <a class="action-button primary" href="${SYNC_WORKFLOW_URL}" target="_blank" rel="noreferrer">Sync Strava</a>
-        <a class="action-button secondary" href="${SYNC_WORKFLOW_URL}" target="_blank" rel="noreferrer">Sync Google Sheets</a>
+        <a class="action-button primary" href="${SYNC_WORKFLOW_URL}" target="_blank" rel="noreferrer">Sync data</a>
         <button id="refreshDashboard" class="action-button secondary" type="button">Refresh dashboard</button>
       </div>
     </article>
