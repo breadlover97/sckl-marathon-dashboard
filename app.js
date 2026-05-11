@@ -370,7 +370,11 @@ function renderTrainingDayProgress(plan) {
   const totalDays = Math.max(daysBetween(planStart, raceDay) + 1, 1);
   const rawDay = daysBetween(planStart, today) + 1;
   const currentDay = Math.min(Math.max(rawDay, 1), totalDays);
-  document.getElementById("raceCountdown").textContent = `Day ${currentDay} of ${totalDays}`;
+  const week = currentWeek(plan);
+  const totalWeeks = Math.max(plan.weeks.length, 1);
+  const currentWeekNumber = Math.min(Math.max(Number(week?.week_number || 1), 1), totalWeeks);
+  document.getElementById("raceCountdown").textContent =
+    `Day ${currentDay} of ${totalDays} · Week ${currentWeekNumber} of ${totalWeeks}`;
 }
 
 function renderCurrentWeek(plan, actuals) {

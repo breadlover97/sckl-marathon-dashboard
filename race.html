@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Race Execution - SCKL 2026 Sub-2:50 Build</title>
+    <script src="theme.js"></script>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <nav class="top-nav" aria-label="Race execution navigation">
+      <a class="site-brand" href="index.html">
+        <span class="site-mark">SCKL 2026 Sub-2:50 Build</span>
+        <span class="nav-date">
+          <span>4 Oct 2026, 3:30am</span>
+          <span class="countdown-pill">Race execution</span>
+        </span>
+      </a>
+      <div class="nav-tabs" aria-label="Race execution sections">
+        <a href="#overview">Overview</a>
+        <a href="#calculator">Calculator</a>
+        <a href="#splits">Splits</a>
+        <a href="#course">Course</a>
+      </div>
+      <div class="nav-actions">
+        <a class="action-button secondary nav-sync" href="index.html">Dashboard</a>
+        <label class="theme-picker" for="themeSelect">
+          <span>Theme</span>
+          <select id="themeSelect" data-theme-select aria-label="Select site theme">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="editor">IDE editor</option>
+            <option value="cyberpunk">Cyberpunk</option>
+          </select>
+        </label>
+        <a class="action-button primary nav-sync" href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noreferrer">Sync data</a>
+      </div>
+    </nav>
+
+    <main>
+      <section id="overview" class="panel anchor-section">
+        <div class="section-heading">
+          <div>
+            <h2>Race execution</h2>
+            <p>A working page for pacing, splits, fuel, hydration, and course notes once the SCKL details are final.</p>
+          </div>
+          <span class="status-pill">Draft plan</span>
+        </div>
+        <div class="race-card-grid">
+          <article class="week-metric"><span>Race</span><strong>Standard Chartered KL Marathon 2026</strong></article>
+          <article class="week-metric"><span>Distance</span><strong>42.195 km</strong></article>
+          <article class="week-metric"><span>Goal time</span><strong>2:50:00</strong></article>
+          <article class="week-metric"><span>Target pace</span><strong>4:02 /km</strong></article>
+        </div>
+      </section>
+
+      <section id="calculator" class="panel anchor-section">
+        <div class="section-heading compact-heading">
+          <div>
+            <h2>Pace calculator</h2>
+            <p>Estimate finish time from pace, or update the goal time and generate checkpoint splits.</p>
+          </div>
+        </div>
+        <form id="paceCalculator" class="calculator-grid">
+          <label>
+            <span>Goal hours</span>
+            <input name="hours" type="number" min="0" max="9" value="2">
+          </label>
+          <label>
+            <span>Goal minutes</span>
+            <input name="minutes" type="number" min="0" max="59" value="50">
+          </label>
+          <label>
+            <span>Goal seconds</span>
+            <input name="seconds" type="number" min="0" max="59" value="0">
+          </label>
+          <label>
+            <span>Race distance km</span>
+            <input name="distance" type="number" min="1" step="0.001" value="42.195">
+          </label>
+        </form>
+        <div id="paceResult" class="calculator-result" aria-live="polite"></div>
+      </section>
+
+      <section id="splits" class="panel anchor-section">
+        <div class="section-heading compact-heading">
+          <div>
+            <h2>Checkpoint splits</h2>
+            <p>Auto-generated from the pace calculator for fast race-morning checking.</p>
+          </div>
+        </div>
+        <div id="splitTable" class="split-table-shell"></div>
+      </section>
+
+      <section id="course" class="race-grid anchor-section">
+        <article class="panel">
+          <h2>Course map</h2>
+          <p class="race-note">Add the official course map, elevation notes, pinch points, and turn-by-turn reminders here once the final SCKL 2026 course is published.</p>
+          <div class="map-placeholder">Course map placeholder</div>
+        </article>
+        <article class="panel">
+          <h2>Fuel and hydration</h2>
+          <p class="race-note">Draft the km-by-km gel, water, electrolyte, and caffeine plan here after long-run testing.</p>
+          <div class="fuel-list">
+            <span>0-10 km · settle rhythm</span>
+            <span>10-25 km · steady fuel rhythm</span>
+            <span>25-35 km · protect effort</span>
+            <span>35-42.2 km · execute and compete</span>
+          </div>
+        </article>
+        <article class="panel">
+          <h2>Water points</h2>
+          <p class="race-note">Add official water station distances when available, then map each one to your hydration plan.</p>
+        </article>
+        <article class="panel">
+          <h2>Decision rules</h2>
+          <p class="race-note">Keep this page practical: heat adjustment, cramp response, gel timing, shoe choice, and when to hold or push pace.</p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>SCKL 2026 Sub-2:50 Build</span>
+      <span><a href="index.html">Dashboard</a> · <a href="backend.html">How the backend works</a></span>
+    </footer>
+
+    <button id="returnTop" class="return-top" type="button" aria-label="Return to top">↑</button>
+    <script src="race.js"></script>
+  </body>
+</html>
