@@ -14,7 +14,6 @@ let latestRenderState = null;
 let resizeTimer = null;
 
 const wellnessChecks = [
-  { key: "sleep", label: "Sleep logged" },
   { key: "protein", label: "Protein shake" },
   { key: "omega3", label: "Omega 3" },
   { key: "vitaminD", label: "Vitamin D" }
@@ -403,8 +402,8 @@ function renderWellnessTracker() {
     <article class="wellness-card">
       <div class="wellness-head">
         <div>
-          <span>Daily recovery check</span>
-          <strong>Sleep and supplements</strong>
+          <span>Daily nutrition check</span>
+          <strong>Supplements</strong>
         </div>
         <small data-wellness-count>${completed}/${wellnessChecks.length}</small>
       </div>
