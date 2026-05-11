@@ -10,9 +10,9 @@ let latestRenderState = null;
 let resizeTimer = null;
 
 const wellnessChecks = [
-  { key: "protein", label: "Protein shake" },
-  { key: "omega3", label: "Omega 3" },
-  { key: "vitaminD", label: "Vitamin D" }
+  { key: "protein", label: "Protein shake", shortLabel: "Protein" },
+  { key: "omega3", label: "Omega 3", shortLabel: "O3" },
+  { key: "vitaminD", label: "Vitamin D", shortLabel: "D" }
 ];
 
 const paceZones = [
@@ -391,6 +391,7 @@ function renderDayCard(session, actuals, options = {}) {
       <strong>${oneDecimalKm(session.planned_km)}<br>planned</strong>
       <p>${escapeHtml(session.plan)}</p>
       ${actualLine}
+      ${renderDaySupplements(session)}
     </article>
   `;
 }
@@ -492,74 +493,29 @@ function saveWellnessChecks(state) {
   }
 }
 
-function renderWellnessTracker() {
-  const today = dateKey(singaporeToday());
-  const todayState = loadWellnessChecks()[today] || {};
-  const completed = wellnessChecks.filter((item) => todayState[item.key]).length;
+function wellnessCompletedCount(dayState = {}) {
+  return wellnessChecks.filter((item) => dayState[item.key]).length;
+}
+
+function renderDaySupplements(session) {
+  const dayState = loadWellnessChecks()[session.date] || {};
+  const completed = wellnessCompletedCount(dayState);
   const items = wellnessChecks.map((item) => {
-    const checked = todayState[item.key] ? "checked" : "";
+    const checked = dayState[item.key] ? "checked" : "";
     return `
-      <label class="wellness-check">
-        <input type="checkbox" data-wellness-check data-date="${today}" data-key="${escapeHtml(item.key)}" ${checked}>
-        <span>${escapeHtml(item.label)}</span>
+      <label class="supplement-toggle" title="${escapeHtml(item.label)}">
+        <input type="checkbox" data-wellness-check data-date="${escapeHtml(session.date)}" data-key="${escapeHtml(item.key)}" ${checked}>
+        <span>${escapeHtml(item.shortLabel)}</span>
       </label>
     `;
   }).join("");
 
   return `
-    <article class="wellness-card">
-      <div class="wellness-head">
-        <div>
-          <span>Daily nutrition check</span>
-          <strong>Supplements</strong>
-        </div>
-        <small data-wellness-count>${completed}/${wellnessChecks.length}</small>
-      </div>
-      <div class="wellness-list">${items}</div>
-    </article>
-  `;
-}
-
-function wellnessCompletedCount(dayState = {}) {
-  return wellnessChecks.filter((item) => dayState[item.key]).length;
-}
-
-function renderWellnessHistory(week, title = "Supplement history") {
-  const state = loadWellnessChecks();
-  const sessions = week.daily_sessions || dailySessions(week);
-  const totalPossible = sessions.length * wellnessChecks.length;
-  const completedTotal = sessions.reduce((sum, session) => {
-    return sum + wellnessCompletedCount(state[session.date] || {});
-  }, 0);
-  const days = sessions.map((session) => {
-    const dayState = state[session.date] || {};
-    const completed = wellnessCompletedCount(dayState);
-    const statusClass = completed === wellnessChecks.length ? "complete" : completed > 0 ? "partial" : "empty";
-    const dots = wellnessChecks.map((item) => {
-      const taken = Boolean(dayState[item.key]);
-      return `<span class="supplement-dot ${taken ? "taken" : ""}" title="${escapeHtml(item.label)} ${taken ? "recorded" : "not recorded"}"></span>`;
-    }).join("");
-    return `
-      <li class="supplement-day ${statusClass}" data-wellness-history-date="${escapeHtml(session.date)}">
-        <span>${escapeHtml(session.day.slice(0, 3))}</span>
-        <strong>${escapeHtml(shortDate(session.date))}</strong>
-        <small>${completed}/${wellnessChecks.length}</small>
-        <div class="supplement-dots" aria-label="${completed} of ${wellnessChecks.length} supplements recorded">${dots}</div>
-      </li>
-    `;
-  }).join("");
-
-  return `
-    <article class="wellness-card supplement-history-card">
-      <div class="wellness-head">
-        <div>
-          <span>Nutrition log</span>
-          <strong>${escapeHtml(title)}</strong>
-        </div>
-        <small data-wellness-history-count>${completedTotal}/${totalPossible}</small>
-      </div>
-      <ul class="supplement-history">${days}</ul>
-    </article>
+    <div class="day-supplement-line" data-wellness-row-date="${escapeHtml(session.date)}">
+      <span>Supplements</span>
+      <div class="supplement-toggles" aria-label="${completed} of ${wellnessChecks.length} supplements recorded">${items}</div>
+      <small>${completed}/${wellnessChecks.length}</small>
+    </div>
   `;
 }
 
@@ -605,8 +561,6 @@ function renderCurrentWeek(plan, actuals) {
         <span style="width: ${progress}%"></span>
       </div>
     </div>
-    ${renderWellnessTracker()}
-    ${renderWellnessHistory(week, "This week")}
     <div class="daily-grid">${dayCards}</div>
     <div class="note-grid">
       <article class="note-card"><span>Long run notes</span><p>${escapeHtml(week.long_run_notes)}</p></article>
@@ -639,7 +593,6 @@ function renderPlanTable(plan, actuals) {
         </summary>
         <div class="week-row-body">
           <div class="daily-grid">${details}</div>
-          ${renderWellnessHistory(week, `Week ${week.week_number}`)}
           <p class="week-notes-line"><strong>Notes:</strong> ${escapeHtml(week.notes || "No notes for this week.")}</p>
         </div>
       </details>
@@ -1205,12 +1158,6 @@ function setupWellnessTracker() {
     };
     saveWellnessChecks(state);
 
-    const card = checkbox.closest(".wellness-card");
-    const count = card?.querySelector("[data-wellness-count]");
-    if (count) {
-      const checked = card.querySelectorAll("[data-wellness-check]:checked").length;
-      count.textContent = `${checked}/${wellnessChecks.length}`;
-    }
     if (latestRenderState) {
       const opened = openWeekNumbers();
       renderCurrentWeek(latestRenderState.plan, latestRenderState.actuals);

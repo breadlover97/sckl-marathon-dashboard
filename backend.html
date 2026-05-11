@@ -57,7 +57,7 @@
           <div class="flow-step"><strong>4</strong><span>The workflow reads private credentials from GitHub secrets, fetches Google Sheets and Strava data, then writes generated JSON files into the Pages artifact.</span></div>
           <div class="flow-step"><strong>5</strong><span>GitHub Pages hosts the static site. The browser loads <code>data/training-plan.json</code> and <code>data/strava-activities.json</code> to render the dashboard.</span></div>
           <div class="flow-step"><strong>6</strong><span>Run notes go the other direction: after passcode auth, the browser sends a note to the Cloudflare Worker, and the Worker writes it to the <code>Run Notes</code> tab in Google Sheets.</span></div>
-          <div class="flow-step"><strong>7</strong><span>Supplement checks are currently local-only. The browser records them in <code>localStorage</code> by date, then displays the same history in This Week and Week-by-week cards.</span></div>
+          <div class="flow-step"><strong>7</strong><span>Supplement checks are currently local-only. The browser records them in <code>localStorage</code> by date, then displays them inside the daily cards in This Week and Week-by-week views.</span></div>
         </div>
       </section>
 

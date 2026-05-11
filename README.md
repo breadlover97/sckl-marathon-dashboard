@@ -6,7 +6,7 @@ The site is intentionally simple: Google Sheets is the editable plan, Strava is 
 
 ## What The Dashboard Shows
 
-- This week’s planned sessions, actual Strava mileage, daily supplement checks, and weekly supplement history.
+- This week’s planned sessions, actual Strava mileage, and daily supplement checks inside each day card.
 - Week-by-week marathon plan from Google Sheets.
 - Planned vs actual weekly mileage and long-run trends.
 - Recent Strava activity feed with pace, time, elevation, heart rate, cadence, links, and optional run notes.

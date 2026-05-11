@@ -971,150 +971,58 @@ main > .panel:first-child {
   background: var(--orange);
 }
 
-.wellness-card {
+.day-supplement-line {
   display: grid;
-  gap: 12px;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--card);
-}
-
-.wellness-head {
-  display: flex;
-  gap: 12px;
+  grid-template-columns: 1fr auto;
+  gap: 7px;
   align-items: center;
-  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--subtle-line);
 }
 
-.wellness-head span,
-.wellness-head small {
+.day-supplement-line > span,
+.day-supplement-line small {
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.62rem;
   font-weight: 900;
   text-transform: uppercase;
 }
 
-.wellness-head strong {
-  display: block;
-  margin-top: 2px;
-  color: var(--ink);
-  font-size: 1rem;
-  font-weight: 900;
-}
-
-.wellness-head small {
-  display: inline-flex;
-  min-height: 26px;
-  align-items: center;
-  padding: 4px 9px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--soft);
-}
-
-.wellness-list {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.wellness-check {
+.supplement-toggles {
   display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.supplement-toggle {
+  display: inline-flex;
   min-width: 0;
-  gap: 8px;
+  gap: 4px;
   align-items: center;
-  padding: 9px 10px;
+  padding: 4px 6px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--soft);
   color: var(--muted);
   cursor: pointer;
-  font-size: 0.76rem;
+  font-size: 0.62rem;
   font-weight: 900;
+  line-height: 1;
 }
 
-.wellness-check input {
-  width: 16px;
-  height: 16px;
+.supplement-toggle input {
+  width: 11px;
+  height: 11px;
   flex: 0 0 auto;
   accent-color: var(--teal);
 }
 
-.wellness-check span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.supplement-history-card {
-  gap: 14px;
-}
-
-.supplement-history {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.supplement-day {
-  display: grid;
-  min-width: 0;
-  gap: 4px;
-  padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--soft);
-}
-
-.supplement-day.complete {
-  border-color: color-mix(in srgb, var(--teal) 34%, var(--line));
+.supplement-toggle:has(input:checked) {
+  border-color: color-mix(in srgb, var(--teal) 42%, var(--line));
   background: var(--teal-soft);
-}
-
-.supplement-day.partial {
-  border-color: color-mix(in srgb, var(--orange) 34%, var(--line));
-  background: var(--orange-soft);
-}
-
-.supplement-day span,
-.supplement-day small {
-  color: var(--muted);
-  font-size: 0.66rem;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.supplement-day strong {
-  overflow: hidden;
-  color: var(--ink);
-  font-size: 0.82rem;
-  font-weight: 900;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.supplement-dots {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  margin-top: 2px;
-}
-
-.supplement-dot {
-  width: 8px;
-  height: 8px;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: var(--card);
-}
-
-.supplement-dot.taken {
-  border-color: var(--teal);
-  background: var(--teal);
+  color: var(--teal);
 }
 
 .week-summary {
@@ -1833,7 +1741,6 @@ html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
 
 @media (hover: hover) and (pointer: fine) {
   .day-card:hover,
-  .wellness-card:hover,
   .pace-summary-card:hover,
   .pace-chip:hover,
   .week-metric:hover,
@@ -2136,37 +2043,6 @@ html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
 
   .week-progress strong {
     font-size: 1.55rem;
-  }
-
-  .wellness-card {
-    padding: 12px;
-  }
-
-  .wellness-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .wellness-check {
-    border-radius: 12px;
-    font-size: 0.72rem;
-  }
-
-  .supplement-history {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-  }
-
-  .supplement-history::-webkit-scrollbar {
-    display: none;
-  }
-
-  .supplement-day {
-    flex: 0 0 86px;
-    scroll-snap-align: start;
   }
 
   .daily-grid {
