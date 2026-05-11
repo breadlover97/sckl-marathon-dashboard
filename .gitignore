@@ -16,3 +16,4 @@ sckl-marathon-dashboard-*.json
 strava_token*.json
 data/strava-activities.json
 generated/
+cloudflare-worker/wrangler.toml

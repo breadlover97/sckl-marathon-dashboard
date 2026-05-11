@@ -1,3 +1,3 @@
 window.SCKL_CONFIG = {
-  runNotesApiUrl: ""
+  runNotesApiUrl: "https://sckl-run-notes.ngimtaizhi.workers.dev"
 };
