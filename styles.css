@@ -1154,6 +1154,10 @@ main > .panel:first-child {
   transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
+.week-row[open] {
+  animation: details-shell-reveal 180ms ease both;
+}
+
 .week-row.current {
   border-color: rgba(252, 76, 2, 0.4);
   box-shadow: 0 14px 34px rgba(252, 76, 2, 0.08);
@@ -1232,7 +1236,7 @@ main > .panel:first-child {
 }
 
 .week-row[open] .week-row-body {
-  animation: details-reveal 180ms ease both;
+  animation: details-body-reveal 190ms ease both;
 }
 
 .week-notes-line {
@@ -1304,10 +1308,49 @@ main > .panel:first-child {
   opacity: 0.94;
 }
 
+.chart-tooltip-bg {
+  stroke: var(--subtle-line);
+  stroke-width: 1;
+}
+
 .chart-tooltip text {
   fill: var(--inverse);
   font-size: 0.68rem;
   font-weight: 900;
+}
+
+.chart-tooltip text.chart-tooltip-title {
+  fill: var(--inverse);
+  font-size: 0.72rem;
+}
+
+.chart-tooltip text.chart-tooltip-phase {
+  fill: var(--amber);
+}
+
+.chart-tooltip text.chart-tooltip-planned {
+  fill: var(--orange-dark);
+}
+
+.chart-tooltip text.chart-tooltip-actual {
+  fill: var(--teal);
+}
+
+.tooltip-marker.phase {
+  fill: var(--amber);
+}
+
+.tooltip-marker.planned {
+  fill: var(--orange-dark);
+}
+
+.tooltip-marker.actual {
+  fill: var(--teal);
+}
+
+html[data-theme="light"] .chart-tooltip text.chart-tooltip-planned,
+html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
+  fill: #ff9b72;
 }
 
 .chart-axis {
@@ -1616,9 +1659,19 @@ main > .panel:first-child {
   .activity-feed:hover,
   .flow-step:hover,
   .tech-grid article:hover {
-    border-color: var(--subtle-line);
-    background: color-mix(in srgb, var(--card) 82%, var(--soft));
-    box-shadow: 0 0 0 3px var(--subtle-line);
+    border-color: color-mix(in srgb, var(--orange) 42%, var(--line));
+    background: color-mix(in srgb, var(--card) 78%, var(--orange-soft));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--orange) 16%, transparent);
+  }
+
+  .day-card.completed-day:hover {
+    background: color-mix(in srgb, var(--complete-bg) 82%, var(--orange-soft));
+  }
+
+  .day-card.active-day:hover {
+    border-color: var(--current-border);
+    background: color-mix(in srgb, var(--current-bg) 88%, var(--orange-soft));
+    box-shadow: 0 0 0 3px var(--current-glow);
   }
 
   .activity-table tbody tr:hover {
@@ -1632,10 +1685,21 @@ main > .panel:first-child {
   }
 }
 
-@keyframes details-reveal {
+@keyframes details-shell-reveal {
+  from {
+    background-color: color-mix(in srgb, var(--card) 72%, var(--orange-soft));
+    border-color: color-mix(in srgb, var(--orange) 34%, var(--line));
+  }
+
+  to {
+    background-color: var(--card);
+  }
+}
+
+@keyframes details-body-reveal {
   from {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translateY(-4px);
   }
 
   to {
@@ -1651,6 +1715,7 @@ main > .panel:first-child {
 
   .nav-tabs a,
   .week-row[open] .week-row-body,
+  .week-row[open],
   .panel,
   .info-section,
   .week-row,
