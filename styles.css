@@ -500,7 +500,6 @@ main {
   border-radius: 18px;
   background: var(--panel);
   box-shadow: var(--shadow);
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .hero-copy {
@@ -643,7 +642,7 @@ main {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--card);
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
 .activity-table-shell {
@@ -1035,7 +1034,7 @@ main > .panel:first-child {
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--soft);
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
 .week-metric span {
@@ -1065,7 +1064,7 @@ main > .panel:first-child {
   min-height: 176px;
   grid-template-rows: minmax(34px, auto) minmax(52px, auto) 1fr auto;
   padding: 14px;
-  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
 }
 
 .day-card-head {
@@ -1124,7 +1123,7 @@ main > .panel:first-child {
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--card);
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
 .note-card span {
@@ -1152,7 +1151,7 @@ main > .panel:first-child {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--card);
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
 .week-row.current {
@@ -1582,7 +1581,6 @@ main > .panel:first-child {
   border-radius: 18px;
   background: var(--panel);
   box-shadow: var(--shadow);
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .info-section p {
@@ -1607,7 +1605,7 @@ main > .panel:first-child {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--card);
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
 .flow-step {
@@ -1652,23 +1650,16 @@ main > .panel:first-child {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .panel:hover,
-  .info-section:hover,
-  .week-row:hover,
-  .activity-feed:hover {
-    border-color: var(--subtle-line);
-    box-shadow: 0 18px 44px rgba(5, 5, 5, 0.12);
-    transform: translateY(-2px);
-  }
-
   .day-card:hover,
   .week-metric:hover,
   .note-card:hover,
+  .week-row:hover,
+  .activity-feed:hover,
   .flow-step:hover,
   .tech-grid article:hover {
     border-color: var(--subtle-line);
-    box-shadow: 0 10px 24px rgba(5, 5, 5, 0.1);
-    transform: translateY(-2px);
+    background: color-mix(in srgb, var(--card) 82%, var(--soft));
+    box-shadow: 0 0 0 3px var(--subtle-line);
   }
 
   .activity-table tbody tr:hover {
@@ -1679,12 +1670,6 @@ main > .panel:first-child {
     border-color: var(--teal);
     background: var(--teal-soft);
     color: var(--teal);
-    transform: translateY(-1px);
-  }
-
-  .chart-dot.actual:hover,
-  .chart-dot.planned:hover {
-    transform: scale(1.08);
   }
 }
 
