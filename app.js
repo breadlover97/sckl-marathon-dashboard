@@ -106,9 +106,9 @@ function text(value, fallback = "-") {
   return value === null || value === undefined || value === "" ? fallback : String(value);
 }
 
-function escapeHtml(value) {
+function escapeHtml(value, fallback = "-") {
   const div = document.createElement("div");
-  div.textContent = text(value);
+  div.textContent = text(value, fallback);
   return div.innerHTML;
 }
 
@@ -121,6 +121,14 @@ function safeExternalUrl(value, allowedHosts = []) {
   } catch (error) {
     return "";
   }
+}
+
+function safeDomId(value, fallback = "item") {
+  const cleaned = String(value || "")
+    .trim()
+    .replace(/[^a-zA-Z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return cleaned || fallback;
 }
 
 function storedRunNotesToken() {
@@ -698,13 +706,26 @@ function setupWeekToggle() {
   }, true);
 }
 
-function renderRunNoteControl(activity, runNotes) {
+function renderRunNotePanel(activity, runNotes) {
   const note = runNotes[String(activity.id)]?.note || "";
-  if (!RUN_NOTES_API_URL || !activity.id) return "-";
+  if (!RUN_NOTES_API_URL || !activity.id) {
+    return `<div class="empty-state compact-empty">Run notes are unavailable until the Cloudflare Worker is configured.</div>`;
+  }
   const stravaUrl = safeExternalUrl(activity.strava_url, ["strava.com"]);
   return `
+    <div class="activity-detail-grid">
+      <div>
+        <span>Run note</span>
+        <p>Saved to the Google Sheet <code>Run Notes</code> tab for this Strava activity.</p>
+      </div>
+      <div class="activity-detail-metrics">
+        <span>${oneDecimalKm(activity.distance_km)}</span>
+        <span>${activityPace(activity)}</span>
+        <span>${heartRate(activity.average_heartrate)}</span>
+      </div>
+    </div>
     <form class="run-note-form" data-run-note-form data-activity-id="${escapeHtml(activity.id)}" data-activity-date="${escapeHtml(activity.date)}" data-activity-name="${escapeHtml(activity.name)}" data-activity-url="${escapeHtml(stravaUrl)}">
-      <textarea name="note" maxlength="500" aria-label="Run note for ${escapeHtml(activity.name)}">${escapeHtml(note)}</textarea>
+      <textarea name="note" maxlength="500" aria-label="Run note for ${escapeHtml(activity.name)}">${escapeHtml(note, "")}</textarea>
       <button type="submit">Save</button>
     </form>
   `;
@@ -722,10 +743,13 @@ function renderActivityFeed(actuals, runNotes = {}) {
   const athlete = actuals.metadata?.athlete || {};
   const athleteName = [athlete.firstname, athlete.lastname].filter(Boolean).join(" ") || "Tai Zhi";
   const profileImage = safeExternalUrl(athlete.profile_medium || athlete.profile || "");
-  const activityRows = activities.map((activity) => {
+  const activityRows = activities.map((activity, index) => {
     const stravaUrl = safeExternalUrl(activity.strava_url, ["strava.com"]);
+    const note = runNotes[String(activity.id)]?.note || "";
+    const detailId = `activity-detail-${safeDomId(activity.id, `row-${index}`)}`;
+    const noteLabel = note ? "Edit note" : "Note";
     return `
-      <tr>
+      <tr class="activity-main-row">
         <td>${escapeHtml(prettyDate(activity.date))}</td>
         <td><strong>${escapeHtml(activity.name)}</strong></td>
         <td><strong>${oneDecimalKm(activity.distance_km)}</strong></td>
@@ -735,8 +759,19 @@ function renderActivityFeed(actuals, runNotes = {}) {
         <td>${heartRate(activity.average_heartrate)}</td>
         <td>${cadence(activity.average_cadence)}</td>
         <td>${Math.round(Number(activity.elevation_gain_m || 0))} m</td>
-        <td>${renderRunNoteControl(activity, runNotes)}</td>
         <td>${stravaUrl ? `<a href="${escapeHtml(stravaUrl)}" target="_blank" rel="noopener noreferrer">Open</a>` : "-"}</td>
+        <td>
+          <button class="table-action-button ${note ? "has-note" : ""}" type="button" data-activity-toggle aria-expanded="false" aria-controls="${detailId}">
+            ${escapeHtml(noteLabel)}
+          </button>
+        </td>
+      </tr>
+      <tr id="${detailId}" class="activity-detail-row" hidden>
+        <td colspan="11">
+          <div class="activity-detail-panel">
+            ${renderRunNotePanel(activity, runNotes)}
+          </div>
+        </td>
       </tr>
     `;
   }).join("");
@@ -762,8 +797,8 @@ function renderActivityFeed(actuals, runNotes = {}) {
               <th>Avg HR</th>
               <th>Avg cadence</th>
               <th>Elev</th>
-              <th>Notes</th>
               <th>Link</th>
+              <th>Details</th>
             </tr>
           </thead>
           <tbody>${activityRows}</tbody>
@@ -1167,6 +1202,11 @@ function setupRunNotesForms() {
       }
       if (!response.ok) throw new Error(`Save failed (${response.status})`);
       button.textContent = "Saved";
+      const toggle = form.closest(".activity-detail-row")?.previousElementSibling?.querySelector("[data-activity-toggle]");
+      if (toggle) {
+        toggle.textContent = note.trim() ? "Edit note" : "Note";
+        toggle.classList.toggle("has-note", Boolean(note.trim()));
+      }
       setTimeout(() => {
         button.textContent = originalText;
       }, 1200);
@@ -1176,6 +1216,18 @@ function setupRunNotesForms() {
     } finally {
       button.disabled = false;
     }
+  });
+}
+
+function setupActivityDetails() {
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-activity-toggle]");
+    if (!button) return;
+    const detail = document.getElementById(button.getAttribute("aria-controls"));
+    if (!detail) return;
+    const willOpen = detail.hidden;
+    detail.hidden = !willOpen;
+    button.setAttribute("aria-expanded", String(willOpen));
   });
 }
 
@@ -1266,6 +1318,7 @@ setupReturnTop();
 setupActiveNav();
 setupWeekToggle();
 setupRunNotesForms();
+setupActivityDetails();
 setupWellnessTracker();
 setupResponsiveCharts();
 
