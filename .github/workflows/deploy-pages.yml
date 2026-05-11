@@ -76,7 +76,7 @@ jobs:
       - name: Prepare Pages artifact
         run: |
           mkdir -p _site/data
-          cp index.html styles.css app.js _site/
+          cp index.html backend.html styles.css app.js _site/
           cp data/training-plan.json _site/data/
           cp data/strava-activities.json _site/data/
           cp data/mock-training-plan.json _site/data/

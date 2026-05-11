@@ -233,6 +233,45 @@ function activitiesForDate(activities, date) {
   return activities.filter((activity) => activity.date === date);
 }
 
+function sessionTypeClasses(session) {
+  const plan = String(session.plan || "").toLowerCase();
+  return [
+    session.day === "Monday" || session.day === "Tuesday" ? "key-day" : "",
+    session.day === "Wednesday" ? "strength-day" : "",
+    session.day === "Saturday" || (session.day === "Sunday" && plan.includes("race")) ? "long-day" : "",
+  ].filter(Boolean).join(" ");
+}
+
+function renderDayCard(session, actuals, options = {}) {
+  const dayActivities = activitiesForDate(actuals.activities || [], session.date);
+  const actualKm = dayActivities.reduce((sum, activity) => sum + Number(activity.distance_km || 0), 0);
+  const todayKey = dateKey(singaporeToday());
+  const isActive = session.date === todayKey;
+  const isCompleted = dayActivities.length > 0 || actualKm > 0;
+  const classes = [
+    "day-card",
+    sessionTypeClasses(session),
+    isActive ? "active-day" : "",
+    isCompleted ? "completed-day" : "",
+  ].filter(Boolean).join(" ");
+  const completedMark = isCompleted ? `<span class="completed-mark" aria-label="Completed">✓</span>` : "";
+  const actualLine = options.showActual || isCompleted
+    ? `<div class="actual-line">${oneDecimalKm(actualKm)} actual · ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}</div>`
+    : "";
+
+  return `
+    <article class="${classes}" ${isActive ? `aria-current="date"` : ""}>
+      <div class="day-card-head">
+        <span>${escapeHtml(session.day)} · ${escapeHtml(shortDate(session.date))}</span>
+        ${completedMark}
+      </div>
+      <strong>${oneDecimalKm(session.planned_km)}<br>planned</strong>
+      <p>${escapeHtml(session.plan)}</p>
+      ${actualLine}
+    </article>
+  `;
+}
+
 function summarizeWeekActual(week, actuals) {
   const start = parseLocalDate(week.week_start_date);
   const end = addDays(start, 6);
@@ -327,22 +366,7 @@ function renderCurrentWeek(plan, actuals) {
   document.getElementById("currentWeekLabel").textContent =
     `Week ${week.week_number}: ${prettyDate(week.week_start_date)} to ${prettyDate(weekEndDate(week))} · ${week.phase}`;
 
-  const dayCards = week.daily_sessions.map((session) => {
-    const day = session.day;
-    const dayActivities = activitiesForDate(actuals.activities || [], session.date);
-    const actualKm = dayActivities.reduce((sum, activity) => sum + Number(activity.distance_km || 0), 0);
-    const keyClass = day === "Monday" || day === "Tuesday" ? "key-day" : "";
-    const strengthClass = day === "Wednesday" ? "strength-day" : "";
-    const longClass = day === "Saturday" || day === "Sunday" && String(session.plan).toLowerCase().includes("race") ? "long-day" : "";
-    return `
-      <article class="day-card ${keyClass} ${strengthClass} ${longClass}">
-        <span>${escapeHtml(day)} · ${escapeHtml(shortDate(session.date))}</span>
-        <strong>${oneDecimalKm(session.planned_km)} planned</strong>
-        <p>${escapeHtml(session.plan)}</p>
-        <div class="actual-line">${oneDecimalKm(actualKm)} actual · ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}</div>
-      </article>
-    `;
-  }).join("");
+  const dayCards = week.daily_sessions.map((session) => renderDayCard(session, actuals, { showActual: true })).join("");
 
   document.getElementById("currentWeekPlan").innerHTML = `
     <div class="week-progress">
@@ -369,7 +393,7 @@ function renderCurrentWeek(plan, actuals) {
   `;
 }
 
-function renderPlanTable(plan) {
+function renderPlanTable(plan, actuals) {
   const table = document.getElementById("planTable");
   const planStatus = document.getElementById("planSyncStatus");
   if (planStatus) {
@@ -380,15 +404,7 @@ function renderPlanTable(plan) {
   }
   table.innerHTML = plan.weeks.map((week) => {
     const current = isCurrentWeek(week);
-    const details = week.daily_sessions.map((session) => {
-      return `
-        <article class="day-card">
-          <span>${escapeHtml(session.day)} · ${escapeHtml(shortDate(session.date))}</span>
-          <strong>${oneDecimalKm(session.planned_km)} planned</strong>
-          <p>${escapeHtml(session.plan)}</p>
-        </article>
-      `;
-    }).join("");
+    const details = week.daily_sessions.map((session) => renderDayCard(session, actuals)).join("");
 
     return `
       <details class="week-row ${current ? "current" : ""}" ${current ? "open" : ""}>
@@ -619,24 +635,30 @@ function setupChartHover(container, points, dims) {
     }, points[0]);
   };
 
-  hitArea.addEventListener("pointermove", (event) => {
+  const moveCrosshair = (event) => {
     const rect = svg.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * dims.width;
+    const rawX = ((event.clientX - rect.left) / rect.width) * dims.width;
+    const x = Math.min(Math.max(rawX, dims.left), dims.left + dims.plotWidth);
     const point = nearestPoint(x);
-    const tooltipX = point.x > dims.width - 210 ? point.x - 180 : point.x + 12;
+    const tooltipX = x > dims.width - 210 ? x - 180 : x + 12;
     const tooltipY = Math.max(dims.top + 4, Math.min(point.y - 62, dims.baseline - 66));
 
     hover.style.opacity = "1";
-    vLine.setAttribute("x1", point.x);
-    vLine.setAttribute("x2", point.x);
+    vLine.setAttribute("x1", x);
+    vLine.setAttribute("x2", x);
     hLine.setAttribute("y1", point.y);
     hLine.setAttribute("y2", point.y);
+    hLine.setAttribute("x1", dims.left);
+    hLine.setAttribute("x2", dims.left + dims.plotWidth);
     dot.setAttribute("cx", point.x);
     dot.setAttribute("cy", point.y);
     tip.setAttribute("transform", `translate(${tooltipX}, ${tooltipY})`);
     dateText.textContent = `${point.label} · ${prettyDate(point.date)}`;
     valueText.textContent = `${dims.valueLabel}: ${oneDecimalKm(point.value)}`;
-  });
+  };
+
+  hitArea.addEventListener("pointerenter", moveCrosshair);
+  hitArea.addEventListener("pointermove", moveCrosshair);
 
   hitArea.addEventListener("pointerleave", () => {
     hover.style.opacity = "0";
@@ -673,31 +695,6 @@ function renderPhaseBreakdown(plan) {
       <span><i class="legend-dot ${row.key}"></i>${escapeHtml(row.phase)} · ${row.weeks} wk · ${average} km/wk avg</span>
     `;
   }).join("");
-}
-
-function renderDataStatus(plan, actuals) {
-  const generated = plan.metadata?.generated_at
-    ? new Date(plan.metadata.generated_at).toLocaleString("en-SG", { timeZone: "Asia/Singapore" })
-    : "Not generated yet";
-  const actualGenerated = actuals.metadata?.generated_at
-    ? new Date(actuals.metadata.generated_at).toLocaleString("en-SG", { timeZone: "Asia/Singapore" })
-    : "Not synced yet";
-  const actualCount = Number(actuals.metadata?.included_activities || actuals.activities?.length || 0);
-  const planSource = plan.loaded_from === "google-sheet" ? "Google Sheets" : "Mock plan";
-  const actualSource = actuals.loaded_from === "strava" ? "Strava" : actuals.loaded_from === "mock" ? "Mock actuals" : "Not connected";
-
-  document.getElementById("settingsGrid").innerHTML = `
-    <article class="setting-card">
-      <span>Plan sync</span>
-      <strong>${escapeHtml(generated)}</strong>
-      <p>${escapeHtml(planSource)} · ${plan.weeks.length} training week${plan.weeks.length === 1 ? "" : "s"} loaded.</p>
-    </article>
-    <article class="setting-card">
-      <span>Strava sync</span>
-      <strong>${escapeHtml(actualGenerated)}</strong>
-      <p>${escapeHtml(actualSource)} · ${actualCount} run${actualCount === 1 ? "" : "s"} loaded.</p>
-    </article>
-  `;
 }
 
 function setupReturnTop() {
@@ -752,12 +749,11 @@ function setupActiveNav() {
 function render({ plan, actuals }) {
   renderTrainingDayProgress(plan);
   renderCurrentWeek(plan, actuals);
-  renderPlanTable(plan);
+  renderPlanTable(plan, actuals);
   renderBarChart("mileageChart", plan.weeks, "target_weekly_mileage_km", { label: "Planned weekly mileage", valueLabel: "Mileage" });
   renderLineChart("longRunChart", plan.weeks, "long_run_distance_km", { label: "Planned long run distance", valueLabel: "Long run" });
   renderPhaseBreakdown(plan);
   renderActivityFeed(actuals);
-  renderDataStatus(plan, actuals);
   document.getElementById("syncStatus").textContent =
     `${plan.loaded_from === "google-sheet" ? "Google Sheet plan" : "Mock plan"} loaded · ${plan.weeks.length} training weeks`;
 }

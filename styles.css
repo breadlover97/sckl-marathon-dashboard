@@ -313,9 +313,11 @@ main {
 
 .day-card strong {
   display: block;
-  margin: -4px 0 8px;
+  min-height: 52px;
+  margin: 0 0 8px;
   font-size: 1.05rem;
   font-weight: 900;
+  line-height: 1.25;
 }
 
 .actual-line {
@@ -428,7 +430,7 @@ main {
 
 .stat-card span,
 .setting-card span,
-.day-card span,
+.day-card-head > span,
 .phase-label {
   display: block;
   margin-bottom: 12px;
@@ -580,8 +582,38 @@ main > .panel:first-child {
 }
 
 .day-card {
-  min-height: 138px;
+  display: grid;
+  min-height: 176px;
+  grid-template-rows: minmax(34px, auto) minmax(52px, auto) 1fr auto;
   padding: 14px;
+  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.day-card-head {
+  display: flex;
+  min-height: 34px;
+  gap: 8px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.day-card-head > span {
+  margin-bottom: 0;
+  line-height: 1.25;
+}
+
+.completed-mark {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--teal);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
 }
 
 .day-card.key-day {
@@ -597,6 +629,15 @@ main > .panel:first-child {
 .day-card.long-day {
   border-color: rgba(5, 5, 5, 0.2);
   background: #fbfaf7;
+}
+
+.day-card.completed-day {
+  border-color: rgba(0, 124, 137, 0.34);
+}
+
+.day-card.active-day {
+  border-color: rgba(252, 76, 2, 0.52);
+  box-shadow: 0 0 0 3px rgba(252, 76, 2, 0.12);
 }
 
 .day-card p {
@@ -677,10 +718,12 @@ main > .panel:first-child {
   content: "+";
   font-size: 1.2rem;
   line-height: 1;
+  transition: transform 180ms ease, background 180ms ease;
 }
 
 .week-row[open] summary::after {
   content: "-";
+  transform: rotate(180deg);
 }
 
 .row-label {
@@ -718,6 +761,11 @@ main > .panel:first-child {
 
 .week-row-body {
   padding: 0 16px 16px;
+  transform-origin: top;
+}
+
+.week-row[open] .week-row-body {
+  animation: details-reveal 180ms ease both;
 }
 
 .week-notes-line {
@@ -753,8 +801,10 @@ main > .panel:first-child {
 }
 
 .chart-hit-area {
-  fill: transparent;
+  fill: #fff;
+  opacity: 0;
   pointer-events: all;
+  cursor: crosshair;
 }
 
 .chart-hover {
@@ -767,6 +817,7 @@ main > .panel:first-child {
   stroke: rgba(5, 5, 5, 0.5);
   stroke-dasharray: 3 4;
   stroke-width: 1.2;
+  shape-rendering: crispEdges;
 }
 
 .chart-hover-dot {
@@ -938,13 +989,121 @@ main > .panel:first-child {
   transform: translateY(0);
 }
 
+.site-header {
+  width: min(1180px, calc(100% - 32px));
+  margin: 28px auto 18px;
+}
+
+.setup-header .header-copy {
+  max-width: 760px;
+}
+
+.date-range {
+  color: var(--muted);
+  font-size: 1.02rem;
+  font-weight: 750;
+}
+
+.wide-copy {
+  max-width: 70ch;
+}
+
+.info-section {
+  margin-top: 18px;
+  padding: clamp(18px, 3vw, 30px);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.info-section p {
+  max-width: 78ch;
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.info-section p:last-child {
+  margin-bottom: 0;
+}
+
+.flow-list,
+.tech-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.flow-step,
+.tech-grid article {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.flow-step {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.flow-step strong {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.flow-step span,
+.tech-grid p {
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.tech-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.code-block {
+  overflow-x: auto;
+  margin: 14px 0 0;
+  padding: 16px;
+  border: 1px solid rgba(5, 5, 5, 0.1);
+  border-radius: 14px;
+  background: #111;
+  color: #fff;
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+@keyframes details-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 
   .nav-tabs a,
+  .week-row[open] .week-row-body,
+  .day-card,
   .return-top {
+    animation: none;
     transition: none;
   }
 }
@@ -972,7 +1131,8 @@ main > .panel:first-child {
 
   .week-summary,
   .note-grid,
-  .settings-grid {
+  .settings-grid,
+  .tech-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -998,7 +1158,7 @@ main > .panel:first-child {
 
   body {
     background: #faf9f7;
-    padding-top: 128px;
+    padding-top: 122px;
   }
 
   html {
@@ -1122,6 +1282,11 @@ main > .panel:first-child {
   .activity-table-summary {
     display: grid;
     gap: 4px;
+  }
+
+  .tech-grid,
+  .flow-step {
+    grid-template-columns: 1fr;
   }
 
   .site-footer {
