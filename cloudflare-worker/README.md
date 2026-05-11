@@ -1,20 +1,26 @@
-# SCKL Run Notes Worker
+# SCKL Dashboard Worker
 
-This Worker lets the static GitHub Pages dashboard write simple notes for Strava runs into the Google Sheet without exposing Google credentials in the browser.
+This Worker lets the static GitHub Pages dashboard write run notes and supplement checks into the Google Sheet without exposing Google credentials in the browser.
 
 ## Data Flow
 
 ```text
-Dashboard note form
--> Cloudflare Worker /notes with bearer passcode
+Dashboard note form or supplement checkbox
+-> Cloudflare Worker /notes or /supplements with bearer passcode
 -> Google Sheets API
--> Run Notes tab
+-> Run Notes or Supplements tab
 ```
 
 The Worker stores notes in a separate `Run Notes` tab using this schema:
 
 ```text
 Activity ID | Date | Activity | Note | Strava URL | Updated At
+```
+
+The Worker stores supplement checks in a separate `Supplements` tab using this schema:
+
+```text
+Date | Protein Shake | Omega 3 | Vitamin D | Updated At
 ```
 
 ## Setup
@@ -62,9 +68,9 @@ window.SCKL_CONFIG = {
 ## Security Notes
 
 - Google credentials stay only in Cloudflare Worker secrets.
-- Reading and writing notes both require the run-note passcode.
+- Reading and writing notes or supplement checks both require the passcode.
 - Notes are capped at 500 characters per activity.
 - Keep `ALLOWED_ORIGIN` set to the GitHub Pages origin unless you are testing locally.
-- The browser stores only your run-note passcode in localStorage after the first save.
-- Anyone with both the public site and the passcode can edit run notes, so keep the passcode private.
-- The Worker is intentionally scoped to run notes only, not arbitrary sheet editing.
+- The browser stores only your dashboard passcode in localStorage after the first save.
+- Anyone with both the public site and the passcode can edit run notes and supplement checks, so keep the passcode private.
+- The Worker is intentionally scoped to run notes and supplement checks only, not arbitrary sheet editing.

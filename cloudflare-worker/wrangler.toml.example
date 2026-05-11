@@ -5,4 +5,5 @@ compatibility_date = "2026-05-11"
 [vars]
 GOOGLE_SHEET_ID = "1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo"
 RUN_NOTES_SHEET_NAME = "Run Notes"
+SUPPLEMENTS_SHEET_NAME = "Supplements"
 ALLOWED_ORIGIN = "https://breadlover97.github.io"

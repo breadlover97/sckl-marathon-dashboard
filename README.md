@@ -189,14 +189,15 @@ The workflow also runs daily at 12:15am Singapore time and whenever `main` is pu
 
 Important Strava note: if a workflow run says Strava returned a rotated refresh token, generate or copy the new refresh token and update the `STRAVA_REFRESH_TOKEN` repository secret before the next sync.
 
-## Run Notes Writeback
+## Run Notes And Supplements Writeback
 
-Run notes are written through a Cloudflare Worker so Google credentials are not exposed on GitHub Pages.
+Run notes and supplement checks are written through a Cloudflare Worker so Google credentials are not exposed on GitHub Pages.
 
 Flow:
 
 ```text
-Website note form -> Cloudflare Worker -> Google Sheets API -> Run Notes tab
+Website note form -> Cloudflare Worker /notes -> Google Sheets API -> Run Notes tab
+Supplement checkbox -> Cloudflare Worker /supplements -> Google Sheets API -> Supplements tab
 ```
 
 Setup:
@@ -224,7 +225,9 @@ The first time you save a note from the website, it asks for `RUN_NOTES_TOKEN` a
 
 ## Supplement Checks
 
-Supplement checks are currently recorded in the browser only, under the `sckl-wellness-checks` localStorage key. The structure is keyed by date:
+Supplement checks are saved to the `Supplements` tab through the Cloudflare Worker when `runNotesApiUrl` is configured. The browser also keeps a local cache under the `sckl-wellness-checks` localStorage key so the dashboard still displays recent checks if the Worker is unavailable.
+
+The local cache structure is keyed by date:
 
 ```json
 {
@@ -236,7 +239,7 @@ Supplement checks are currently recorded in the browser only, under the `sckl-we
 }
 ```
 
-This is deliberately lightweight for the first version. It is not synced to GitHub, Cloudflare, Google Sheets, or Strava yet, so clearing browser site data or changing devices will lose or hide that history.
+Google Sheets is the cross-device source of truth once the Worker is deployed. Clearing browser site data removes only the local cache and passcode, not rows already written to the `Supplements` tab.
 
 ## Security Notes
 
@@ -244,7 +247,7 @@ This is deliberately lightweight for the first version. It is not synced to GitH
 - GitHub Actions secrets should hold `GOOGLE_SERVICE_ACCOUNT_JSON`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, and `STRAVA_REFRESH_TOKEN`.
 - The frontend must not contain Strava client secrets, Google credentials, or Worker secrets.
 - `config.js` is public. Only put public settings there, such as the Worker URL.
-- The Cloudflare Worker is scoped to the `Run Notes` tab and requires a bearer passcode for reading or writing notes.
+- The Cloudflare Worker is scoped to the `Run Notes` and `Supplements` tabs and requires a bearer passcode for reading or writing notes and supplement checks.
 - The site is public on GitHub Pages, so generated JSON should be treated as public data.
 
 ## Checks

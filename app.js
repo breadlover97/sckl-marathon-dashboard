@@ -281,6 +281,39 @@ async function loadRunNotes() {
   }
 }
 
+async function loadSupplements() {
+  if (!RUN_NOTES_API_URL) return loadWellnessChecks();
+  const token = storedRunNotesToken();
+  if (!token) return loadWellnessChecks();
+  try {
+    const response = await fetch(`${RUN_NOTES_API_URL}/supplements?v=${Date.now()}`, {
+      cache: "no-store",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    if (response.status === 401 || response.status === 403) {
+      setStoredRunNotesToken("");
+      return loadWellnessChecks();
+    }
+    if (!response.ok) throw new Error(`Could not load supplements (${response.status})`);
+    const payload = await response.json();
+    const supplements = (payload.supplements || []).reduce((result, row) => {
+      if (!row.date) return result;
+      result[row.date] = {
+        protein: Boolean(row.protein),
+        omega3: Boolean(row.omega3),
+        vitaminD: Boolean(row.vitaminD)
+      };
+      return result;
+    }, {});
+    const merged = { ...loadWellnessChecks(), ...supplements };
+    saveWellnessChecks(merged);
+    return merged;
+  } catch (error) {
+    console.info("Supplement history unavailable.", error);
+    return loadWellnessChecks();
+  }
+}
+
 function normalizePlan(plan) {
   plan.weeks = (plan.weeks || []).map((week) => {
     const sessions = dailySessions(week);
@@ -1157,6 +1190,7 @@ function setupWellnessTracker() {
       [key]: checkbox.checked
     };
     saveWellnessChecks(state);
+    saveSupplementCheck(date, state[date]);
 
     if (latestRenderState) {
       const opened = openWeekNumbers();
@@ -1165,6 +1199,39 @@ function setupWellnessTracker() {
       restoreOpenWeeks(opened);
     }
   });
+}
+
+async function saveSupplementCheck(date, dayState) {
+  if (!RUN_NOTES_API_URL) return;
+  let token = storedRunNotesToken();
+  if (!token) {
+    token = window.prompt("Enter dashboard passcode") || "";
+    setStoredRunNotesToken(token);
+  }
+  if (!token) return;
+
+  try {
+    const response = await fetch(`${RUN_NOTES_API_URL}/supplements`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        date,
+        protein: Boolean(dayState.protein),
+        omega3: Boolean(dayState.omega3),
+        vitaminD: Boolean(dayState.vitaminD)
+      })
+    });
+    if (response.status === 401 || response.status === 403) {
+      setStoredRunNotesToken("");
+      throw new Error("Passcode rejected");
+    }
+    if (!response.ok) throw new Error(`Supplement save failed (${response.status})`);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 function render({ plan, actuals, runNotes }) {
@@ -1200,7 +1267,7 @@ setupRunNotesForms();
 setupWellnessTracker();
 setupResponsiveCharts();
 
-Promise.all([loadPlan().then(normalizePlan), loadActuals(), loadRunNotes()])
+Promise.all([loadPlan().then(normalizePlan), loadActuals(), loadRunNotes(), loadSupplements()])
   .then(([plan, actuals, runNotes]) => render({ plan, actuals, runNotes }))
   .catch((error) => {
     console.error(error);
