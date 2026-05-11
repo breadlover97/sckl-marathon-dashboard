@@ -19,62 +19,52 @@ const paceZones = [
   {
     label: "Recovery",
     range: "5:45-6:20 /km",
-    use: "Post-workout, tired legs, shin-splint caution days.",
-    cue: "Very easy; breathing never pressured."
+    description: "Very easy running for post-workout days, tired legs, shin-splint caution days, and low-stress aerobic volume."
   },
   {
     label: "Easy aerobic",
     range: "5:10-5:45 /km",
-    use: "Most normal easy runs and aerobic mileage.",
-    cue: "Your current 5:15-5:30/km sits well here."
+    description: "Your default mileage pace for normal easy runs, commuting aerobic volume, and relaxed run-club days."
   },
   {
     label: "Long run easy",
     range: "5:05-5:40 /km",
-    use: "Long runs before workout sections.",
-    cue: "Use effort on hills and humid mornings."
+    description: "Early and middle portions of long runs, especially before progression finishes, MP blocks, or hilly sections."
   },
   {
     label: "Steady aerobic",
     range: "4:35-5:00 /km",
-    use: "Controlled finishes and medium-long progression work.",
-    cue: "Smooth pressure, not threshold."
+    description: "Controlled aerobic pressure for medium-long runs, progression finishes, and steady segments without drifting into threshold."
   },
   {
     label: "Marathon effort",
     range: "4:10-4:20 /km",
-    use: "Tropical MP blocks in long runs.",
-    cue: "Cool-weather goal pace is 4:02/km; SCKL effort may be slower."
+    description: "Tropical marathon-pace work for long-run finishes, cruise blocks, and race-specific sessions; use effort over exact pace in heat."
   },
   {
     label: "Tempo",
     range: "3:58-4:08 /km",
-    use: "Longer continuous tempo, 25-45 minutes.",
-    cue: "Comfortably hard, stable breathing."
+    description: "Comfortably hard running for 25-45 minute tempos, controlled progression runs, and longer sustained aerobic strength work."
   },
   {
     label: "Lactate threshold",
     range: "3:50-4:00 /km",
-    use: "20-30 minute tempo or cruise intervals.",
-    cue: "Hard but repeatable; validate with a 30-minute field test."
+    description: "Hard but repeatable pace for 20-30 minute threshold runs, cruise intervals, and sessions like 4-6 x 1 km to 2 km."
   },
   {
     label: "10K / critical velocity",
     range: "3:38-3:46 /km",
-    use: "Shorter fast aerobic reps such as 1 km repeats.",
-    cue: "Fast and controlled, not a race."
+    description: "Fast controlled aerobic reps for 800 m to 1.2 km repeats, sharpening workouts, and 10K-specific rhythm."
   },
   {
     label: "VO2 interval",
     range: "3:28-3:38 /km",
-    use: "600m-1200m track intervals with jog recoveries.",
-    cue: "Strong form; stop before straining."
+    description: "High-end interval pace for 600 m to 1.2 km track reps with jog recoveries, used sparingly when form is strong."
   },
   {
     label: "Repetition / speed",
     range: "80-86s / 400m",
-    use: "200m-400m speed economy work with fuller recovery.",
-    cue: "Early-cycle 86-88s is intentionally conservative."
+    description: "Fast relaxed speed for 200 m to 400 m reps, strides, and running-economy work with fuller recovery."
   }
 ];
 
@@ -959,8 +949,7 @@ function renderPaceGuide() {
     <tr>
       <td><strong>${escapeHtml(zone.label)}</strong></td>
       <td>${escapeHtml(zone.range)}</td>
-      <td>${escapeHtml(zone.use)}</td>
-      <td>${escapeHtml(zone.cue)}</td>
+      <td>${escapeHtml(zone.description)}</td>
     </tr>
   `).join("");
   const targetRows = trackTargets.map(([distance, target, purpose]) => `
@@ -995,8 +984,7 @@ function renderPaceGuide() {
           <tr>
             <th>Zone</th>
             <th>Target</th>
-            <th>Use</th>
-            <th>Coaching cue</th>
+            <th>Description</th>
           </tr>
         </thead>
         <tbody>${zoneRows}</tbody>
