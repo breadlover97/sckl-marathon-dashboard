@@ -1,0 +1,1400 @@
+{
+  "metadata": {
+    "race": "Standard Chartered Kuala Lumpur Marathon 2026",
+    "race_date": "2026-10-04",
+    "race_distance_km": 42.195,
+    "flag_off": "03:30",
+    "timezone": "Asia/Singapore",
+    "goal_time": "2h 50m",
+    "goal_pace": "4:02 /km",
+    "tropical_marathon_pace_estimate": "4:15 /km"
+  },
+  "weeks": [
+    {
+      "week_number": 1,
+      "week_start_date": "2026-05-11",
+      "phase": "Base",
+      "target_weekly_mileage_km": 58,
+      "daily_plan": {
+        "monday": "Workout night: 8 x 2 min steady hills, easy jog recoveries",
+        "tuesday": "Easy 8-10 km if Monday completed; workout backup if Monday unavailable",
+        "wednesday": "PT strength session, optional 6 km recovery jog",
+        "thursday": "Easy 10 km with relaxed strides",
+        "friday": "Rest or 6 km recovery",
+        "saturday": "Long run 22 km easy, finish controlled if fresh",
+        "sunday": "Easy 8-10 km, keep heat stress low"
+      },
+      "key_workout": "Hill reps",
+      "long_run_distance_km": 22,
+      "long_run_notes": "Keep this fully aerobic and protect the shins.",
+      "strength_training": "Wednesday PT",
+      "fuel_practice": "Start noting breakfast timing and fluid intake.",
+      "sleep_recovery_focus": "Minimum two early nights after the workout and long run.",
+      "notes": "Opening week from current 50-60 km baseline.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-05-11",
+          "plan": "Workout night: 8 x 2 min steady hills, easy jog recoveries",
+          "planned_km": 10
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-05-12",
+          "plan": "Easy 8-10 km if Monday completed; workout backup if Monday unavailable",
+          "planned_km": 0
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-05-13",
+          "plan": "PT strength session, optional 6 km recovery jog",
+          "planned_km": 6
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-05-14",
+          "plan": "Easy 10 km with relaxed strides",
+          "planned_km": 10
+        },
+        {
+          "day": "Friday",
+          "date": "2026-05-15",
+          "plan": "Rest or 6 km recovery",
+          "planned_km": 0
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-05-16",
+          "plan": "Long run 22 km easy, finish controlled if fresh",
+          "planned_km": 22
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-05-17",
+          "plan": "Easy 8-10 km, keep heat stress low",
+          "planned_km": 10
+        }
+      ]
+    },
+    {
+      "week_number": 2,
+      "week_start_date": "2026-05-18",
+      "phase": "Base",
+      "target_weekly_mileage_km": 62,
+      "daily_plan": {
+        "monday": "Workout night: 5 x 1 km at controlled threshold effort",
+        "tuesday": "Easy 8 km or workout backup",
+        "wednesday": "PT strength session, optional 6 km recovery jog",
+        "thursday": "Easy 12 km",
+        "friday": "Rest or 6 km recovery",
+        "saturday": "Long run 23 km easy",
+        "sunday": "Easy 10 km"
+      },
+      "key_workout": "Threshold 1 km reps",
+      "long_run_distance_km": 23,
+      "long_run_notes": "Stay patient; no marathon pace yet.",
+      "strength_training": "Wednesday PT",
+      "fuel_practice": "Carry fluids on the long run.",
+      "sleep_recovery_focus": "Watch calf and shin tightness after reps.",
+      "notes": "Small mileage lift only.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-05-18",
+          "plan": "Workout night: 5 x 1 km at controlled threshold effort",
+          "planned_km": 12
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-05-19",
+          "plan": "Easy 8 km or workout backup",
+          "planned_km": 0
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-05-20",
+          "plan": "PT strength session, optional 6 km recovery jog",
+          "planned_km": 6
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-05-21",
+          "plan": "Easy 12 km",
+          "planned_km": 12
+        },
+        {
+          "day": "Friday",
+          "date": "2026-05-22",
+          "plan": "Rest or 6 km recovery",
+          "planned_km": 0
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-05-23",
+          "plan": "Long run 23 km easy",
+          "planned_km": 23
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-05-24",
+          "plan": "Easy 10 km",
+          "planned_km": 9
+        }
+      ]
+    },
+    {
+      "week_number": 3,
+      "week_start_date": "2026-05-25",
+      "phase": "Base",
+      "target_weekly_mileage_km": 66,
+      "daily_plan": {
+        "monday": "Workout night: 3 x 10 min tempo, 3 min jog",
+        "tuesday": "Easy 8 km or workout backup",
+        "wednesday": "PT strength session, optional 7 km recovery jog",
+        "thursday": "Medium easy 13 km",
+        "friday": "Rest or 6 km recovery",
+        "saturday": "Long run 24 km easy",
+        "sunday": "Easy 10-12 km"
+      },
+      "key_workout": "Tempo blocks",
+      "long_run_distance_km": 24,
+      "long_run_notes": "Run by effort in heat.",
+      "strength_training": "Wednesday PT",
+      "fuel_practice": "Test one gel late in the long run.",
+      "sleep_recovery_focus": "Keep Wednesday strength moderate.",
+      "notes": "Build aerobic durability.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-05-25",
+          "plan": "Workout night: 3 x 10 min tempo, 3 min jog",
+          "planned_km": 14
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-05-26",
+          "plan": "Easy 8 km or workout backup",
+          "planned_km": 0
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-05-27",
+          "plan": "PT strength session, optional 7 km recovery jog",
+          "planned_km": 7
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-05-28",
+          "plan": "Medium easy 13 km",
+          "planned_km": 13
+        },
+        {
+          "day": "Friday",
+          "date": "2026-05-29",
+          "plan": "Rest or 6 km recovery",
+          "planned_km": 0
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-05-30",
+          "plan": "Long run 24 km easy",
+          "planned_km": 24
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-05-31",
+          "plan": "Easy 10-12 km",
+          "planned_km": 8
+        }
+      ]
+    },
+    {
+      "week_number": 4,
+      "week_start_date": "2026-06-01",
+      "phase": "Recovery",
+      "target_weekly_mileage_km": 54,
+      "daily_plan": {
+        "monday": "Light fartlek: 10 x 1 min smooth, plenty easy",
+        "tuesday": "Easy 8 km or workout backup",
+        "wednesday": "PT strength session, lighter load",
+        "thursday": "Easy 10 km",
+        "friday": "Rest",
+        "saturday": "Long run 20 km relaxed",
+        "sunday": "Easy 8 km"
+      },
+      "key_workout": "Light fartlek",
+      "long_run_distance_km": 20,
+      "long_run_notes": "Down week; finish fresher than you started.",
+      "strength_training": "Wednesday PT, reduced load",
+      "fuel_practice": "No aggressive fueling test needed.",
+      "sleep_recovery_focus": "Reset sleep debt.",
+      "notes": "Absorb first three weeks.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-06-01",
+          "plan": "Light fartlek: 10 x 1 min smooth, plenty easy",
+          "planned_km": 8
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-06-02",
+          "plan": "Easy 8 km or workout backup",
+          "planned_km": 0
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-06-03",
+          "plan": "PT strength session, lighter load",
+          "planned_km": 6
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-06-04",
+          "plan": "Easy 10 km",
+          "planned_km": 10
+        },
+        {
+          "day": "Friday",
+          "date": "2026-06-05",
+          "plan": "Rest",
+          "planned_km": 0
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-06-06",
+          "plan": "Long run 20 km relaxed",
+          "planned_km": 20
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-06-07",
+          "plan": "Easy 8 km",
+          "planned_km": 10
+        }
+      ]
+    },
+    {
+      "week_number": 5,
+      "week_start_date": "2026-06-08",
+      "phase": "Build",
+      "target_weekly_mileage_km": 70,
+      "daily_plan": {
+        "monday": "Workout night: 6 x 1 km at threshold effort",
+        "tuesday": "Easy 9 km or workout backup",
+        "wednesday": "PT strength session, optional 7 km recovery jog",
+        "thursday": "Medium easy 14 km",
+        "friday": "Rest or 7 km recovery",
+        "saturday": "Long run 25 km easy",
+        "sunday": "Easy 10-12 km"
+      },
+      "key_workout": "Threshold 1 km reps",
+      "long_run_distance_km": 25,
+      "long_run_notes": "Keep cadence relaxed on tired legs.",
+      "strength_training": "Wednesday PT",
+      "fuel_practice": "One gel plus fluids during long run.",
+      "sleep_recovery_focus": "No late-night work before Saturday.",
+      "notes": "Return to building.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-06-08",
+          "plan": "Workout night: 6 x 1 km at threshold effort",
+          "planned_km": 14
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-06-09",
+          "plan": "Easy 9 km or workout backup",
+          "planned_km": 0
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-06-10",
+          "plan": "PT strength session, optional 7 km recovery jog",
+          "planned_km": 7
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-06-11",
+          "plan": "Medium easy 14 km",
+          "planned_km": 14
+        },
+        {
+          "day": "Friday",
+          "date": "2026-06-12",
+          "plan": "Rest or 7 km recovery",
+          "planned_km": 0
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-06-13",
+          "plan": "Long run 25 km easy",
+          "planned_km": 25
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-06-14",
+          "plan": "Easy 10-12 km",
+          "planned_km": 10
+        }
+      ]
+    },
+    {
+      "week_number": 6,
+      "week_start_date": "2026-06-15",
+      "phase": "Build",
+      "target_weekly_mileage_km": 75,
+      "daily_plan": {
+        "monday": "Workout night: 4 x 2 km controlled tempo",
+        "tuesday": "Easy 9 km or workout backup",
+        "wednesday": "PT strength session, optional 7 km recovery jog",
+        "thursday": "Medium easy 15 km",
+        "friday": "Rest or 7 km recovery",
+        "saturday": "Long run 26 km easy",
+        "sunday": "Easy 12 km"
+      },
+      "key_workout": "2 km tempo reps",
+      "long_run_distance_km": 26,
+      "long_run_notes": "Practice relaxed fueling while moving.",
+      "strength_training": "Wednesday PT",
+      "fuel_practice": "Try 2 gels across the long run.",
+      "sleep_recovery_focus": "Monitor shin response to added volume.",
+      "notes": "First mid-70 km week.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-06-15",
+          "plan": "Workout night: 4 x 2 km controlled tempo",
+          "planned_km": 15
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-06-16",
+          "plan": "Easy 9 km or workout backup",
+          "planned_km": 0
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-06-17",
+          "plan": "PT strength session, optional 7 km recovery jog",
+          "planned_km": 7
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-06-18",
+          "plan": "Medium easy 15 km",
+          "planned_km": 15
+        },
+        {
+          "day": "Friday",
+          "date": "2026-06-19",
+          "plan": "Rest or 7 km recovery",
+          "planned_km": 0
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-06-20",
+          "plan": "Long run 26 km easy",
+          "planned_km": 26
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-06-21",
+          "plan": "Easy 12 km",
+          "planned_km": 12
+        }
+      ]
+    },
+    {
+      "week_number": 7,
+      "week_start_date": "2026-06-22",
+      "phase": "Build",
+      "target_weekly_mileage_km": 80,
+      "daily_plan": {
+        "monday": "Workout night: 10 km progression from easy to steady",
+        "tuesday": "Easy 10 km or workout backup",
+        "wednesday": "PT strength session, optional 8 km recovery jog",
+        "thursday": "Medium easy 16 km",
+        "friday": "Rest or 7 km recovery",
+        "saturday": "Long run 27 km easy",
+        "sunday": "Easy 12 km"
+      },
+      "key_workout": "Progression run",
+      "long_run_distance_km": 27,
+      "long_run_notes": "Do not chase pace if the morning is hot.",
+      "strength_training": "Wednesday PT",
+      "fuel_practice": "Test fluid volume in humid conditions.",
+      "sleep_recovery_focus": "Keep the easy days honest.",
+      "notes": "Mileage moves toward marathon-specific load.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-06-22",
+          "plan": "Workout night: 10 km progression from easy to steady",
+          "planned_km": 15
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-06-23",
+          "plan": "Easy 10 km or workout backup",
+          "planned_km": 0
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-06-24",
+          "plan": "PT strength session, optional 8 km recovery jog",
+          "planned_km": 7
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-06-25",
+          "plan": "Medium easy 16 km",
+          "planned_km": 16
+        },
+        {
+          "day": "Friday",
+          "date": "2026-06-26",
+          "plan": "Rest or 7 km recovery",
+          "planned_km": 3
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-06-27",
+          "plan": "Long run 27 km easy",
+          "planned_km": 27
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-06-28",
+          "plan": "Easy 12 km",
+          "planned_km": 12
+        }
+      ]
+    },
+    {
+      "week_number": 8,
+      "week_start_date": "2026-06-29",
+      "phase": "Recovery",
+      "target_weekly_mileage_km": 64,
+      "daily_plan": {
+        "monday": "Light workout: 6 x 3 min steady, easy recoveries",
+        "tuesday": "Easy 8-9 km or workout backup",
+        "wednesday": "PT strength session, lighter load",
+        "thursday": "Easy 12 km",
+        "friday": "Rest",
+        "saturday": "Long run 22 km relaxed",
+        "sunday": "Easy 10 km"
+      },
+      "key_workout": "Steady intervals",
+      "long_run_distance_km": 22,
+      "long_run_notes": "Recovery week with rhythm, not strain.",
+      "strength_training": "Wednesday PT, reduced load",
+      "fuel_practice": "Review what has worked so far.",
+      "sleep_recovery_focus": "Prioritise sleep consistency.",
+      "notes": "Cut back before the specific block.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-06-29",
+          "plan": "Light workout: 6 x 3 min steady, easy recoveries",
+          "planned_km": 10
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-06-30",
+          "plan": "Easy 8-9 km or workout backup",
+          "planned_km": 0
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-07-01",
+          "plan": "PT strength session, lighter load",
+          "planned_km": 6
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-07-02",
+          "plan": "Easy 12 km",
+          "planned_km": 12
+        },
+        {
+          "day": "Friday",
+          "date": "2026-07-03",
+          "plan": "Rest",
+          "planned_km": 0
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-07-04",
+          "plan": "Long run 22 km relaxed",
+          "planned_km": 22
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-07-05",
+          "plan": "Easy 10 km",
+          "planned_km": 14
+        }
+      ]
+    },
+    {
+      "week_number": 9,
+      "week_start_date": "2026-07-06",
+      "phase": "Marathon Specific",
+      "target_weekly_mileage_km": 84,
+      "daily_plan": {
+        "monday": "Workout night: 3 x 5 km around marathon effort, 1 km easy",
+        "tuesday": "Easy 10 km or workout backup",
+        "wednesday": "PT strength session, optional 8 km recovery jog",
+        "thursday": "Medium easy 16 km",
+        "friday": "Rest or 8 km recovery",
+        "saturday": "Long run 28 km easy",
+        "sunday": "Easy 12 km"
+      },
+      "key_workout": "Marathon effort blocks",
+      "long_run_distance_km": 28,
+      "long_run_notes": "Keep marathon effort controlled in tropical conditions.",
+      "strength_training": "Wednesday PT",
+      "fuel_practice": "2 gels plus fluids; note stomach response.",
+      "sleep_recovery_focus": "Watch total fatigue after Monday workout.",
+      "notes": "Specific work starts.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-07-06",
+          "plan": "Workout night: 3 x 5 km around marathon effort, 1 km easy",
+          "planned_km": 16
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-07-07",
+          "plan": "Easy 10 km or workout backup",
+          "planned_km": 0
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-07-08",
+          "plan": "PT strength session, optional 8 km recovery jog",
+          "planned_km": 8
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-07-09",
+          "plan": "Medium easy 16 km",
+          "planned_km": 16
+        },
+        {
+          "day": "Friday",
+          "date": "2026-07-10",
+          "plan": "Rest or 8 km recovery",
+          "planned_km": 4
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-07-11",
+          "plan": "Long run 28 km easy",
+          "planned_km": 28
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-07-12",
+          "plan": "Easy 12 km",
+          "planned_km": 12
+        }
+      ]
+    },
+    {
+      "week_number": 10,
+      "week_start_date": "2026-07-13",
+      "phase": "Marathon Specific",
+      "target_weekly_mileage_km": 90,
+      "daily_plan": {
+        "monday": "Workout night: 14 km with 8 km steady-marathon effort",
+        "tuesday": "Easy 10 km or workout backup",
+        "wednesday": "PT strength session, optional 8 km recovery jog",
+        "thursday": "Medium easy 17 km",
+        "friday": "Rest or 8 km recovery",
+        "saturday": "Long run 30 km easy",
+        "sunday": "Easy 12-14 km"
+      },
+      "key_workout": "Steady marathon effort",
+      "long_run_distance_km": 30,
+      "long_run_notes": "Fuel early, not only when tired.",
+      "strength_training": "Wednesday PT",
+      "fuel_practice": "Aim for 40-50 g carbs/hour.",
+      "sleep_recovery_focus": "Guard Friday night sleep.",
+      "notes": "First 30 km long run.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-07-13",
+          "plan": "Workout night: 14 km with 8 km steady-marathon effort",
+          "planned_km": 16
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-07-14",
+          "plan": "Easy 10 km or workout backup",
+          "planned_km": 0
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-07-15",
+          "plan": "PT strength session, optional 8 km recovery jog",
+          "planned_km": 8
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-07-16",
+          "plan": "Medium easy 17 km",
+          "planned_km": 17
+        },
+        {
+          "day": "Friday",
+          "date": "2026-07-17",
+          "plan": "Rest or 8 km recovery",
+          "planned_km": 7
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-07-18",
+          "plan": "Long run 30 km easy",
+          "planned_km": 30
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-07-19",
+          "plan": "Easy 12-14 km",
+          "planned_km": 12
+        }
+      ]
+    },
+    {
+      "week_number": 11,
+      "week_start_date": "2026-07-20",
+      "phase": "Marathon Specific",
+      "target_weekly_mileage_km": 96,
+      "daily_plan": {
+        "monday": "Workout night: 5 x 2 km threshold, controlled",
+        "tuesday": "Easy 10 km or workout backup",
+        "wednesday": "PT strength session, optional 8 km recovery jog",
+        "thursday": "Medium easy 18 km",
+        "friday": "Rest or 8 km recovery",
+        "saturday": "Long run 31 km easy with last 5 km steady if fresh",
+        "sunday": "Easy 13 km"
+      },
+      "key_workout": "2 km threshold reps",
+      "long_run_distance_km": 31,
+      "long_run_notes": "Optional steady finish only if legs are good.",
+      "strength_training": "Wednesday PT",
+      "fuel_practice": "Test gels at 30-35 minute spacing.",
+      "sleep_recovery_focus": "Shin check after long run.",
+      "notes": "Approaching 100 km.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-07-20",
+          "plan": "Workout night: 5 x 2 km threshold, controlled",
+          "planned_km": 18
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-07-21",
+          "plan": "Easy 10 km or workout backup",
+          "planned_km": 0
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-07-22",
+          "plan": "PT strength session, optional 8 km recovery jog",
+          "planned_km": 8
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-07-23",
+          "plan": "Medium easy 18 km",
+          "planned_km": 18
+        },
+        {
+          "day": "Friday",
+          "date": "2026-07-24",
+          "plan": "Rest or 8 km recovery",
+          "planned_km": 8
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-07-25",
+          "plan": "Long run 31 km easy with last 5 km steady if fresh",
+          "planned_km": 31
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-07-26",
+          "plan": "Easy 13 km",
+          "planned_km": 13
+        }
+      ]
+    },
+    {
+      "week_number": 12,
+      "week_start_date": "2026-07-27",
+      "phase": "Recovery",
+      "target_weekly_mileage_km": 76,
+      "daily_plan": {
+        "monday": "Light workout: 30 min steady inside 12 km",
+        "tuesday": "Easy 9 km or workout backup",
+        "wednesday": "PT strength session, lighter load",
+        "thursday": "Easy 14 km",
+        "friday": "Rest",
+        "saturday": "Long run 24 km relaxed",
+        "sunday": "Easy 11 km"
+      },
+      "key_workout": "Steady aerobic",
+      "long_run_distance_km": 24,
+      "long_run_notes": "Let the load drop do its job.",
+      "strength_training": "Wednesday PT, reduced load",
+      "fuel_practice": "Keep routine simple.",
+      "sleep_recovery_focus": "Extra sleep where possible.",
+      "notes": "Down week after three-week push.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-07-27",
+          "plan": "Light workout: 30 min steady inside 12 km",
+          "planned_km": 12
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-07-28",
+          "plan": "Easy 9 km or workout backup",
+          "planned_km": 9
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-07-29",
+          "plan": "PT strength session, lighter load",
+          "planned_km": 0
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-07-30",
+          "plan": "Easy 14 km",
+          "planned_km": 14
+        },
+        {
+          "day": "Friday",
+          "date": "2026-07-31",
+          "plan": "Rest",
+          "planned_km": 6
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-08-01",
+          "plan": "Long run 24 km relaxed",
+          "planned_km": 24
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-08-02",
+          "plan": "Easy 11 km",
+          "planned_km": 11
+        }
+      ]
+    },
+    {
+      "week_number": 13,
+      "week_start_date": "2026-08-03",
+      "phase": "Peak Build",
+      "target_weekly_mileage_km": 100,
+      "daily_plan": {
+        "monday": "Workout night: 16 km with 10 km marathon effort",
+        "tuesday": "Easy 11 km or workout backup",
+        "wednesday": "PT strength session, optional 8 km recovery jog",
+        "thursday": "Medium easy 18 km",
+        "friday": "Rest or 8 km recovery",
+        "saturday": "Long run 32 km easy",
+        "sunday": "Easy 14 km"
+      },
+      "key_workout": "10 km marathon effort",
+      "long_run_distance_km": 32,
+      "long_run_notes": "This is a load week; keep non-key days easy.",
+      "strength_training": "Wednesday PT",
+      "fuel_practice": "50-60 g carbs/hour on long run.",
+      "sleep_recovery_focus": "No hero sessions if sleep is poor.",
+      "notes": "First target 100 km week if healthy.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-08-03",
+          "plan": "Workout night: 16 km with 10 km marathon effort",
+          "planned_km": 18
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-08-04",
+          "plan": "Easy 11 km or workout backup",
+          "planned_km": 0
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-08-05",
+          "plan": "PT strength session, optional 8 km recovery jog",
+          "planned_km": 8
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-08-06",
+          "plan": "Medium easy 18 km",
+          "planned_km": 18
+        },
+        {
+          "day": "Friday",
+          "date": "2026-08-07",
+          "plan": "Rest or 8 km recovery",
+          "planned_km": 8
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-08-08",
+          "plan": "Long run 32 km easy",
+          "planned_km": 32
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-08-09",
+          "plan": "Easy 14 km",
+          "planned_km": 16
+        }
+      ]
+    },
+    {
+      "week_number": 14,
+      "week_start_date": "2026-08-10",
+      "phase": "Peak Build",
+      "target_weekly_mileage_km": 106,
+      "daily_plan": {
+        "monday": "Workout night: 4 x 4 km marathon effort, 1 km easy",
+        "tuesday": "Easy 11 km or workout backup",
+        "wednesday": "PT strength session, optional 8 km recovery jog",
+        "thursday": "Medium easy 19 km",
+        "friday": "Rest or 8 km recovery",
+        "saturday": "Long run 33 km easy",
+        "sunday": "Easy 14-15 km"
+      },
+      "key_workout": "4 km marathon blocks",
+      "long_run_distance_km": 33,
+      "long_run_notes": "Practice race-morning breakfast timing.",
+      "strength_training": "Wednesday PT",
+      "fuel_practice": "Full race fueling rehearsal, then review notes.",
+      "sleep_recovery_focus": "Protect recovery before and after Saturday.",
+      "notes": "High-load week; back off if niggles appear.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-08-10",
+          "plan": "Workout night: 4 x 4 km marathon effort, 1 km easy",
+          "planned_km": 20
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-08-11",
+          "plan": "Easy 11 km or workout backup",
+          "planned_km": 0
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-08-12",
+          "plan": "PT strength session, optional 8 km recovery jog",
+          "planned_km": 8
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-08-13",
+          "plan": "Medium easy 19 km",
+          "planned_km": 19
+        },
+        {
+          "day": "Friday",
+          "date": "2026-08-14",
+          "plan": "Rest or 8 km recovery",
+          "planned_km": 8
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-08-15",
+          "plan": "Long run 33 km easy",
+          "planned_km": 33
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-08-16",
+          "plan": "Easy 14-15 km",
+          "planned_km": 18
+        }
+      ]
+    },
+    {
+      "week_number": 15,
+      "week_start_date": "2026-08-17",
+      "phase": "Peak Build",
+      "target_weekly_mileage_km": 112,
+      "daily_plan": {
+        "monday": "Workout night: 18 km with 12 km marathon effort",
+        "tuesday": "Easy 12 km or workout backup",
+        "wednesday": "PT strength session, optional 8 km recovery jog",
+        "thursday": "Medium easy 20 km",
+        "friday": "Rest or 8 km recovery",
+        "saturday": "Long run 34 km easy-progressive",
+        "sunday": "Easy 15 km"
+      },
+      "key_workout": "12 km marathon effort",
+      "long_run_distance_km": 34,
+      "long_run_notes": "Peak long run; finish steady only if robust.",
+      "strength_training": "Wednesday PT",
+      "fuel_practice": "Race-like carbs and fluid practice.",
+      "sleep_recovery_focus": "Immediate cutback if shin splints flare.",
+      "notes": "Highest planned load in the mock build.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-08-17",
+          "plan": "Workout night: 18 km with 12 km marathon effort",
+          "planned_km": 20
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-08-18",
+          "plan": "Easy 12 km or workout backup",
+          "planned_km": 5
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-08-19",
+          "plan": "PT strength session, optional 8 km recovery jog",
+          "planned_km": 8
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-08-20",
+          "plan": "Medium easy 20 km",
+          "planned_km": 20
+        },
+        {
+          "day": "Friday",
+          "date": "2026-08-21",
+          "plan": "Rest or 8 km recovery",
+          "planned_km": 8
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-08-22",
+          "plan": "Long run 34 km easy-progressive",
+          "planned_km": 34
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-08-23",
+          "plan": "Easy 15 km",
+          "planned_km": 17
+        }
+      ]
+    },
+    {
+      "week_number": 16,
+      "week_start_date": "2026-08-24",
+      "phase": "Recovery",
+      "target_weekly_mileage_km": 86,
+      "daily_plan": {
+        "monday": "Light workout: 8 x 3 min steady, relaxed",
+        "tuesday": "Easy 10 km or workout backup",
+        "wednesday": "PT strength session, lighter load",
+        "thursday": "Easy 16 km",
+        "friday": "Rest",
+        "saturday": "Long run 26 km relaxed",
+        "sunday": "Easy 12 km"
+      },
+      "key_workout": "Relaxed steady reps",
+      "long_run_distance_km": 26,
+      "long_run_notes": "Let the body absorb the peak work.",
+      "strength_training": "Wednesday PT, reduced load",
+      "fuel_practice": "Use proven fuel only.",
+      "sleep_recovery_focus": "Restore freshness.",
+      "notes": "Down week before final specific cycle.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-08-24",
+          "plan": "Light workout: 8 x 3 min steady, relaxed",
+          "planned_km": 14
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-08-25",
+          "plan": "Easy 10 km or workout backup",
+          "planned_km": 10
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-08-26",
+          "plan": "PT strength session, lighter load",
+          "planned_km": 8
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-08-27",
+          "plan": "Easy 16 km",
+          "planned_km": 16
+        },
+        {
+          "day": "Friday",
+          "date": "2026-08-28",
+          "plan": "Rest",
+          "planned_km": 0
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-08-29",
+          "plan": "Long run 26 km relaxed",
+          "planned_km": 26
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-08-30",
+          "plan": "Easy 12 km",
+          "planned_km": 12
+        }
+      ]
+    },
+    {
+      "week_number": 17,
+      "week_start_date": "2026-08-31",
+      "phase": "Race Specific",
+      "target_weekly_mileage_km": 104,
+      "daily_plan": {
+        "monday": "Workout night: 3 x 6 km marathon effort, 1 km easy",
+        "tuesday": "Easy 11 km or workout backup",
+        "wednesday": "PT strength session, optional 8 km recovery jog",
+        "thursday": "Medium easy 18 km",
+        "friday": "Rest or 8 km recovery",
+        "saturday": "Long run 32 km with controlled marathon segments",
+        "sunday": "Easy 14 km"
+      },
+      "key_workout": "6 km marathon blocks",
+      "long_run_distance_km": 32,
+      "long_run_notes": "Quality matters more than squeezing extra distance.",
+      "strength_training": "Wednesday PT",
+      "fuel_practice": "Lock in gel timing if stomach is settled.",
+      "sleep_recovery_focus": "Avoid stacking stress around Monday.",
+      "notes": "Specific rehearsal block.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-08-31",
+          "plan": "Workout night: 3 x 6 km marathon effort, 1 km easy",
+          "planned_km": 20
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-09-01",
+          "plan": "Easy 11 km or workout backup",
+          "planned_km": 0
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-09-02",
+          "plan": "PT strength session, optional 8 km recovery jog",
+          "planned_km": 8
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-09-03",
+          "plan": "Medium easy 18 km",
+          "planned_km": 18
+        },
+        {
+          "day": "Friday",
+          "date": "2026-09-04",
+          "plan": "Rest or 8 km recovery",
+          "planned_km": 8
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-09-05",
+          "plan": "Long run 32 km with controlled marathon segments",
+          "planned_km": 32
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-09-06",
+          "plan": "Easy 14 km",
+          "planned_km": 18
+        }
+      ]
+    },
+    {
+      "week_number": 18,
+      "week_start_date": "2026-09-07",
+      "phase": "Race Specific",
+      "target_weekly_mileage_km": 98,
+      "daily_plan": {
+        "monday": "Workout night: 16 km with 2 x 5 km marathon effort",
+        "tuesday": "Easy 10 km or workout backup",
+        "wednesday": "PT strength session, maintenance only",
+        "thursday": "Medium easy 17 km",
+        "friday": "Rest or 8 km recovery",
+        "saturday": "Long run 30 km steady-easy",
+        "sunday": "Easy 13 km"
+      },
+      "key_workout": "2 x 5 km marathon effort",
+      "long_run_distance_km": 30,
+      "long_run_notes": "Last substantial long run if healthy.",
+      "strength_training": "Wednesday PT, maintenance",
+      "fuel_practice": "Full race fueling rehearsal.",
+      "sleep_recovery_focus": "Begin reducing life-stress where possible.",
+      "notes": "Final high-specific week.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-09-07",
+          "plan": "Workout night: 16 km with 2 x 5 km marathon effort",
+          "planned_km": 18
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-09-08",
+          "plan": "Easy 10 km or workout backup",
+          "planned_km": 0
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-09-09",
+          "plan": "PT strength session, maintenance only",
+          "planned_km": 8
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-09-10",
+          "plan": "Medium easy 17 km",
+          "planned_km": 17
+        },
+        {
+          "day": "Friday",
+          "date": "2026-09-11",
+          "plan": "Rest or 8 km recovery",
+          "planned_km": 8
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-09-12",
+          "plan": "Long run 30 km steady-easy",
+          "planned_km": 30
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-09-13",
+          "plan": "Easy 13 km",
+          "planned_km": 17
+        }
+      ]
+    },
+    {
+      "week_number": 19,
+      "week_start_date": "2026-09-14",
+      "phase": "Taper",
+      "target_weekly_mileage_km": 78,
+      "daily_plan": {
+        "monday": "Workout night: 10 km with 5 km marathon effort",
+        "tuesday": "Easy 9 km or workout backup",
+        "wednesday": "PT strength session, light maintenance",
+        "thursday": "Easy 14 km with strides",
+        "friday": "Rest",
+        "saturday": "Long run 24 km relaxed",
+        "sunday": "Easy 10 km"
+      },
+      "key_workout": "Short marathon effort",
+      "long_run_distance_km": 24,
+      "long_run_notes": "Start freshening up; no fitness chasing.",
+      "strength_training": "Wednesday PT, light",
+      "fuel_practice": "Use only proven products.",
+      "sleep_recovery_focus": "Prioritise consistency and reduce late nights.",
+      "notes": "Taper begins.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-09-14",
+          "plan": "Workout night: 10 km with 5 km marathon effort",
+          "planned_km": 12
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-09-15",
+          "plan": "Easy 9 km or workout backup",
+          "planned_km": 8
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-09-16",
+          "plan": "PT strength session, light maintenance",
+          "planned_km": 6
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-09-17",
+          "plan": "Easy 14 km with strides",
+          "planned_km": 14
+        },
+        {
+          "day": "Friday",
+          "date": "2026-09-18",
+          "plan": "Rest",
+          "planned_km": 0
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-09-19",
+          "plan": "Long run 24 km relaxed",
+          "planned_km": 24
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-09-20",
+          "plan": "Easy 10 km",
+          "planned_km": 14
+        }
+      ]
+    },
+    {
+      "week_number": 20,
+      "week_start_date": "2026-09-21",
+      "phase": "Taper",
+      "target_weekly_mileage_km": 58,
+      "daily_plan": {
+        "monday": "Workout night: 8 km with 3 km marathon effort",
+        "tuesday": "Easy 8 km or workout backup",
+        "wednesday": "PT strength session, mobility and activation",
+        "thursday": "Easy 10 km with strides",
+        "friday": "Rest",
+        "saturday": "Long run 18 km easy",
+        "sunday": "Easy 8 km"
+      },
+      "key_workout": "Race rhythm touch",
+      "long_run_distance_km": 18,
+      "long_run_notes": "Feel smooth, not sharp-tired.",
+      "strength_training": "Wednesday PT, activation",
+      "fuel_practice": "Confirm breakfast, caffeine, gels, and fluids.",
+      "sleep_recovery_focus": "Bank sleep early in the week.",
+      "notes": "Second taper week.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-09-21",
+          "plan": "Workout night: 8 km with 3 km marathon effort",
+          "planned_km": 8
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-09-22",
+          "plan": "Easy 8 km or workout backup",
+          "planned_km": 8
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-09-23",
+          "plan": "PT strength session, mobility and activation",
+          "planned_km": 0
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-09-24",
+          "plan": "Easy 10 km with strides",
+          "planned_km": 10
+        },
+        {
+          "day": "Friday",
+          "date": "2026-09-25",
+          "plan": "Rest",
+          "planned_km": 0
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-09-26",
+          "plan": "Long run 18 km easy",
+          "planned_km": 18
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-09-27",
+          "plan": "Easy 8 km",
+          "planned_km": 14
+        }
+      ]
+    },
+    {
+      "week_number": 21,
+      "week_start_date": "2026-09-28",
+      "phase": "Race Week",
+      "target_weekly_mileage_km": 66.195,
+      "daily_plan": {
+        "monday": "Easy 8 km with 4 relaxed strides",
+        "tuesday": "Easy 6-8 km, keep legs light",
+        "wednesday": "Mobility only, no heavy strength",
+        "thursday": "Easy 6 km with short race-pace touch",
+        "friday": "Rest or 20 min shakeout",
+        "saturday": "Short shakeout, prepare kit and fuel",
+        "sunday": "Race: SCKL Marathon, 42.195 km at 3:30am"
+      },
+      "key_workout": "Race",
+      "long_run_distance_km": 42.195,
+      "long_run_notes": "Execute calmly from the first kilometre.",
+      "strength_training": "Mobility only",
+      "fuel_practice": "Race fueling plan only; nothing new.",
+      "sleep_recovery_focus": "Protect sleep and stay off feet.",
+      "notes": "Race week target includes the marathon.",
+      "daily_sessions": [
+        {
+          "day": "Monday",
+          "date": "2026-09-28",
+          "plan": "Easy 8 km with 4 relaxed strides",
+          "planned_km": 8
+        },
+        {
+          "day": "Tuesday",
+          "date": "2026-09-29",
+          "plan": "Easy 6-8 km, keep legs light",
+          "planned_km": 7
+        },
+        {
+          "day": "Wednesday",
+          "date": "2026-09-30",
+          "plan": "Mobility only, no heavy strength",
+          "planned_km": 0
+        },
+        {
+          "day": "Thursday",
+          "date": "2026-10-01",
+          "plan": "Easy 6 km with short race-pace touch",
+          "planned_km": 6
+        },
+        {
+          "day": "Friday",
+          "date": "2026-10-02",
+          "plan": "Rest or 20 min shakeout",
+          "planned_km": 0
+        },
+        {
+          "day": "Saturday",
+          "date": "2026-10-03",
+          "plan": "Short shakeout, prepare kit and fuel",
+          "planned_km": 3
+        },
+        {
+          "day": "Sunday",
+          "date": "2026-10-04",
+          "plan": "Race: SCKL Marathon, 42.195 km at 3:30am",
+          "planned_km": 42.195
+        }
+      ]
+    }
+  ]
+}

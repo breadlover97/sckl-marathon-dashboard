@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>SCKL 2026 Marathon Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <nav class="top-nav" aria-label="Marathon dashboard navigation">
+      <a class="site-brand" href="index.html">
+        <span class="site-mark">SCKL 2026</span>
+        <span class="nav-date">
+          <span>4 Oct 2026, 3:30am</span>
+          <span id="raceCountdown" class="countdown-pill">Loading countdown</span>
+        </span>
+      </a>
+      <div class="nav-tabs" aria-label="Dashboard sections">
+        <a href="#overview">Overview</a>
+        <a href="#week">This Week</a>
+        <a href="#compare">Compare</a>
+        <a href="#plan">Weekly Plan</a>
+        <a href="#trends">Trends</a>
+        <a href="#data">Data</a>
+      </div>
+    </nav>
+
+    <main>
+      <section id="overview" class="dashboard-hero anchor-section">
+        <div class="hero-copy">
+          <p class="eyebrow">Standard Chartered Kuala Lumpur Marathon</p>
+          <h1>Sub-2:50 marathon build.</h1>
+          <p class="hero-note">
+            A simple training dashboard for tracking the plan, watching the load, and keeping the build healthy.
+          </p>
+        </div>
+        <div class="hero-stat-grid" id="overviewStats" aria-label="Race and training summary"></div>
+      </section>
+
+      <section id="week" class="panel anchor-section">
+        <div class="section-heading">
+          <div>
+            <h2>This Week</h2>
+            <p id="currentWeekLabel">Loading current training week...</p>
+          </div>
+          <span id="trackStatus" class="status-pill">Mock plan</span>
+        </div>
+        <div id="currentWeekPlan" class="week-detail"></div>
+      </section>
+
+      <section id="compare" class="panel anchor-section">
+        <div class="section-heading">
+          <div>
+            <h2>Planned vs Actual</h2>
+            <p>Planned kilometres come from Google Sheets. Actual runs come from Strava JSON when connected.</p>
+          </div>
+          <span id="actualStatus" class="status-pill">Loading actuals</span>
+        </div>
+        <div id="comparisonGrid" class="comparison-grid"></div>
+      </section>
+
+      <section id="plan" class="panel anchor-section">
+        <div class="section-heading">
+          <div>
+            <h2>Week-by-week plan</h2>
+            <p>Daily dates, planned sessions, and estimated kilometres from the Google Sheet.</p>
+          </div>
+        </div>
+        <div id="planTable" class="plan-list"></div>
+      </section>
+
+      <section id="trends" class="trend-grid anchor-section">
+        <article class="panel">
+          <div class="section-heading compact-heading">
+            <div>
+              <h2>Planned mileage</h2>
+              <p>Weekly target progression and taper shape.</p>
+            </div>
+          </div>
+          <div id="mileageChart" class="chart-shell" aria-label="Planned weekly mileage chart"></div>
+        </article>
+
+        <article class="panel">
+          <div class="section-heading compact-heading">
+            <div>
+              <h2>Long run build</h2>
+              <p>Saturday long-run distance target where possible.</p>
+            </div>
+          </div>
+          <div id="longRunChart" class="chart-shell" aria-label="Planned long run progression chart"></div>
+        </article>
+
+        <article class="panel phase-panel">
+          <div class="section-heading compact-heading">
+            <div>
+              <h2>Phase breakdown</h2>
+              <p>Simple view of the training blocks before race week.</p>
+            </div>
+          </div>
+          <div id="phaseBreakdown" class="phase-list"></div>
+        </article>
+      </section>
+
+      <section id="data" class="panel anchor-section">
+        <div class="section-heading">
+          <div>
+            <h2>Settings / Data</h2>
+            <p>Planned training now supports Google Sheets sync, with mock data as a fallback.</p>
+          </div>
+        </div>
+        <div id="settingsGrid" class="settings-grid">
+          <article class="setting-card">
+            <span>Planned training source</span>
+            <strong>Loading</strong>
+            <p>Checking generated training plan JSON.</p>
+          </article>
+          <article class="setting-card">
+            <span>Strava status</span>
+            <strong>Not connected</strong>
+            <p>OAuth and refresh-token handling will live server-side in Phase 3.</p>
+          </article>
+          <article class="setting-card">
+            <span>Fuel plan</span>
+            <strong>Tracked as weekly notes</strong>
+            <p>Keep it simple first, then add specific gel/carb/fluid fields once the pattern is clear.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <div>
+            <h2>Activity feed</h2>
+            <p>Recent Strava run activities after the actuals sync is connected.</p>
+          </div>
+        </div>
+        <div id="activityFeed" class="activity-feed"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>SCKL 2026 Marathon Training Dashboard</span>
+      <span id="syncStatus">Loading mock plan...</span>
+    </footer>
+
+    <button id="returnTop" class="return-top" type="button" aria-label="Return to top">↑</button>
+    <script src="app.js"></script>
+  </body>
+</html>
