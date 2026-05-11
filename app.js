@@ -9,8 +9,16 @@ const GOAL_TIME = "2h 50m";
 const GOAL_PACE = "4:02 /km";
 const TROPICAL_MARATHON_PACE = "4:15 /km";
 const CURRENT_EASY_PACE = "5:15-5:30 /km";
+const WELLNESS_STORAGE_KEY = "sckl-wellness-checks";
 let latestRenderState = null;
 let resizeTimer = null;
+
+const wellnessChecks = [
+  { key: "sleep", label: "Sleep logged" },
+  { key: "protein", label: "Protein shake" },
+  { key: "omega3", label: "Omega 3" },
+  { key: "vitaminD", label: "Vitamin D" }
+];
 
 const formatDate = new Intl.DateTimeFormat("en-SG", {
   day: "numeric",
@@ -361,6 +369,50 @@ function activityPace(activity) {
   return distance > 0 && moving > 0 ? pace(moving / distance) : "-";
 }
 
+function loadWellnessChecks() {
+  try {
+    return JSON.parse(window.localStorage.getItem(WELLNESS_STORAGE_KEY) || "{}");
+  } catch (error) {
+    return {};
+  }
+}
+
+function saveWellnessChecks(state) {
+  try {
+    window.localStorage.setItem(WELLNESS_STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    // Local wellness tracking is optional; ignore storage failures.
+  }
+}
+
+function renderWellnessTracker() {
+  const today = dateKey(singaporeToday());
+  const todayState = loadWellnessChecks()[today] || {};
+  const completed = wellnessChecks.filter((item) => todayState[item.key]).length;
+  const items = wellnessChecks.map((item) => {
+    const checked = todayState[item.key] ? "checked" : "";
+    return `
+      <label class="wellness-check">
+        <input type="checkbox" data-wellness-check data-date="${today}" data-key="${escapeHtml(item.key)}" ${checked}>
+        <span>${escapeHtml(item.label)}</span>
+      </label>
+    `;
+  }).join("");
+
+  return `
+    <article class="wellness-card">
+      <div class="wellness-head">
+        <div>
+          <span>Daily recovery check</span>
+          <strong>Sleep and supplements</strong>
+        </div>
+        <small data-wellness-count>${completed}/${wellnessChecks.length}</small>
+      </div>
+      <div class="wellness-list">${items}</div>
+    </article>
+  `;
+}
+
 function renderTrainingDayProgress(plan) {
   const today = singaporeToday();
   const raceDay = parseLocalDate(RACE_DATE);
@@ -405,6 +457,7 @@ function renderCurrentWeek(plan, actuals) {
         <span style="width: ${progress}%"></span>
       </div>
     </div>
+    ${renderWellnessTracker()}
     <div class="week-summary">
       <div class="week-metric"><span>Key workout</span><strong>${escapeHtml(week.key_workout)}</strong></div>
       <div class="week-metric"><span>Planned long run</span><strong>${oneDecimalKm(week.long_run_distance_km)}</strong></div>
@@ -909,6 +962,29 @@ function setupRunNotesForms() {
   });
 }
 
+function setupWellnessTracker() {
+  document.addEventListener("change", (event) => {
+    const checkbox = event.target.closest("[data-wellness-check]");
+    if (!checkbox) return;
+    const state = loadWellnessChecks();
+    const date = checkbox.dataset.date;
+    const key = checkbox.dataset.key;
+    if (!date || !key) return;
+    state[date] = {
+      ...(state[date] || {}),
+      [key]: checkbox.checked
+    };
+    saveWellnessChecks(state);
+
+    const card = checkbox.closest(".wellness-card");
+    const count = card?.querySelector("[data-wellness-count]");
+    if (count) {
+      const checked = card.querySelectorAll("[data-wellness-check]:checked").length;
+      count.textContent = `${checked}/${wellnessChecks.length}`;
+    }
+  });
+}
+
 function render({ plan, actuals, runNotes }) {
   latestRenderState = { actuals, plan, runNotes };
   renderTrainingDayProgress(plan);
@@ -937,6 +1013,7 @@ function setupResponsiveCharts() {
 setupReturnTop();
 setupActiveNav();
 setupRunNotesForms();
+setupWellnessTracker();
 setupResponsiveCharts();
 
 Promise.all([loadPlan().then(normalizePlan), loadActuals(), loadRunNotes()])
