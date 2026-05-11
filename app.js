@@ -68,17 +68,6 @@ const paceZones = [
   }
 ];
 
-const trackTargets = [
-  ["200m", "38-42s", "Strides, relaxed speed"],
-  ["300m", "61-65s", "Taper rhythm or light speed"],
-  ["400m", "82-86s", "Main controlled speed range"],
-  ["500m", "1:45-1:50", "Speed endurance"],
-  ["600m", "2:06-2:14", "Aerobic speed"],
-  ["800m", "2:52-3:00", "VO2 / controlled interval"],
-  ["1 km", "3:38-3:46", "10K / CV reps"],
-  ["1.2 km", "4:20-4:28", "Long interval rhythm"]
-];
-
 const formatDate = new Intl.DateTimeFormat("en-SG", {
   day: "numeric",
   month: "short",
@@ -958,14 +947,6 @@ function renderPaceGuide() {
       <td>${escapeHtml(zone.description)}</td>
     </tr>
   `).join("");
-  const targetRows = trackTargets.map(([distance, target, purpose]) => `
-    <article class="pace-chip">
-      <span>${escapeHtml(distance)}</span>
-      <strong>${escapeHtml(target)}</strong>
-      <small>${escapeHtml(purpose)}</small>
-    </article>
-  `).join("");
-
   container.innerHTML = `
     <div class="activity-table-scroll pace-table-scroll">
       <table class="activity-table pace-table">
@@ -979,7 +960,6 @@ function renderPaceGuide() {
         <tbody>${zoneRows}</tbody>
       </table>
     </div>
-    <div class="pace-track-grid">${targetRows}</div>
     <p class="pace-note">Treat these as training ranges, not laws. If heat, sleep, shin pain, or accumulated fatigue changes the effort, slow the pace and keep the intended stimulus.</p>
   `;
 }
