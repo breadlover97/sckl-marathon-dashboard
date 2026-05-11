@@ -233,15 +233,6 @@ function activitiesForDate(activities, date) {
   return activities.filter((activity) => activity.date === date);
 }
 
-function sessionTypeClasses(session) {
-  const plan = String(session.plan || "").toLowerCase();
-  return [
-    session.day === "Monday" || session.day === "Tuesday" ? "key-day" : "",
-    session.day === "Wednesday" ? "strength-day" : "",
-    session.day === "Saturday" || (session.day === "Sunday" && plan.includes("race")) ? "long-day" : "",
-  ].filter(Boolean).join(" ");
-}
-
 function renderDayCard(session, actuals, options = {}) {
   const dayActivities = activitiesForDate(actuals.activities || [], session.date);
   const actualKm = dayActivities.reduce((sum, activity) => sum + Number(activity.distance_km || 0), 0);
@@ -250,7 +241,6 @@ function renderDayCard(session, actuals, options = {}) {
   const isCompleted = dayActivities.length > 0 || actualKm > 0;
   const classes = [
     "day-card",
-    sessionTypeClasses(session),
     isActive ? "active-day" : "",
     isCompleted ? "completed-day" : "",
   ].filter(Boolean).join(" ");
@@ -636,8 +626,13 @@ function setupChartHover(container, points, dims) {
   };
 
   const moveCrosshair = (event) => {
-    const rect = svg.getBoundingClientRect();
-    const rawX = ((event.clientX - rect.left) / rect.width) * dims.width;
+    const screenMatrix = svg.getScreenCTM();
+    if (!screenMatrix) return;
+    const pointInSvg = svg.createSVGPoint();
+    pointInSvg.x = event.clientX;
+    pointInSvg.y = event.clientY;
+    const svgPoint = pointInSvg.matrixTransform(screenMatrix.inverse());
+    const rawX = svgPoint.x;
     const x = Math.min(Math.max(rawX, dims.left), dims.left + dims.plotWidth);
     const point = nearestPoint(x);
     const tooltipX = x > dims.width - 210 ? x - 180 : x + 12;
