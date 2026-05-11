@@ -11,7 +11,7 @@ Dashboard note form or supplement checkbox
 -> Run Notes or Supplements tab
 ```
 
-The Worker stores notes in a separate `Run Notes` tab using this schema:
+The Worker stores notes in a separate `Run Notes` tab using this schema. If the tab does not exist yet, the Worker creates it on the first successful notes request.
 
 ```text
 Activity ID | Date | Activity | Note | Strava URL | Updated At
@@ -73,4 +73,5 @@ window.SCKL_CONFIG = {
 - Keep `ALLOWED_ORIGIN` set to the GitHub Pages origin unless you are testing locally.
 - The browser stores only your dashboard passcode in localStorage after the first save.
 - Anyone with both the public site and the passcode can edit run notes and supplement checks, so keep the passcode private.
+- Rotate `RUN_NOTES_TOKEN` and the Google service account key if either one is pasted into chat, committed, or shared.
 - The Worker is intentionally scoped to run notes and supplement checks only, not arbitrary sheet editing.

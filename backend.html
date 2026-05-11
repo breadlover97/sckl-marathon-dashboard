@@ -56,7 +56,7 @@
           <div class="flow-step"><strong>3</strong><span>GitHub Actions runs the sync workflow on schedule, on code changes, or when you press the Sync data button and manually run the workflow.</span></div>
           <div class="flow-step"><strong>4</strong><span>The workflow reads private credentials from GitHub secrets, fetches Google Sheets and Strava data, then writes generated JSON files into the Pages artifact.</span></div>
           <div class="flow-step"><strong>5</strong><span>GitHub Pages hosts the static site. The browser loads <code>data/training-plan.json</code> and <code>data/strava-activities.json</code> to render the dashboard.</span></div>
-          <div class="flow-step"><strong>6</strong><span>Run notes go the other direction: after passcode auth, the browser sends a note to the Cloudflare Worker, and the Worker writes it to the <code>Run Notes</code> tab in Google Sheets.</span></div>
+          <div class="flow-step"><strong>6</strong><span>Run notes go the other direction: after passcode auth, the browser sends a note to the Cloudflare Worker, and the Worker writes it to the <code>Run Notes</code> tab in Google Sheets. The Worker creates that tab on first use if it does not exist yet.</span></div>
           <div class="flow-step"><strong>7</strong><span>Supplement checks use the same Worker pattern. The browser sends the date and supplement state to <code>/supplements</code>, then the Worker writes it to the <code>Supplements</code> tab.</span></div>
         </div>
       </section>
@@ -119,7 +119,7 @@
           </article>
           <article>
             <h3>Run notes</h3>
-            <p>The Cloudflare Worker reads and writes notes in the <code>Run Notes</code> tab, keyed by Strava activity ID, after you enter the private passcode in the browser.</p>
+            <p>The Cloudflare Worker reads and writes notes in the <code>Run Notes</code> tab, keyed by Strava activity ID, after you enter the private passcode in the browser. The tab is created automatically the first time notes are loaded or saved.</p>
           </article>
           <article>
             <h3>Supplements</h3>
@@ -198,7 +198,7 @@
       <section class="info-section">
         <h2>Data Contract</h2>
         <p><code>data/training-plan.json</code> contains the plan from Google Sheets: week number, week start date, phase, weekly mileage, daily sessions, long run target, weekly summary, and notes.</p>
-        <p><code>data/strava-activities.json</code> contains the generated actual training data: athlete profile, sync timestamp, run distance, moving time, elapsed time, pace inputs, elevation, heart rate, cadence, activity names, dates, and Strava links.</p>
+        <p><code>data/strava-activities.json</code> contains the generated actual training data used by the dashboard: athlete profile, sync timestamp, run distance, moving time, elapsed time, elevation, heart rate, cadence, activity names, dates, and Strava links.</p>
         <p>The Worker serves supplement checks from the <code>Supplements</code> tab as date-keyed rows: date, protein shake, omega 3, vitamin D, and updated timestamp.</p>
         <pre class="code-block"><code>{
   "metadata": { "generated_at": "2026-05-11T12:00:00+08:00" },
@@ -219,6 +219,7 @@
         <p>The website is public, so anything written into generated JSON can be viewed by anyone with the site link. API secrets are private, but published activity metrics are public.</p>
         <p>Run notes and supplement checks are different: they are served by the Cloudflare Worker and require the private passcode before the browser can load or save them.</p>
         <p>Supplement checks are cached in this browser's <code>localStorage</code>, but the <code>Supplements</code> tab is the cross-device source of truth once the Worker is configured.</p>
+        <p>If a passcode, Strava token, or Google service account key is ever shared outside the secret stores, rotate it and update GitHub Actions or Cloudflare Worker secrets.</p>
         <p>The dashboard is a training visibility tool, not a coaching or medical system. Risk flags and progress views should guide decisions, not replace judgement around injury, sleep, heat, or recovery.</p>
       </section>
 

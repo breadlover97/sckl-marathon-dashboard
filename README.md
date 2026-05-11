@@ -140,7 +140,7 @@ python scripts/fetch_strava.py
 
 The browser only reads sanitized run data. Strava secrets stay in your shell, local environment, or deployment secrets.
 
-Published Strava JSON intentionally includes public training metrics used by the dashboard: activity ID, name, date, distance, time, elevation, heart rate, cadence, and Strava link. Do not publish fields you would not want visible on the public GitHub Pages site.
+Published Strava JSON intentionally includes only the public training metrics used by the dashboard: activity ID, name, date, distance, time, elevation, heart rate, cadence, Strava link, and basic athlete profile image/name if Strava returns them. Do not publish fields you would not want visible on the public GitHub Pages site.
 
 ## GitHub Pages Deployment
 
@@ -200,6 +200,8 @@ Website note form -> Cloudflare Worker /notes -> Google Sheets API -> Run Notes 
 Supplement checkbox -> Cloudflare Worker /supplements -> Google Sheets API -> Supplements tab
 ```
 
+The `Run Notes` tab is created automatically by the Worker the first time notes are loaded or saved. It may not exist yet if no note has been saved.
+
 Setup:
 
 1. Copy `cloudflare-worker/wrangler.toml.example` to `cloudflare-worker/wrangler.toml`.
@@ -248,6 +250,8 @@ Google Sheets is the cross-device source of truth once the Worker is deployed. C
 - The frontend must not contain Strava client secrets, Google credentials, or Worker secrets.
 - `config.js` is public. Only put public settings there, such as the Worker URL.
 - The Cloudflare Worker is scoped to the `Run Notes` and `Supplements` tabs and requires a bearer passcode for reading or writing notes and supplement checks.
+- Set the Worker `ALLOWED_ORIGIN` variable to the GitHub Pages URL in production so browser calls are limited to the dashboard origin. This is a CORS guard, not a replacement for the passcode.
+- Rotate `RUN_NOTES_TOKEN`, Strava tokens, and Google service account keys if they are ever pasted into chat, committed, or shared.
 - The site is public on GitHub Pages, so generated JSON should be treated as public data.
 
 ## Checks
@@ -265,7 +269,7 @@ node --check cloudflare-worker/src/index.js
 
 For a visual QC pass, run the local preview server and check:
 
-- Dashboard nav links: This Week, Weekly Plan, Trends, Activities.
+- Dashboard nav links: This Week, Weekly Plan, Trends, Pace, Activities.
 - Footer link to the backend page.
 - Race button and race page calculator.
 - Theme switching across Light, Dark, IDE editor, and Cyberpunk.

@@ -4,6 +4,9 @@ const SHEETS_BASE_URL = "https://sheets.googleapis.com/v4/spreadsheets";
 const NOTE_HEADER_ROW = ["Activity ID", "Date", "Activity", "Note", "Strava URL", "Updated At"];
 const SUPPLEMENT_HEADER_ROW = ["Date", "Protein Shake", "Omega 3", "Vitamin D", "Updated At"];
 const MAX_NOTE_LENGTH = 500;
+const MAX_REQUEST_BODY_LENGTH = 4096;
+const TOKEN_REFRESH_BUFFER_SECONDS = 60;
+let cachedGoogleAccessToken = null;
 
 export default {
   async fetch(request, env) {
@@ -91,13 +94,19 @@ function requireEnv(env, name) {
 
 async function readJson(request) {
   const contentLength = Number(request.headers.get("Content-Length") || 0);
-  if (contentLength > 4096) {
+  if (contentLength > MAX_REQUEST_BODY_LENGTH) {
+    const error = new Error("Request body too large");
+    error.status = 413;
+    throw error;
+  }
+  const body = await request.text();
+  if (body.length > MAX_REQUEST_BODY_LENGTH) {
     const error = new Error("Request body too large");
     error.status = 413;
     throw error;
   }
   try {
-    return await request.json();
+    return JSON.parse(body);
   } catch (error) {
     const parseError = new Error("Request body must be JSON");
     parseError.status = 400;
@@ -271,8 +280,12 @@ async function sheetsFetch(env, path, init) {
 }
 
 async function getAccessToken(env) {
-  const serviceAccount = JSON.parse(env.GOOGLE_SERVICE_ACCOUNT_JSON);
   const now = Math.floor(Date.now() / 1000);
+  if (cachedGoogleAccessToken?.value && cachedGoogleAccessToken.expiresAt - TOKEN_REFRESH_BUFFER_SECONDS > now) {
+    return cachedGoogleAccessToken.value;
+  }
+
+  const serviceAccount = JSON.parse(env.GOOGLE_SERVICE_ACCOUNT_JSON);
   const claim = {
     aud: TOKEN_URL,
     exp: now + 3600,
@@ -295,6 +308,10 @@ async function getAccessToken(env) {
     error.status = response.status;
     throw error;
   }
+  cachedGoogleAccessToken = {
+    value: body.access_token,
+    expiresAt: now + Number(body.expires_in || 3600)
+  };
   return body.access_token;
 }
 
