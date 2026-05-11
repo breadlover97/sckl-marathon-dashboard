@@ -17,6 +17,8 @@
       "type": "Run",
       "sport_type": "Run",
       "average_speed_mps": 3.21,
+      "average_heartrate": 154,
+      "average_cadence": 86,
       "strava_url": ""
     }
   ]

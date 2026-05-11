@@ -103,6 +103,10 @@ def sanitize_activity(activity: dict[str, Any]) -> dict[str, Any]:
         "type": activity.get("type"),
         "sport_type": activity.get("sport_type"),
         "average_speed_mps": float(activity.get("average_speed") or 0),
+        "average_heartrate": round(float(activity.get("average_heartrate") or 0), 1) if activity.get("average_heartrate") else None,
+        "max_heartrate": int(activity.get("max_heartrate") or 0) if activity.get("max_heartrate") else None,
+        "average_cadence": round(float(activity.get("average_cadence") or 0), 1) if activity.get("average_cadence") else None,
+        "calories": round(float(activity.get("calories") or 0), 1) if activity.get("calories") else None,
         "strava_url": f"https://www.strava.com/activities/{activity_id}" if activity_id else "",
     }
 

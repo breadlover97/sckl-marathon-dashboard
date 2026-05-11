@@ -111,11 +111,11 @@ button {
   position: sticky;
   top: 0;
   z-index: 20;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   min-height: 72px;
   gap: 16px;
   align-items: center;
-  justify-content: space-between;
   padding: 14px min(7vw, 86px);
   border-bottom: 1px solid rgba(232, 229, 223, 0.86);
   background: rgba(255, 255, 255, 0.92);
@@ -124,7 +124,7 @@ button {
 
 .site-brand {
   display: grid;
-  min-width: 210px;
+  min-width: 0;
   gap: 4px;
   color: var(--ink);
   text-decoration: none;
@@ -186,6 +186,7 @@ button {
 
 .nav-tabs {
   display: flex;
+  justify-self: center;
   gap: 6px;
   align-items: center;
   justify-content: center;
@@ -219,6 +220,16 @@ button {
   color: #fff;
   box-shadow: 0 10px 24px rgba(5, 5, 5, 0.16);
   transform: translateY(-1px);
+}
+
+.nav-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.nav-sync {
+  min-height: 34px;
+  white-space: nowrap;
 }
 
 main {
@@ -356,24 +367,73 @@ main {
 }
 
 .activity-feed {
-  display: grid;
-  gap: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
 }
 
-.activity-feed-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
+.activity-table-shell {
+  min-width: 0;
+}
+
+.activity-table-summary {
+  display: flex;
+  gap: 16px;
   align-items: center;
+  justify-content: space-between;
+  padding: 18px;
+  border-bottom: 1px solid var(--line);
 }
 
-.activity-feed-row strong {
-  display: block;
+.activity-table-summary strong {
+  font-size: 1rem;
   font-weight: 900;
 }
 
-.activity-feed-row > div:last-child {
-  text-align: right;
+.activity-table-summary span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.activity-table-scroll {
+  overflow-x: auto;
+}
+
+.activity-table {
+  width: 100%;
+  min-width: 940px;
+  border-collapse: collapse;
+}
+
+.activity-table th,
+.activity-table td {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.activity-table th {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.activity-table td {
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.activity-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.activity-table a {
+  color: var(--ink);
+  font-weight: 900;
 }
 
 .stat-card.featured {
@@ -422,9 +482,17 @@ main {
   margin-top: 14px;
 }
 
+.compact-settings {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .panel {
   margin-top: 18px;
   padding: clamp(18px, 3vw, 30px);
+}
+
+main > .panel:first-child {
+  margin-top: 0;
 }
 
 .section-heading {
@@ -619,6 +687,18 @@ main {
   padding: 0 16px 16px;
 }
 
+.week-notes-line {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.week-notes-line strong {
+  color: var(--ink);
+  font-weight: 900;
+}
+
 .trend-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -637,6 +717,40 @@ main {
   width: 100%;
   height: 284px;
   overflow: visible;
+}
+
+.chart-hit-area {
+  fill: transparent;
+  pointer-events: all;
+}
+
+.chart-hover {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 100ms ease;
+}
+
+.chart-crosshair {
+  stroke: rgba(5, 5, 5, 0.5);
+  stroke-dasharray: 3 4;
+  stroke-width: 1.2;
+}
+
+.chart-hover-dot {
+  fill: var(--ink);
+  stroke: #fff;
+  stroke-width: 3;
+}
+
+.chart-tooltip rect {
+  fill: var(--ink);
+  opacity: 0.94;
+}
+
+.chart-tooltip text {
+  fill: #fff;
+  font-size: 0.68rem;
+  font-weight: 900;
 }
 
 .chart-axis {
@@ -794,12 +908,17 @@ main {
 @media (max-width: 980px) {
   .top-nav {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr auto;
   }
 
   .nav-tabs {
+    grid-column: 1 / -1;
     justify-content: flex-start;
     overflow-x: auto;
+  }
+
+  .nav-actions {
+    justify-content: flex-end;
   }
 
   .dashboard-hero,
@@ -835,11 +954,11 @@ main {
 
   body {
     background: #faf9f7;
-    padding-top: 132px;
+    padding-top: 174px;
   }
 
   html {
-    scroll-padding-top: 146px;
+    scroll-padding-top: 188px;
   }
 
   .top-nav {
@@ -847,6 +966,7 @@ main {
     right: 0;
     left: 0;
     width: 100%;
+    grid-template-columns: 1fr;
     min-height: 66px;
     gap: 8px;
     align-items: start;
@@ -854,7 +974,7 @@ main {
   }
 
   .anchor-section {
-    scroll-margin-top: 146px;
+    scroll-margin-top: 188px;
   }
 
   .site-brand {
@@ -873,6 +993,7 @@ main {
   }
 
   .nav-tabs {
+    grid-column: auto;
     width: 100%;
     padding: 4px;
     border-radius: 14px;
@@ -888,6 +1009,14 @@ main {
     padding: 6px 10px;
     font-size: 0.72rem;
     white-space: nowrap;
+  }
+
+  .nav-actions {
+    width: 100%;
+  }
+
+  .nav-sync {
+    width: 100%;
   }
 
   main {
@@ -944,12 +1073,9 @@ main {
     grid-template-columns: 1fr;
   }
 
-  .activity-feed-row {
-    grid-template-columns: 1fr;
-  }
-
-  .activity-feed-row > div:last-child {
-    text-align: left;
+  .activity-table-summary {
+    display: grid;
+    gap: 4px;
   }
 
   .site-footer {
