@@ -755,7 +755,6 @@ function renderActivityFeed(actuals, runNotes = {}) {
         <td><strong>${oneDecimalKm(activity.distance_km)}</strong></td>
         <td>${duration(activity.moving_time_seconds)}</td>
         <td>${activityPace(activity)}</td>
-        <td>${duration(activity.elapsed_time_seconds)}</td>
         <td>${heartRate(activity.average_heartrate)}</td>
         <td>${cadence(activity.average_cadence)}</td>
         <td>${Math.round(Number(activity.elevation_gain_m || 0))} m</td>
@@ -767,7 +766,7 @@ function renderActivityFeed(actuals, runNotes = {}) {
         </td>
       </tr>
       <tr id="${detailId}" class="activity-detail-row" hidden>
-        <td colspan="11">
+        <td colspan="10">
           <div class="activity-detail-panel">
             ${renderRunNotePanel(activity, runNotes)}
           </div>
@@ -793,7 +792,6 @@ function renderActivityFeed(actuals, runNotes = {}) {
               <th>Distance</th>
               <th>Moving</th>
               <th>Avg pace</th>
-              <th>Elapsed</th>
               <th>Avg HR</th>
               <th>Avg cadence</th>
               <th>Elev</th>
