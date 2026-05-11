@@ -70,13 +70,13 @@ const paceZones = [
 
 const trackTargets = [
   ["200m", "38-42s", "Strides, relaxed speed"],
-  ["300m", "61-65s", "Taper rhythm or light speed"],
   ["400m", "82-86s", "Main controlled speed range"],
-  ["500m", "1:45-1:50", "Speed endurance"],
   ["600m", "2:06-2:14", "Aerobic speed"],
   ["800m", "2:52-3:00", "VO2 / controlled interval"],
   ["1 km", "3:38-3:46", "10K / CV reps"],
-  ["1.2 km", "4:20-4:28", "Long interval rhythm"]
+  ["1.2 km", "4:20-4:28", "Long interval rhythm"],
+  ["1.6 km", "5:50-6:05", "Mile-style strength reps"],
+  ["MP", "4:10-4:20 /km", "Marathon pace work"]
 ];
 
 const formatDate = new Intl.DateTimeFormat("en-SG", {
@@ -1012,7 +1012,6 @@ function renderPaceGuide() {
       </table>
     </div>
     <div class="pace-track-grid">${targetRows}</div>
-    <p class="pace-note">Treat these as training ranges, not laws. If heat, sleep, shin pain, or accumulated fatigue changes the effort, slow the pace and keep the intended stimulus.</p>
   `;
 }
 
