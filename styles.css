@@ -1318,6 +1318,22 @@ main > .panel:first-child {
   gap: 14px;
 }
 
+.pace-chip {
+  min-width: 0;
+  border: 1px solid var(--line);
+  background: var(--card);
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.pace-chip span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
 .pace-note {
   margin: 0;
   color: var(--muted);
@@ -1333,6 +1349,32 @@ main > .panel:first-child {
 
 .pace-table td:nth-child(3) {
   color: var(--muted);
+}
+
+.pace-track-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pace-chip {
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.pace-chip strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.pace-chip small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .phase-panel {
@@ -1730,6 +1772,7 @@ html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
 
 @media (hover: hover) and (pointer: fine) {
   .day-card:hover,
+  .pace-chip:hover,
   .week-metric:hover,
   .note-card:hover,
   .week-row:hover,
@@ -1995,6 +2038,14 @@ html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
   }
 
   .week-metric {
+    padding: 11px;
+  }
+
+  .pace-track-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pace-chip {
     padding: 11px;
   }
 
