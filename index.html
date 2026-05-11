@@ -21,6 +21,7 @@
         <a href="#week">This Week</a>
         <a href="#plan">Weekly Plan</a>
         <a href="#trends">Trends</a>
+        <a href="#pace">Pace</a>
         <a href="#activity">Activities</a>
       </div>
       <div class="nav-actions">
@@ -33,7 +34,7 @@
             <option value="cyberpunk">Cyberpunk</option>
           </select>
         </label>
-        <a class="action-button secondary nav-sync" href="race.html" title="Race execution">Race</a>
+        <a class="action-button secondary nav-sync race-action" href="race.html" title="Race execution">Race</a>
         <a class="action-button primary nav-sync" href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer">Sync data</a>
       </div>
     </nav>
@@ -86,6 +87,17 @@
             <span><i class="legend-line actual"></i>Actual longest run</span>
           </div>
         </article>
+      </section>
+
+      <section id="pace" class="panel anchor-section">
+        <div class="section-heading">
+          <div>
+            <h2>Pace</h2>
+            <p>Estimated workout targets from recent race results, adjusted for Singapore heat and humidity.</p>
+          </div>
+          <span class="status-pill">Working ranges</span>
+        </div>
+        <div id="paceGuide" class="pace-guide"></div>
       </section>
 
       <section id="activity" class="panel anchor-section">

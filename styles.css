@@ -314,6 +314,16 @@ button {
   color: var(--ink);
 }
 
+.action-button.race-action {
+  border-color: var(--orange);
+  background: var(--orange);
+  color: #ffffff;
+}
+
+.action-button.race-action:hover {
+  background: var(--orange-dark);
+}
+
 .top-nav {
   position: sticky;
   top: 0;
@@ -1258,6 +1268,91 @@ main > .panel:first-child {
   min-width: 0;
 }
 
+.pace-guide {
+  display: grid;
+  gap: 14px;
+}
+
+.pace-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pace-summary-card,
+.pace-chip {
+  min-width: 0;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+
+.pace-summary-card {
+  padding: 14px;
+  border-radius: 14px;
+}
+
+.pace-summary-card span,
+.pace-chip span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.pace-summary-card strong {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.pace-summary-card p,
+.pace-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 750;
+}
+
+.pace-table td:nth-child(2) {
+  color: var(--orange-dark);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.pace-table td:nth-child(4) {
+  color: var(--muted);
+}
+
+.pace-track-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pace-chip {
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.pace-chip strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.pace-chip small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
 .phase-panel {
   grid-column: 1 / -1;
 }
@@ -1759,6 +1854,7 @@ html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
   .race-card-grid,
   .calculator-grid,
   .calculator-result,
+  .pace-summary-grid,
   .settings-grid,
   .tech-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1901,6 +1997,7 @@ html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
 
   .hero-stat-grid,
   .note-grid,
+  .pace-summary-grid,
   .settings-grid {
     grid-template-columns: 1fr;
   }
@@ -1919,6 +2016,22 @@ html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
 
   .week-metric {
     padding: 11px;
+  }
+
+  .pace-track-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pace-summary-card,
+  .pace-chip {
+    padding: 11px;
+  }
+
+  .pace-table-scroll {
+    margin-right: -14px;
+    margin-left: -14px;
+    padding-right: 14px;
+    padding-left: 14px;
   }
 
   .week-metric strong,

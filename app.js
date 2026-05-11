@@ -15,6 +15,80 @@ const wellnessChecks = [
   { key: "vitaminD", label: "Vitamin D" }
 ];
 
+const paceZones = [
+  {
+    label: "Recovery",
+    range: "5:45-6:20 /km",
+    use: "Post-workout, tired legs, shin-splint caution days.",
+    cue: "Very easy; breathing never pressured."
+  },
+  {
+    label: "Easy aerobic",
+    range: "5:10-5:45 /km",
+    use: "Most normal easy runs and aerobic mileage.",
+    cue: "Your current 5:15-5:30/km sits well here."
+  },
+  {
+    label: "Long run easy",
+    range: "5:05-5:40 /km",
+    use: "Long runs before workout sections.",
+    cue: "Use effort on hills and humid mornings."
+  },
+  {
+    label: "Steady aerobic",
+    range: "4:35-5:00 /km",
+    use: "Controlled finishes and medium-long progression work.",
+    cue: "Smooth pressure, not threshold."
+  },
+  {
+    label: "Marathon effort",
+    range: "4:10-4:20 /km",
+    use: "Tropical MP blocks in long runs.",
+    cue: "Cool-weather goal pace is 4:02/km; SCKL effort may be slower."
+  },
+  {
+    label: "Tempo",
+    range: "3:58-4:08 /km",
+    use: "Longer continuous tempo, 25-45 minutes.",
+    cue: "Comfortably hard, stable breathing."
+  },
+  {
+    label: "Lactate threshold",
+    range: "3:50-4:00 /km",
+    use: "20-30 minute tempo or cruise intervals.",
+    cue: "Hard but repeatable; validate with a 30-minute field test."
+  },
+  {
+    label: "10K / critical velocity",
+    range: "3:38-3:46 /km",
+    use: "Shorter fast aerobic reps such as 1 km repeats.",
+    cue: "Fast and controlled, not a race."
+  },
+  {
+    label: "VO2 interval",
+    range: "3:28-3:38 /km",
+    use: "600m-1200m track intervals with jog recoveries.",
+    cue: "Strong form; stop before straining."
+  },
+  {
+    label: "Repetition / speed",
+    range: "80-86s / 400m",
+    use: "200m-400m speed economy work with fuller recovery.",
+    cue: "Early-cycle 86-88s is intentionally conservative."
+  }
+];
+
+const trackTargets = [
+  ["200m", "38-42s", "Strides, relaxed speed"],
+  ["300m", "61-65s", "Taper rhythm or light speed"],
+  ["400m", "82-86s", "Main controlled speed range"],
+  ["500m", "1:45-1:50", "Speed endurance"],
+  ["600m", "2:06-2:14", "Aerobic speed"],
+  ["800m", "2:52-3:00", "VO2 / controlled interval"],
+  ["1 km", "3:38-3:46", "10K / CV reps"],
+  ["1.2 km", "4:20-4:28", "Long interval rhythm"]
+];
+
 const formatDate = new Intl.DateTimeFormat("en-SG", {
   day: "numeric",
   month: "short",
@@ -382,6 +456,21 @@ function syncTime(value) {
   });
 }
 
+function timeAgo(value) {
+  if (!value) return "";
+  const elapsedMs = Math.max(Date.now() - new Date(value).getTime(), 0);
+  const totalMinutes = Math.floor(elapsedMs / 60000);
+  if (totalMinutes < 1) return "just now";
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}h ${minutes}m ago`;
+}
+
+function lastSyncedText(label, value, fallback) {
+  if (!value) return fallback;
+  return `${label} last synced ${syncTime(value)} (${timeAgo(value)})`;
+}
+
 function heartRate(value) {
   return value ? `${Math.round(Number(value))} bpm` : "-";
 }
@@ -463,9 +552,7 @@ function renderCurrentWeek(plan, actuals) {
   const week = currentWeek(plan);
   const actual = summarizeWeekActual(week, actuals);
   const status = document.getElementById("trackStatus");
-  status.textContent = actuals.metadata?.generated_at
-    ? `Strava synced ${syncTime(actuals.metadata.generated_at)}`
-    : "Strava not synced";
+  status.textContent = lastSyncedText("Strava", actuals.metadata?.generated_at, "Strava not synced");
   status.className = "status-pill";
   const planned = Number(week.target_weekly_mileage_km || 0);
   const progress = planned > 0 ? Math.min((actual.distance_km / planned) * 100, 140) : 0;
@@ -499,9 +586,7 @@ function renderPlanTable(plan, actuals) {
   const table = document.getElementById("planTable");
   const planStatus = document.getElementById("planSyncStatus");
   if (planStatus) {
-    planStatus.textContent = plan.metadata?.generated_at
-      ? `Sheet synced ${syncTime(plan.metadata.generated_at)}`
-      : "Sheet not synced";
+    planStatus.textContent = lastSyncedText("Sheet", plan.metadata?.generated_at, "Sheet not synced");
     planStatus.className = "status-pill";
   }
   table.innerHTML = plan.weeks.map((week) => {
@@ -777,6 +862,61 @@ function renderLineChart(containerId, weeks, valueKey, options = {}) {
   setupChartHover(container, points, { width, height, left, right, top, baseline, plotWidth, plotHeight, valueLabel: options.valueLabel || "Distance" });
 }
 
+function renderPaceGuide() {
+  const container = document.getElementById("paceGuide");
+  if (!container) return;
+  const zoneRows = paceZones.map((zone) => `
+    <tr>
+      <td><strong>${escapeHtml(zone.label)}</strong></td>
+      <td>${escapeHtml(zone.range)}</td>
+      <td>${escapeHtml(zone.use)}</td>
+      <td>${escapeHtml(zone.cue)}</td>
+    </tr>
+  `).join("");
+  const targetRows = trackTargets.map(([distance, target, purpose]) => `
+    <article class="pace-chip">
+      <span>${escapeHtml(distance)}</span>
+      <strong>${escapeHtml(target)}</strong>
+      <small>${escapeHtml(purpose)}</small>
+    </article>
+  `).join("");
+
+  container.innerHTML = `
+    <div class="pace-summary-grid">
+      <article class="pace-summary-card">
+        <span>Anchor result</span>
+        <strong>37:00 10K tropical</strong>
+        <p>VDOT-style estimate around 57, cross-checked against 1:19 half and 2:45 cool-weather marathon history.</p>
+      </article>
+      <article class="pace-summary-card">
+        <span>Field check</span>
+        <strong>30-minute threshold test</strong>
+        <p>Run hard and even; use the full 30-minute average pace to refine lactate threshold.</p>
+      </article>
+      <article class="pace-summary-card">
+        <span>Heat rule</span>
+        <strong>Effort first</strong>
+        <p>For Singapore humidity, let HR/RPE override exact pace, especially on hills and long MP blocks.</p>
+      </article>
+    </div>
+    <div class="activity-table-scroll pace-table-scroll">
+      <table class="activity-table pace-table">
+        <thead>
+          <tr>
+            <th>Zone</th>
+            <th>Target</th>
+            <th>Use</th>
+            <th>Coaching cue</th>
+          </tr>
+        </thead>
+        <tbody>${zoneRows}</tbody>
+      </table>
+    </div>
+    <div class="pace-track-grid">${targetRows}</div>
+    <p class="pace-note">Treat these as training ranges, not laws. If heat, sleep, shin pain, or accumulated fatigue changes the effort, slow the pace and keep the intended stimulus.</p>
+  `;
+}
+
 function chartHoverMarkup(left, top, plotWidth, plotHeight, baseline) {
   return `
     <g class="chart-hover" aria-hidden="true">
@@ -1003,6 +1143,7 @@ function render({ plan, actuals, runNotes }) {
   renderPlanTable(plan, actuals);
   renderBarChart("mileageChart", plan.weeks, "target_weekly_mileage_km", { actuals, actualMetric: "distance_km", label: "Planned and actual weekly mileage", valueLabel: "Mileage" });
   renderLineChart("longRunChart", plan.weeks, "long_run_distance_km", { actuals, actualMetric: "longest_run_km", label: "Planned and actual long run distance", valueLabel: "Long run" });
+  renderPaceGuide();
   renderMileageLegend();
   renderActivityFeed(actuals, runNotes);
   document.getElementById("syncStatus").textContent =
