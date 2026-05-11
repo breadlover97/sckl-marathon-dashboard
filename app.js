@@ -590,9 +590,10 @@ function renderDataStatus(plan, actuals) {
     <article class="setting-card sync-card">
       <span>Manual sync</span>
       <strong>Strava + Sheet</strong>
-      <p>Opens GitHub Actions. Click Run workflow there, then refresh this dashboard when it finishes.</p>
+      <p>Opens GitHub Actions. Either sync button runs the secure workflow, then refresh this dashboard when it finishes.</p>
       <div class="setting-actions">
         <a class="action-button primary" href="${SYNC_WORKFLOW_URL}" target="_blank" rel="noreferrer">Sync Strava</a>
+        <a class="action-button secondary" href="${SYNC_WORKFLOW_URL}" target="_blank" rel="noreferrer">Sync Google Sheets</a>
         <button id="refreshDashboard" class="action-button secondary" type="button">Refresh dashboard</button>
       </div>
     </article>
