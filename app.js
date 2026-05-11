@@ -530,24 +530,43 @@ function wellnessCompletedCount(dayState = {}) {
   return wellnessChecks.filter((item) => dayState[item.key]).length;
 }
 
-function renderDaySupplements(session) {
-  const dayState = loadWellnessChecks()[session.date] || {};
+function renderSupplementInput(date) {
+  const dayState = loadWellnessChecks()[date] || {};
   const completed = wellnessCompletedCount(dayState);
   const items = wellnessChecks.map((item) => {
     const checked = dayState[item.key] ? "checked" : "";
     return `
       <label class="supplement-toggle" title="${escapeHtml(item.label)}">
-        <input type="checkbox" data-wellness-check data-date="${escapeHtml(session.date)}" data-key="${escapeHtml(item.key)}" ${checked}>
+        <input type="checkbox" data-wellness-check data-date="${escapeHtml(date)}" data-key="${escapeHtml(item.key)}" ${checked}>
         <span>${escapeHtml(item.shortLabel)}</span>
       </label>
     `;
   }).join("");
 
   return `
+    <div class="week-supplement-input" data-wellness-input-date="${escapeHtml(date)}">
+      <div>
+        <span>Today's supplements</span>
+        <strong>${completed}/${wellnessChecks.length}</strong>
+      </div>
+      <div class="supplement-toggles" aria-label="${completed} of ${wellnessChecks.length} supplements recorded">${items}</div>
+    </div>
+  `;
+}
+
+function renderDaySupplements(session) {
+  const dayState = loadWellnessChecks()[session.date] || {};
+  const completed = wellnessCompletedCount(dayState);
+  const items = wellnessChecks.map((item) => {
+    const done = Boolean(dayState[item.key]);
+    return `<span class="supplement-status-pill ${done ? "done" : ""}" title="${escapeHtml(item.label)} ${done ? "recorded" : "not recorded"}">${escapeHtml(item.shortLabel)}</span>`;
+  }).join("");
+
+  return `
     <div class="day-supplement-line" data-wellness-row-date="${escapeHtml(session.date)}">
       <span>Supplements</span>
-      <div class="supplement-toggles" aria-label="${completed} of ${wellnessChecks.length} supplements recorded">${items}</div>
       <small>${completed}/${wellnessChecks.length}</small>
+      <div class="supplement-status-list" aria-label="${completed} of ${wellnessChecks.length} supplements recorded">${items}</div>
     </div>
   `;
 }
@@ -593,6 +612,7 @@ function renderCurrentWeek(plan, actuals) {
       <div class="progress-track" aria-label="This week mileage progress">
         <span style="width: ${progress}%"></span>
       </div>
+      ${renderSupplementInput(dateKey(singaporeToday()))}
     </div>
     <div class="daily-grid">${dayCards}</div>
     <div class="note-grid">

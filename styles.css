@@ -971,6 +971,32 @@ main > .panel:first-child {
   background: var(--orange);
 }
 
+.week-supplement-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--orange) 22%, var(--line));
+}
+
+.week-supplement-input > div:first-child {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.week-supplement-input span,
+.week-supplement-input strong {
+  display: inline;
+}
+
+.week-supplement-input strong {
+  color: var(--ink);
+  font-size: 0.78rem;
+}
+
 .day-supplement-line {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -1021,6 +1047,33 @@ main > .panel:first-child {
 
 .supplement-toggle:has(input:checked) {
   border-color: color-mix(in srgb, var(--teal) 42%, var(--line));
+  background: var(--teal-soft);
+  color: var(--teal);
+}
+
+.supplement-status-list {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.supplement-status-pill {
+  display: inline-flex;
+  min-height: 18px;
+  align-items: center;
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.supplement-status-pill.done {
+  border-color: color-mix(in srgb, var(--teal) 36%, var(--line));
   background: var(--teal-soft);
   color: var(--teal);
 }
