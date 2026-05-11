@@ -530,6 +530,49 @@ function renderWellnessTracker() {
   `;
 }
 
+function wellnessCompletedCount(dayState = {}) {
+  return wellnessChecks.filter((item) => dayState[item.key]).length;
+}
+
+function renderWellnessHistory(week, title = "Supplement history") {
+  const state = loadWellnessChecks();
+  const sessions = week.daily_sessions || dailySessions(week);
+  const totalPossible = sessions.length * wellnessChecks.length;
+  const completedTotal = sessions.reduce((sum, session) => {
+    return sum + wellnessCompletedCount(state[session.date] || {});
+  }, 0);
+  const days = sessions.map((session) => {
+    const dayState = state[session.date] || {};
+    const completed = wellnessCompletedCount(dayState);
+    const statusClass = completed === wellnessChecks.length ? "complete" : completed > 0 ? "partial" : "empty";
+    const dots = wellnessChecks.map((item) => {
+      const taken = Boolean(dayState[item.key]);
+      return `<span class="supplement-dot ${taken ? "taken" : ""}" title="${escapeHtml(item.label)} ${taken ? "recorded" : "not recorded"}"></span>`;
+    }).join("");
+    return `
+      <li class="supplement-day ${statusClass}" data-wellness-history-date="${escapeHtml(session.date)}">
+        <span>${escapeHtml(session.day.slice(0, 3))}</span>
+        <strong>${escapeHtml(shortDate(session.date))}</strong>
+        <small>${completed}/${wellnessChecks.length}</small>
+        <div class="supplement-dots" aria-label="${completed} of ${wellnessChecks.length} supplements recorded">${dots}</div>
+      </li>
+    `;
+  }).join("");
+
+  return `
+    <article class="wellness-card supplement-history-card">
+      <div class="wellness-head">
+        <div>
+          <span>Nutrition log</span>
+          <strong>${escapeHtml(title)}</strong>
+        </div>
+        <small data-wellness-history-count>${completedTotal}/${totalPossible}</small>
+      </div>
+      <ul class="supplement-history">${days}</ul>
+    </article>
+  `;
+}
+
 function renderTrainingDayProgress(plan) {
   const today = singaporeToday();
   const raceDay = parseLocalDate(RACE_DATE);
@@ -573,6 +616,7 @@ function renderCurrentWeek(plan, actuals) {
       </div>
     </div>
     ${renderWellnessTracker()}
+    ${renderWellnessHistory(week, "This week")}
     <div class="daily-grid">${dayCards}</div>
     <div class="note-grid">
       <article class="note-card"><span>Long run notes</span><p>${escapeHtml(week.long_run_notes)}</p></article>
@@ -594,7 +638,7 @@ function renderPlanTable(plan, actuals) {
     const details = week.daily_sessions.map((session) => renderDayCard(session, actuals)).join("");
 
     return `
-      <details class="week-row ${current ? "current" : ""}" ${current ? "open" : ""}>
+      <details class="week-row ${current ? "current" : ""}" data-week-number="${escapeHtml(week.week_number)}" ${current ? "open" : ""}>
         <summary>
           <span class="row-label">Week ${week.week_number}</span>
           <span class="row-title">
@@ -605,11 +649,28 @@ function renderPlanTable(plan, actuals) {
         </summary>
         <div class="week-row-body">
           <div class="daily-grid">${details}</div>
+          ${renderWellnessHistory(week, `Week ${week.week_number}`)}
           <p class="week-notes-line"><strong>Notes:</strong> ${escapeHtml(week.notes || "No notes for this week.")}</p>
         </div>
       </details>
     `;
   }).join("");
+  updateWeekToggleLabel();
+}
+
+function openWeekNumbers() {
+  return new Set(
+    Array.from(document.querySelectorAll(".week-row[open]"))
+      .map((row) => row.dataset.weekNumber)
+      .filter(Boolean)
+  );
+}
+
+function restoreOpenWeeks(openWeeks) {
+  if (!openWeeks?.size) return;
+  document.querySelectorAll(".week-row").forEach((row) => {
+    if (openWeeks.has(row.dataset.weekNumber)) row.open = true;
+  });
   updateWeekToggleLabel();
 }
 
@@ -1161,6 +1222,12 @@ function setupWellnessTracker() {
     if (count) {
       const checked = card.querySelectorAll("[data-wellness-check]:checked").length;
       count.textContent = `${checked}/${wellnessChecks.length}`;
+    }
+    if (latestRenderState) {
+      const opened = openWeekNumbers();
+      renderCurrentWeek(latestRenderState.plan, latestRenderState.actuals);
+      renderPlanTable(latestRenderState.plan, latestRenderState.actuals);
+      restoreOpenWeeks(opened);
     }
   });
 }

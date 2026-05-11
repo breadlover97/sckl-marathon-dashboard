@@ -1047,6 +1047,76 @@ main > .panel:first-child {
   white-space: nowrap;
 }
 
+.supplement-history-card {
+  gap: 14px;
+}
+
+.supplement-history {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.supplement-day {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--soft);
+}
+
+.supplement-day.complete {
+  border-color: color-mix(in srgb, var(--teal) 34%, var(--line));
+  background: var(--teal-soft);
+}
+
+.supplement-day.partial {
+  border-color: color-mix(in srgb, var(--orange) 34%, var(--line));
+  background: var(--orange-soft);
+}
+
+.supplement-day span,
+.supplement-day small {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.supplement-day strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.supplement-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.supplement-dot {
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--card);
+}
+
+.supplement-dot.taken {
+  border-color: var(--teal);
+  background: var(--teal);
+}
+
 .week-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1762,6 +1832,7 @@ html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
 
 @media (hover: hover) and (pointer: fine) {
   .day-card:hover,
+  .wellness-card:hover,
   .week-metric:hover,
   .note-card:hover,
   .week-row:hover,
@@ -2075,6 +2146,24 @@ html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
   .wellness-check {
     border-radius: 12px;
     font-size: 0.72rem;
+  }
+
+  .supplement-history {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .supplement-history::-webkit-scrollbar {
+    display: none;
+  }
+
+  .supplement-day {
+    flex: 0 0 86px;
+    scroll-snap-align: start;
   }
 
   .daily-grid {

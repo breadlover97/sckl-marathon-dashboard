@@ -57,6 +57,7 @@
           <div class="flow-step"><strong>4</strong><span>The workflow reads private credentials from GitHub secrets, fetches Google Sheets and Strava data, then writes generated JSON files into the Pages artifact.</span></div>
           <div class="flow-step"><strong>5</strong><span>GitHub Pages hosts the static site. The browser loads <code>data/training-plan.json</code> and <code>data/strava-activities.json</code> to render the dashboard.</span></div>
           <div class="flow-step"><strong>6</strong><span>Run notes go the other direction: after passcode auth, the browser sends a note to the Cloudflare Worker, and the Worker writes it to the <code>Run Notes</code> tab in Google Sheets.</span></div>
+          <div class="flow-step"><strong>7</strong><span>Supplement checks are currently local-only. The browser records them in <code>localStorage</code> by date, then displays the same history in This Week and Week-by-week cards.</span></div>
         </div>
       </section>
 
@@ -66,6 +67,7 @@
         <p><strong>Strava API</strong> provides actual runs: distance, time, pace, elevation, heart rate and cadence when Strava includes them, activity names, dates, and Strava links.</p>
         <p><strong>GitHub Actions</strong> is the private sync worker. It refreshes Strava tokens, reads the Google service account secret, fetches both data sources, and prepares the Pages deployment.</p>
         <p><strong>Cloudflare Worker</strong> accepts authenticated run-note writes from the static website and updates the Google Sheet without exposing Google credentials.</p>
+        <p><strong>Browser localStorage</strong> stores supplement check history on the current device. This keeps the first version simple, but it is not shared across browsers or backed up to Google Sheets yet.</p>
         <p><strong>GitHub Pages</strong> is the public static host. It has no server-side code and no API secrets in frontend JavaScript.</p>
       </section>
 
@@ -170,6 +172,7 @@
         <h2>Privacy And Limits</h2>
         <p>The website is public, so anything written into generated JSON can be viewed by anyone with the site link. API secrets are private, but published activity metrics are public.</p>
         <p>Run notes are different: they are served by the Cloudflare Worker and require the private passcode before the browser can load or save them.</p>
+        <p>Supplement checks stay in this browser's <code>localStorage</code>. Clearing site data, switching device, or using another browser will not carry that history across.</p>
         <p>The dashboard is a training visibility tool, not a coaching or medical system. Risk flags and progress views should guide decisions, not replace judgement around injury, sleep, heat, or recovery.</p>
       </section>
 

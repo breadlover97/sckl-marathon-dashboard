@@ -6,7 +6,7 @@ The site is intentionally simple: Google Sheets is the editable plan, Strava is 
 
 ## What The Dashboard Shows
 
-- This week’s planned sessions, actual Strava mileage, and daily supplement checks.
+- This week’s planned sessions, actual Strava mileage, daily supplement checks, and weekly supplement history.
 - Week-by-week marathon plan from Google Sheets.
 - Planned vs actual weekly mileage and long-run trends.
 - Recent Strava activity feed with pace, time, elevation, heart rate, cadence, links, and optional run notes.
@@ -221,6 +221,22 @@ window.SCKL_CONFIG = {
 4. Commit and push `config.js`.
 
 The first time you save a note from the website, it asks for `RUN_NOTES_TOKEN` and stores it in browser localStorage. Reading existing notes also requires that stored passcode, so notes are not exposed as a public unauthenticated API.
+
+## Supplement Checks
+
+Supplement checks are currently recorded in the browser only, under the `sckl-wellness-checks` localStorage key. The structure is keyed by date:
+
+```json
+{
+  "2026-05-12": {
+    "protein": true,
+    "omega3": true,
+    "vitaminD": false
+  }
+}
+```
+
+This is deliberately lightweight for the first version. It is not synced to GitHub, Cloudflare, Google Sheets, or Strava yet, so clearing browser site data or changing devices will lose or hide that history.
 
 ## Security Notes
 
