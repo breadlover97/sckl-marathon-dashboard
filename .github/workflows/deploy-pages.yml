@@ -1,0 +1,99 @@
+name: Sync data and deploy Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    # Runs at 12:15am Asia/Singapore time.
+    - cron: "15 16 * * *"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install sync dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Check sync secrets
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
+          STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+          STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
+        run: |
+          missing=0
+          for name in GOOGLE_SERVICE_ACCOUNT_JSON STRAVA_CLIENT_ID STRAVA_CLIENT_SECRET STRAVA_REFRESH_TOKEN; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing required repository secret: $name"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: Fetch Google Sheet plan
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SHEET_ID: ${{ vars.GOOGLE_SHEET_ID || '1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo' }}
+          GOOGLE_SHEET_RANGE: ${{ vars.GOOGLE_SHEET_RANGE || 'A:AF' }}
+        run: python scripts/fetch_google_sheet.py
+
+      - name: Fetch Strava run activities
+        env:
+          STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
+          STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+          STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
+        run: |
+          after_timestamp="$(python - <<'PY'
+          from datetime import datetime, timezone
+          print(int(datetime(2026, 5, 1, tzinfo=timezone.utc).timestamp()))
+          PY
+          )"
+          python scripts/fetch_strava.py --after "$after_timestamp"
+
+      - name: Prepare Pages artifact
+        run: |
+          mkdir -p _site/data
+          cp index.html styles.css app.js _site/
+          cp data/training-plan.json _site/data/
+          cp data/strava-activities.json _site/data/
+          cp data/mock-training-plan.json _site/data/
+          cp data/mock-strava-activities.json _site/data/
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

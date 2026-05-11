@@ -110,6 +110,53 @@ python scripts/fetch_strava.py
 
 The browser only reads sanitized run data. Strava secrets stay in your shell, local environment, or deployment secrets.
 
+## GitHub Pages Deployment
+
+GitHub Pages is deployed by `.github/workflows/deploy-pages.yml`.
+
+The workflow:
+
+1. Installs the Python dependencies.
+2. Fetches the latest planned training from Google Sheets.
+3. Fetches Strava run activities from 1 May 2026 onward.
+4. Publishes `index.html`, `styles.css`, `app.js`, and the generated dashboard JSON files to GitHub Pages.
+
+Required repository secrets:
+
+```text
+GOOGLE_SERVICE_ACCOUNT_JSON
+STRAVA_CLIENT_ID
+STRAVA_CLIENT_SECRET
+STRAVA_REFRESH_TOKEN
+```
+
+Optional repository variables:
+
+```text
+GOOGLE_SHEET_ID
+GOOGLE_SHEET_RANGE
+```
+
+If the optional variables are not set, the workflow uses:
+
+```text
+GOOGLE_SHEET_ID=1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo
+GOOGLE_SHEET_RANGE=A:AF
+```
+
+To enable Pages:
+
+1. Open the GitHub repository.
+2. Go to **Settings**.
+3. Go to **Pages**.
+4. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+5. Go to **Actions**.
+6. Run **Sync data and deploy Pages** manually once.
+
+The workflow also runs daily at 12:15am Singapore time and whenever `main` is pushed.
+
+Important Strava note: if a workflow run says Strava returned a rotated refresh token, generate or copy the new refresh token and update the `STRAVA_REFRESH_TOKEN` repository secret before the next sync.
+
 ## Checks
 
 ```bash
