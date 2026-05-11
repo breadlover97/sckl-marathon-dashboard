@@ -903,12 +903,17 @@ main > .panel:first-child {
   margin-bottom: 18px;
 }
 
+.section-heading > div:first-child {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
 .compact-heading {
   display: block;
 }
 
 .section-heading p {
-  max-width: 62ch;
+  max-width: none;
   margin-bottom: 0;
   font-weight: 700;
 }
