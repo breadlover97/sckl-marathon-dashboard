@@ -2,6 +2,7 @@ const LIVE_DATA_URL = "data/training-plan.json";
 const MOCK_DATA_URL = "data/mock-training-plan.json";
 const ACTUAL_DATA_URL = "data/strava-activities.json";
 const MOCK_ACTUAL_DATA_URL = "data/mock-strava-activities.json";
+const RUN_NOTES_API_URL = String(window.SCKL_CONFIG?.runNotesApiUrl || "").replace(/\/$/, "");
 const RACE_DATE = "2026-10-04";
 const RACE_START_LOCAL = "2026-10-04T03:30:00+08:00";
 const GOAL_TIME = "2h 50m";
@@ -166,6 +167,20 @@ async function loadActuals() {
   }
 }
 
+async function loadRunNotes() {
+  if (!RUN_NOTES_API_URL) return {};
+  try {
+    const payload = await fetchJson(`${RUN_NOTES_API_URL}/notes`);
+    return (payload.notes || []).reduce((result, note) => {
+      if (note.activity_id) result[String(note.activity_id)] = note;
+      return result;
+    }, {});
+  } catch (error) {
+    console.info("Run notes unavailable.", error);
+    return {};
+  }
+}
+
 function normalizePlan(plan) {
   plan.weeks = (plan.weeks || []).map((week) => {
     const sessions = dailySessions(week);
@@ -233,6 +248,10 @@ function activitiesForDate(activities, date) {
   return activities.filter((activity) => activity.date === date);
 }
 
+function firstActivityUrl(activities) {
+  return activities.find((activity) => activity.strava_url)?.strava_url || "";
+}
+
 function renderDayCard(session, actuals, options = {}) {
   const dayActivities = activitiesForDate(actuals.activities || [], session.date);
   const actualKm = dayActivities.reduce((sum, activity) => sum + Number(activity.distance_km || 0), 0);
@@ -245,8 +264,10 @@ function renderDayCard(session, actuals, options = {}) {
     isCompleted ? "completed-day" : "",
   ].filter(Boolean).join(" ");
   const completedMark = isCompleted ? `<span class="completed-mark" aria-label="Completed">✓</span>` : "";
+  const actualText = `${oneDecimalKm(actualKm)} actual · ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}`;
+  const activityUrl = firstActivityUrl(dayActivities);
   const actualLine = options.showActual || isCompleted
-    ? `<div class="actual-line">${oneDecimalKm(actualKm)} actual · ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}</div>`
+    ? `<div class="actual-line">${activityUrl ? `<a href="${escapeHtml(activityUrl)}" target="_blank" rel="noreferrer">${escapeHtml(actualText)}</a>` : escapeHtml(actualText)}</div>`
     : "";
 
   return `
@@ -415,7 +436,18 @@ function renderPlanTable(plan, actuals) {
   }).join("");
 }
 
-function renderActivityFeed(actuals) {
+function renderRunNoteControl(activity, runNotes) {
+  const note = runNotes[String(activity.id)]?.note || "";
+  if (!RUN_NOTES_API_URL || !activity.id) return "-";
+  return `
+    <form class="run-note-form" data-run-note-form data-activity-id="${escapeHtml(activity.id)}" data-activity-date="${escapeHtml(activity.date)}" data-activity-name="${escapeHtml(activity.name)}" data-activity-url="${escapeHtml(activity.strava_url || "")}">
+      <textarea name="note" aria-label="Run note for ${escapeHtml(activity.name)}">${escapeHtml(note)}</textarea>
+      <button type="submit">Save</button>
+    </form>
+  `;
+}
+
+function renderActivityFeed(actuals, runNotes = {}) {
   const activities = [...(actuals.activities || [])].sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 16);
   const feed = document.getElementById("activityFeed");
   if (!activities.length) {
@@ -449,6 +481,7 @@ function renderActivityFeed(actuals) {
               <th>Avg HR</th>
               <th>Avg cadence</th>
               <th>Elev</th>
+              <th>Notes</th>
               <th>Link</th>
             </tr>
           </thead>
@@ -464,6 +497,7 @@ function renderActivityFeed(actuals) {
                 <td>${heartRate(activity.average_heartrate)}</td>
                 <td>${cadence(activity.average_cadence)}</td>
                 <td>${Math.round(Number(activity.elevation_gain_m || 0))} m</td>
+                <td>${renderRunNoteControl(activity, runNotes)}</td>
                 <td>${activity.strava_url ? `<a href="${escapeHtml(activity.strava_url)}" target="_blank" rel="noreferrer">Open</a>` : "-"}</td>
               </tr>
             `).join("")}
@@ -472,6 +506,26 @@ function renderActivityFeed(actuals) {
       </div>
     </div>
   `;
+}
+
+function actualWeekValue(week, actuals, metric) {
+  const actual = summarizeWeekActual(week, actuals);
+  const weekStart = parseLocalDate(week.week_start_date);
+  if (!actual.run_count) return weekStart && weekStart <= singaporeToday() ? 0 : null;
+  return metric === "longest_run_km" ? actual.longest_run_km : actual.distance_km;
+}
+
+function linePath(points) {
+  let open = false;
+  return points.reduce((path, point) => {
+    if (point.value === null || point.value === undefined) {
+      open = false;
+      return path;
+    }
+    const command = open ? "L" : "M";
+    open = true;
+    return `${path}${command}${point.x.toFixed(1)} ${point.y.toFixed(1)} `;
+  }, "").trim();
 }
 
 function renderBarChart(containerId, weeks, valueKey, options = {}) {
@@ -485,7 +539,8 @@ function renderBarChart(containerId, weeks, valueKey, options = {}) {
   const plotWidth = width - left - right;
   const plotHeight = height - top - bottom;
   const baseline = height - bottom;
-  const maxValue = niceMax(Math.max(...weeks.map((week) => Number(week[valueKey] || 0)), 0));
+  const actualValues = weeks.map((week) => actualWeekValue(week, options.actuals || { activities: [] }, options.actualMetric || "distance_km"));
+  const maxValue = niceMax(Math.max(...weeks.map((week) => Number(week[valueKey] || 0)), ...actualValues.filter((value) => value !== null), 0));
   const current = currentWeek({ weeks });
   const barGap = 4;
   const barWidth = Math.max((plotWidth / weeks.length) - barGap, 8);
@@ -500,6 +555,7 @@ function renderBarChart(containerId, weeks, valueKey, options = {}) {
       date: week.week_start_date,
       label: `Week ${week.week_number}`,
       value,
+      actualValue: actualValues[index],
       x: x + barWidth / 2,
       y
     });
@@ -517,6 +573,20 @@ function renderBarChart(containerId, weeks, valueKey, options = {}) {
     `;
   }).join("");
 
+  const actualPoints = hoverPoints.map((point) => {
+    const value = point.actualValue;
+    return {
+      ...point,
+      value,
+      y: value === null ? null : baseline - (Number(value || 0) / maxValue) * plotHeight
+    };
+  });
+  const actualLine = linePath(actualPoints);
+  const actualDots = actualPoints
+    .filter((point) => point.value !== null)
+    .map((point) => `<circle class="chart-dot actual" cx="${point.x}" cy="${point.y}" r="4.6"></circle>`)
+    .join("");
+
   container.innerHTML = `
     <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(options.label || "Training chart")}">
       <line class="chart-grid" x1="${left}" y1="${top}" x2="${width - right}" y2="${top}"></line>
@@ -527,6 +597,7 @@ function renderBarChart(containerId, weeks, valueKey, options = {}) {
       <text class="chart-label" x="0" y="${top + plotHeight / 2 + 4}">${maxValue / 2} km</text>
       <text class="chart-label" x="32" y="${baseline + 4}">0</text>
       ${bars}
+      ${actualLine ? `<path class="chart-actual-line" d="${actualLine}"></path>${actualDots}` : ""}
       ${chartHoverMarkup(left, top, plotWidth, plotHeight, baseline)}
     </svg>
   `;
@@ -544,7 +615,8 @@ function renderLineChart(containerId, weeks, valueKey, options = {}) {
   const plotWidth = width - left - right;
   const plotHeight = height - top - bottom;
   const baseline = height - bottom;
-  const maxValue = niceMax(Math.max(...weeks.map((week) => Number(week[valueKey] || 0)), 0));
+  const actualValues = weeks.map((week) => actualWeekValue(week, options.actuals || { activities: [] }, options.actualMetric || "longest_run_km"));
+  const maxValue = niceMax(Math.max(...weeks.map((week) => Number(week[valueKey] || 0)), ...actualValues.filter((value) => value !== null), 0));
   const current = currentWeek({ weeks });
   const step = plotWidth / Math.max(weeks.length - 1, 1);
 
@@ -557,11 +629,21 @@ function renderLineChart(containerId, weeks, valueKey, options = {}) {
       week,
       date: week.week_start_date,
       label: `Week ${week.week_number}`,
-      value: Number(week[valueKey] || 0)
+      value: Number(week[valueKey] || 0),
+      actualValue: actualValues[index]
     };
   });
 
   const line = points.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
+  const actualPoints = points.map((point) => {
+    const value = point.actualValue;
+    return {
+      ...point,
+      value,
+      y: value === null ? null : baseline - (Number(value || 0) / maxValue) * plotHeight
+    };
+  });
+  const actualLine = linePath(actualPoints);
   const dots = points.map((point, index) => {
     const currentLine = point.week.week_number === current.week_number
       ? `<line class="chart-current" x1="${point.x}" y1="${top - 4}" x2="${point.x}" y2="${baseline}"></line>
@@ -570,8 +652,12 @@ function renderLineChart(containerId, weeks, valueKey, options = {}) {
     const label = index % 2 === 0 || index === points.length - 1
       ? `<text class="chart-label" x="${point.x}" y="${height - 14}" text-anchor="middle">W${point.week.week_number}</text>`
       : "";
-    return `${currentLine}<circle class="chart-dot" cx="${point.x}" cy="${point.y}" r="5.2"></circle>${label}`;
+    return `${currentLine}<circle class="chart-dot planned" cx="${point.x}" cy="${point.y}" r="5.2"></circle>${label}`;
   }).join("");
+  const actualDots = actualPoints
+    .filter((point) => point.value !== null)
+    .map((point) => `<circle class="chart-dot actual" cx="${point.x}" cy="${point.y}" r="4.6"></circle>`)
+    .join("");
 
   container.innerHTML = `
     <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(options.label || "Long run chart")}">
@@ -579,7 +665,8 @@ function renderLineChart(containerId, weeks, valueKey, options = {}) {
       <line class="chart-grid" x1="${left}" y1="${top + plotHeight / 2}" x2="${width - right}" y2="${top + plotHeight / 2}"></line>
       <line class="chart-axis" x1="${left}" y1="${baseline}" x2="${width - right}" y2="${baseline}"></line>
       <line class="chart-axis" x1="${left}" y1="${top}" x2="${left}" y2="${baseline}"></line>
-      <polyline class="chart-line" points="${line}"></polyline>
+      <polyline class="chart-line planned" points="${line}"></polyline>
+      ${actualLine ? `<path class="chart-actual-line" d="${actualLine}"></path>${actualDots}` : ""}
       <text class="chart-label" x="0" y="${top + 4}">${maxValue} km</text>
       <text class="chart-label" x="0" y="${top + plotHeight / 2 + 4}">${maxValue / 2} km</text>
       <text class="chart-label" x="32" y="${baseline + 4}">0</text>
@@ -597,9 +684,10 @@ function chartHoverMarkup(left, top, plotWidth, plotHeight, baseline) {
       <line class="chart-crosshair" data-hover-h x1="${left}" y1="${top}" x2="${left + plotWidth}" y2="${top}"></line>
       <circle class="chart-hover-dot" data-hover-dot cx="${left}" cy="${top}" r="5"></circle>
       <g class="chart-tooltip" data-hover-tip>
-        <rect width="168" height="52" rx="8"></rect>
+        <rect width="190" height="68" rx="8"></rect>
         <text data-hover-date x="10" y="20"></text>
-        <text data-hover-value x="10" y="39"></text>
+        <text data-hover-value x="10" y="40"></text>
+        <text data-hover-actual x="10" y="58"></text>
       </g>
     </g>
     <rect class="chart-hit-area" x="${left}" y="${top}" width="${plotWidth}" height="${plotHeight}"></rect>
@@ -618,6 +706,7 @@ function setupChartHover(container, points, dims) {
   const tip = container.querySelector("[data-hover-tip]");
   const dateText = container.querySelector("[data-hover-date]");
   const valueText = container.querySelector("[data-hover-value]");
+  const actualText = container.querySelector("[data-hover-actual]");
 
   const nearestPoint = (x) => {
     return points.reduce((best, point) => {
@@ -635,8 +724,8 @@ function setupChartHover(container, points, dims) {
     const rawX = svgPoint.x;
     const x = Math.min(Math.max(rawX, dims.left), dims.left + dims.plotWidth);
     const point = nearestPoint(x);
-    const tooltipX = x > dims.width - 210 ? x - 180 : x + 12;
-    const tooltipY = Math.max(dims.top + 4, Math.min(point.y - 62, dims.baseline - 66));
+    const tooltipX = x > dims.width - 230 ? x - 202 : x + 12;
+    const tooltipY = Math.max(dims.top + 4, Math.min(point.y - 78, dims.baseline - 82));
 
     hover.style.opacity = "1";
     vLine.setAttribute("x1", x);
@@ -649,7 +738,8 @@ function setupChartHover(container, points, dims) {
     dot.setAttribute("cy", point.y);
     tip.setAttribute("transform", `translate(${tooltipX}, ${tooltipY})`);
     dateText.textContent = `${point.label} · ${prettyDate(point.date)}`;
-    valueText.textContent = `${dims.valueLabel}: ${oneDecimalKm(point.value)}`;
+    valueText.textContent = `Planned: ${oneDecimalKm(point.value)}`;
+    actualText.textContent = `Actual: ${point.actualValue === null || point.actualValue === undefined ? "-" : oneDecimalKm(point.actualValue)}`;
   };
 
   hitArea.addEventListener("pointerenter", moveCrosshair);
@@ -684,12 +774,18 @@ function renderPhaseBreakdown(plan) {
   }, {});
   const rows = Object.values(groups);
 
-  document.getElementById("phaseBreakdown").innerHTML = rows.map((row) => {
+  const phaseItems = rows.map((row) => {
     const average = Math.round(row.mileage / row.weeks);
     return `
       <span><i class="legend-dot ${row.key}"></i>${escapeHtml(row.phase)} · ${row.weeks} wk · ${average} km/wk avg</span>
     `;
   }).join("");
+
+  document.getElementById("phaseBreakdown").innerHTML = `
+    <span><i class="legend-bar"></i>Planned mileage</span>
+    <span><i class="legend-line actual"></i>Actual mileage</span>
+    ${phaseItems}
+  `;
 }
 
 function setupReturnTop() {
@@ -741,23 +837,76 @@ function setupActiveNav() {
   update();
 }
 
-function render({ plan, actuals }) {
+function setupRunNotesForms() {
+  document.addEventListener("submit", async (event) => {
+    const form = event.target.closest("[data-run-note-form]");
+    if (!form) return;
+    event.preventDefault();
+    if (!RUN_NOTES_API_URL) return;
+
+    const button = form.querySelector("button");
+    const note = form.querySelector("textarea")?.value || "";
+    let token = window.localStorage.getItem("sckl-run-notes-token") || "";
+    if (!token) {
+      token = window.prompt("Enter run notes passcode") || "";
+      if (!token) return;
+      window.localStorage.setItem("sckl-run-notes-token", token);
+    }
+
+    button.disabled = true;
+    const originalText = button.textContent;
+    button.textContent = "Saving";
+    try {
+      const response = await fetch(`${RUN_NOTES_API_URL}/notes`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          activity_id: form.dataset.activityId,
+          date: form.dataset.activityDate,
+          name: form.dataset.activityName,
+          note,
+          strava_url: form.dataset.activityUrl
+        })
+      });
+      if (response.status === 401 || response.status === 403) {
+        window.localStorage.removeItem("sckl-run-notes-token");
+        throw new Error("Passcode rejected");
+      }
+      if (!response.ok) throw new Error(`Save failed (${response.status})`);
+      button.textContent = "Saved";
+      setTimeout(() => {
+        button.textContent = originalText;
+      }, 1200);
+    } catch (error) {
+      console.error(error);
+      button.textContent = "Retry";
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
+
+function render({ plan, actuals, runNotes }) {
   renderTrainingDayProgress(plan);
   renderCurrentWeek(plan, actuals);
   renderPlanTable(plan, actuals);
-  renderBarChart("mileageChart", plan.weeks, "target_weekly_mileage_km", { label: "Planned weekly mileage", valueLabel: "Mileage" });
-  renderLineChart("longRunChart", plan.weeks, "long_run_distance_km", { label: "Planned long run distance", valueLabel: "Long run" });
+  renderBarChart("mileageChart", plan.weeks, "target_weekly_mileage_km", { actuals, actualMetric: "distance_km", label: "Planned and actual weekly mileage", valueLabel: "Mileage" });
+  renderLineChart("longRunChart", plan.weeks, "long_run_distance_km", { actuals, actualMetric: "longest_run_km", label: "Planned and actual long run distance", valueLabel: "Long run" });
   renderPhaseBreakdown(plan);
-  renderActivityFeed(actuals);
+  renderActivityFeed(actuals, runNotes);
   document.getElementById("syncStatus").textContent =
     `${plan.loaded_from === "google-sheet" ? "Google Sheet plan" : "Mock plan"} loaded · ${plan.weeks.length} training weeks`;
 }
 
 setupReturnTop();
 setupActiveNav();
+setupRunNotesForms();
 
-Promise.all([loadPlan().then(normalizePlan), loadActuals()])
-  .then(([plan, actuals]) => render({ plan, actuals }))
+Promise.all([loadPlan().then(normalizePlan), loadActuals(), loadRunNotes()])
+  .then(([plan, actuals, runNotes]) => render({ plan, actuals, runNotes }))
   .catch((error) => {
     console.error(error);
     document.getElementById("syncStatus").textContent = "Unable to load mock training plan.";

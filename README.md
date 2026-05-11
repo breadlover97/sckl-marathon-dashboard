@@ -158,6 +158,39 @@ The workflow also runs daily at 12:15am Singapore time and whenever `main` is pu
 
 Important Strava note: if a workflow run says Strava returned a rotated refresh token, generate or copy the new refresh token and update the `STRAVA_REFRESH_TOKEN` repository secret before the next sync.
 
+## Run Notes Writeback
+
+Run notes are written through a Cloudflare Worker so Google credentials are not exposed on GitHub Pages.
+
+Flow:
+
+```text
+Website note form -> Cloudflare Worker -> Google Sheets API -> Run Notes tab
+```
+
+Setup:
+
+1. Copy `cloudflare-worker/wrangler.toml.example` to `cloudflare-worker/wrangler.toml`.
+2. In `cloudflare-worker`, run:
+
+```bash
+wrangler secret put GOOGLE_SERVICE_ACCOUNT_JSON
+wrangler secret put RUN_NOTES_TOKEN
+wrangler deploy
+```
+
+3. Copy the deployed Worker URL into `config.js`:
+
+```js
+window.SCKL_CONFIG = {
+  runNotesApiUrl: "https://sckl-run-notes.<your-subdomain>.workers.dev"
+};
+```
+
+4. Commit and push `config.js`.
+
+The first time you save a note from the website, it asks for `RUN_NOTES_TOKEN` and stores it in browser localStorage.
+
 ## Checks
 
 ```bash
@@ -166,4 +199,6 @@ python3 -m py_compile scripts/fetch_google_sheet.py
 python3 -m py_compile scripts/fetch_strava.py
 python3 -m py_compile scripts/exchange_strava_code.py
 node --check app.js
+node --check theme.js
+node --check cloudflare-worker/src/index.js
 ```

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&family=Orbitron:wght@600;800;900&display=swap");
 
 :root {
   --bg: #ffffff;
@@ -112,45 +112,51 @@ html[data-theme="editor"] {
   --chart-crosshair: rgba(121, 192, 255, 0.9);
   --code-bg: #000000;
   --code-text: #f0f6fc;
+  --syntax-keyword: #ff7b72;
+  --syntax-function: #d2a8ff;
+  --syntax-string: #a5d6ff;
+  --syntax-number: #79c0ff;
+  --syntax-comment: #8b949e;
   --font-ui: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   --shadow: 0 18px 50px rgba(0, 0, 0, 0.72);
 }
 
-html[data-theme="midnight"] {
+html[data-theme="cyberpunk"] {
   --bg: #000000;
   --body-start: #000000;
   --body-mid: #000000;
   --body-end: #000000;
-  --panel: #060914;
-  --card: #0c1224;
-  --ink: #ffffff;
-  --muted: #d7def5;
-  --soft: #131b33;
-  --line: #344268;
+  --panel: #04040a;
+  --card: #090916;
+  --ink: #f8fbff;
+  --muted: #c8d3ff;
+  --soft: #111125;
+  --line: #33305f;
   --subtle-line: rgba(255, 255, 255, 0.14);
-  --nav-line: rgba(215, 222, 245, 0.24);
+  --nav-line: rgba(255, 0, 220, 0.32);
   --nav-bg: rgba(0, 0, 0, 0.94);
   --inverse: #000000;
-  --orange: #ff9f5f;
-  --orange-dark: #ffd4b8;
-  --orange-soft: #2b1608;
-  --teal: #93ddff;
-  --teal-soft: #08233a;
-  --amber: #ffe86a;
-  --amber-soft: #2c2600;
-  --long-bg: #0c1224;
-  --complete-bg: #1b2236;
-  --complete-border: #637199;
-  --complete-mark-bg: #d7def5;
+  --orange: #ff3df2;
+  --orange-dark: #ffc2fb;
+  --orange-soft: #25001f;
+  --teal: #00f5ff;
+  --teal-soft: #001f26;
+  --amber: #faff00;
+  --amber-soft: #272800;
+  --long-bg: #090916;
+  --complete-bg: #17172a;
+  --complete-border: #635cff;
+  --complete-mark-bg: #00f5ff;
   --complete-mark-text: #000000;
-  --current-bg: #302900;
-  --current-border: #ffe86a;
-  --current-glow: rgba(255, 232, 106, 0.3);
-  --chart-grid: rgba(255, 255, 255, 0.14);
-  --chart-axis: rgba(255, 255, 255, 0.28);
-  --chart-crosshair: rgba(147, 221, 255, 0.9);
+  --current-bg: #272800;
+  --current-border: #faff00;
+  --current-glow: rgba(250, 255, 0, 0.34);
+  --chart-grid: rgba(0, 245, 255, 0.16);
+  --chart-axis: rgba(250, 255, 0, 0.32);
+  --chart-crosshair: rgba(250, 255, 0, 0.95);
   --code-bg: #000000;
   --code-text: #ffffff;
+  --font-ui: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --shadow: 0 18px 50px rgba(0, 0, 0, 0.72);
 }
 
@@ -165,11 +171,75 @@ html {
 }
 
 body {
+  position: relative;
   margin: 0;
   background: linear-gradient(180deg, var(--body-start) 0%, var(--body-mid) 62%, var(--body-end) 100%);
   color: var(--ink);
   font-family: var(--font-ui);
   line-height: 1.5;
+}
+
+html[data-theme="cyberpunk"] body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(rgba(0, 245, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 61, 242, 0.045) 1px, transparent 1px),
+    radial-gradient(circle at 20% 16%, rgba(255, 61, 242, 0.2), transparent 26%),
+    radial-gradient(circle at 80% 12%, rgba(0, 245, 255, 0.18), transparent 24%),
+    #000;
+  background-size: 36px 36px, 36px 36px, 100% 100%, 100% 100%, auto;
+  content: "";
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+html[data-theme="cyberpunk"] .panel,
+html[data-theme="cyberpunk"] .info-section,
+html[data-theme="cyberpunk"] .week-row,
+html[data-theme="cyberpunk"] .activity-feed {
+  box-shadow: 0 0 0 1px rgba(0, 245, 255, 0.16), 0 18px 54px rgba(255, 61, 242, 0.12);
+}
+
+html[data-theme="cyberpunk"] h1,
+html[data-theme="cyberpunk"] h2,
+html[data-theme="cyberpunk"] .site-mark {
+  color: var(--ink);
+  font-family: "Orbitron", var(--font-ui);
+  text-shadow: 0 0 16px rgba(0, 245, 255, 0.28);
+}
+
+html[data-theme="cyberpunk"] .action-button.primary,
+html[data-theme="cyberpunk"] .nav-tabs a.active,
+html[data-theme="cyberpunk"] .nav-tabs a[aria-current="true"] {
+  box-shadow: 0 0 18px rgba(255, 61, 242, 0.38), inset 0 0 14px rgba(0, 245, 255, 0.18);
+}
+
+html[data-theme="editor"] h1,
+html[data-theme="editor"] h2 {
+  color: var(--syntax-function);
+}
+
+html[data-theme="editor"] .site-mark,
+html[data-theme="editor"] .row-label,
+html[data-theme="editor"] .day-card-head > span,
+html[data-theme="editor"] .week-metric span,
+html[data-theme="editor"] .activity-table th {
+  color: var(--syntax-keyword);
+}
+
+html[data-theme="editor"] .day-card strong,
+html[data-theme="editor"] .week-metric strong,
+html[data-theme="editor"] .row-title strong {
+  color: var(--syntax-string);
+}
+
+html[data-theme="editor"] .section-heading p,
+html[data-theme="editor"] .row-summary-text,
+html[data-theme="editor"] .day-card p,
+html[data-theme="editor"] .site-footer {
+  color: var(--syntax-comment);
 }
 
 a {
@@ -479,6 +549,49 @@ main {
   font-weight: 850;
 }
 
+.actual-line a {
+  color: inherit;
+  text-decoration-color: var(--teal);
+}
+
+.run-note-form {
+  display: grid;
+  min-width: 180px;
+  gap: 8px;
+}
+
+.run-note-form textarea {
+  width: 100%;
+  min-height: 42px;
+  resize: vertical;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.run-note-form button {
+  justify-self: start;
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--inverse);
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.run-note-form button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
 .day-card strong {
   display: block;
   min-height: 52px;
@@ -557,7 +670,7 @@ main {
 
 .activity-table {
   width: 100%;
-  min-width: 940px;
+  min-width: 1120px;
   border-collapse: collapse;
 }
 
@@ -1005,6 +1118,7 @@ main > .panel:first-child {
 
 .chart-bar {
   fill: var(--orange);
+  opacity: 0.46;
   rx: 5;
 }
 
@@ -1029,10 +1143,33 @@ main > .panel:first-child {
   filter: drop-shadow(0 6px 12px rgba(5, 5, 5, 0.08));
 }
 
+.chart-line.planned {
+  stroke: var(--orange);
+  opacity: 0.72;
+}
+
+.chart-line.actual,
+.chart-actual-line {
+  fill: none;
+  stroke: var(--teal);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+  filter: drop-shadow(0 0 10px rgba(0, 124, 137, 0.28));
+}
+
 .chart-dot {
   fill: var(--teal);
   stroke: var(--card);
   stroke-width: 3;
+}
+
+.chart-dot.planned {
+  fill: var(--orange);
+}
+
+.chart-dot.actual {
+  fill: var(--teal);
 }
 
 .chart-current {
@@ -1057,6 +1194,7 @@ main > .panel:first-child {
   display: flex;
   flex-wrap: wrap;
   gap: 10px 14px;
+  justify-content: center;
   margin-top: 14px;
   color: var(--muted);
   font-size: 0.78rem;
@@ -1081,6 +1219,24 @@ main > .panel:first-child {
 
 .legend-dot.build {
   background: var(--teal);
+}
+
+.legend-line.planned {
+  background: var(--orange);
+}
+
+.legend-line.actual {
+  background: var(--teal);
+}
+
+.legend-bar {
+  display: inline-block;
+  width: 20px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 3px;
+  background: var(--orange);
+  opacity: 0.46;
 }
 
 .legend-dot.recovery {

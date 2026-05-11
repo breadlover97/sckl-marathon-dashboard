@@ -30,7 +30,7 @@
             <option value="light">Light</option>
             <option value="dark">Dark</option>
             <option value="editor">IDE editor</option>
-            <option value="midnight">Midnight</option>
+            <option value="cyberpunk">Cyberpunk</option>
           </select>
         </label>
         <a class="action-button primary nav-sync" href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noreferrer">Sync data</a>
@@ -81,7 +81,8 @@
           </div>
           <div id="longRunChart" class="chart-shell" aria-label="Planned long run progression chart"></div>
           <div class="chart-legend">
-            <span><i class="legend-line long-run"></i>Planned long run distance</span>
+            <span><i class="legend-line planned"></i>Planned long run</span>
+            <span><i class="legend-line actual"></i>Actual longest run</span>
           </div>
         </article>
       </section>
@@ -104,6 +105,7 @@
     </footer>
 
     <button id="returnTop" class="return-top" type="button" aria-label="Return to top">↑</button>
+    <script src="config.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

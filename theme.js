@@ -1,10 +1,11 @@
 (function () {
   const storageKey = "sckl-dashboard-theme";
-  const themes = ["light", "dark", "editor", "midnight"];
+  const themes = ["light", "dark", "editor", "cyberpunk"];
 
   function preferredTheme() {
     try {
       const saved = window.localStorage.getItem(storageKey);
+      if (saved === "midnight") return "cyberpunk";
       if (themes.includes(saved)) return saved;
     } catch (error) {
       return "light";

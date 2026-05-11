@@ -31,7 +31,7 @@
             <option value="light">Light</option>
             <option value="dark">Dark</option>
             <option value="editor">IDE editor</option>
-            <option value="midnight">Midnight</option>
+            <option value="cyberpunk">Cyberpunk</option>
           </select>
         </label>
         <a class="action-button primary nav-sync" href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noreferrer">Sync data</a>
@@ -41,7 +41,7 @@
     <header class="site-header setup-header">
       <div class="header-copy">
         <h1>How the backend works</h1>
-        <p class="date-range wide-copy">Google Sheets is the editable training plan, Strava is the actual running log, GitHub Actions performs the private sync, and GitHub Pages serves the public dashboard.</p>
+        <p class="date-range wide-copy">Google Sheets is the editable training plan, Strava is the actual running log, GitHub Actions performs the private sync, Cloudflare Worker handles run-note writes, and GitHub Pages serves the public dashboard.</p>
       </div>
     </header>
 
@@ -54,7 +54,7 @@
           <div class="flow-step"><strong>3</strong><span>GitHub Actions runs the sync workflow on schedule, on code changes, or when you press the Sync data button and manually run the workflow.</span></div>
           <div class="flow-step"><strong>4</strong><span>The workflow reads private credentials from GitHub secrets, fetches Google Sheets and Strava data, then writes generated JSON files into the Pages artifact.</span></div>
           <div class="flow-step"><strong>5</strong><span>GitHub Pages hosts the static site. The browser loads <code>data/training-plan.json</code> and <code>data/strava-activities.json</code> to render the dashboard.</span></div>
-          <div class="flow-step"><strong>6</strong><span>If either live sync fails, the app falls back to mock JSON so the dashboard still opens while the API setup is being fixed.</span></div>
+          <div class="flow-step"><strong>6</strong><span>Run notes go the other direction: the browser sends a note to the Cloudflare Worker, and the Worker writes it to the <code>Run Notes</code> tab in Google Sheets.</span></div>
         </div>
       </section>
 
@@ -63,6 +63,7 @@
         <p><strong>Google Sheets</strong> stores the planned marathon build. You can adjust daily estimated mileage, session notes, weekly summaries, and phase details there.</p>
         <p><strong>Strava API</strong> provides actual runs: distance, time, pace, elevation, heart rate and cadence when Strava includes them, activity names, dates, and Strava links.</p>
         <p><strong>GitHub Actions</strong> is the private sync worker. It refreshes Strava tokens, reads the Google service account secret, fetches both data sources, and prepares the Pages deployment.</p>
+        <p><strong>Cloudflare Worker</strong> accepts authenticated run-note writes from the static website and updates the Google Sheet without exposing Google credentials.</p>
         <p><strong>GitHub Pages</strong> is the public static host. It has no server-side code and no API secrets in frontend JavaScript.</p>
       </section>
 
@@ -82,6 +83,10 @@
 |   |-- fetch_google_sheet.py     # Reads and normalises Google Sheet rows
 |   |-- fetch_strava.py           # Refreshes Strava token and fetches runs
 |   `-- exchange_strava_code.py   # One-time OAuth helper
+|-- cloudflare-worker/
+|   |-- src/index.js              # Authenticated run-note write API
+|   |-- wrangler.toml.example
+|   `-- README.md
 |-- .github/workflows/
 |   `-- deploy-pages.yml          # Scheduled/manual sync and Pages deploy
 |-- requirements.txt
@@ -108,6 +113,10 @@
             <h3>Manual refresh</h3>
             <p>The Sync data button opens the GitHub Actions workflow page. From there, run the workflow manually to fetch the latest sheet and Strava data.</p>
           </article>
+          <article>
+            <h3>Run notes</h3>
+            <p>The Cloudflare Worker writes notes to the <code>Run Notes</code> tab, keyed by Strava activity ID, after you enter the private passcode in the browser.</p>
+          </article>
         </div>
       </section>
 
@@ -129,6 +138,10 @@
           <article>
             <h3>Local development</h3>
             <p><code>.env</code> can hold local copies of the same values for testing scripts, while <code>.env.example</code> documents the required names without real credentials.</p>
+          </article>
+          <article>
+            <h3>Cloudflare Worker secrets</h3>
+            <p><code>GOOGLE_SERVICE_ACCOUNT_JSON</code> lets the Worker write to Sheets. <code>RUN_NOTES_TOKEN</code> is the private passcode for note saves.</p>
           </article>
         </div>
       </section>
