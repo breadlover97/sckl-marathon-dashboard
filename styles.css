@@ -495,6 +495,7 @@ main {
 
 .hero-copy,
 .panel {
+  min-width: 0;
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--panel);
@@ -1175,6 +1176,7 @@ main > .panel:first-child {
   display: grid;
   grid-template-columns: 1fr;
   gap: 18px;
+  min-width: 0;
 }
 
 .phase-panel {
@@ -1182,10 +1184,15 @@ main > .panel:first-child {
 }
 
 .chart-shell {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 284px;
 }
 
 .chart-shell svg {
+  display: block;
+  max-width: 100%;
   width: 100%;
   height: 284px;
   overflow: visible;
@@ -1689,45 +1696,52 @@ main > .panel:first-child {
   html,
   body {
     max-width: 100%;
-    overflow-x: clip;
+    overflow-x: hidden;
   }
 
   body {
     background: var(--body-end);
-    padding-top: 122px;
+    padding-top: 0;
+    padding-bottom: calc(78px + env(safe-area-inset-bottom));
   }
 
   html {
-    scroll-padding-top: 140px;
+    scroll-padding-top: 86px;
   }
 
   .top-nav {
-    position: fixed;
+    position: sticky;
     right: 0;
     left: 0;
     width: 100%;
     grid-template-columns: minmax(0, 1fr) auto;
-    min-height: 66px;
-    gap: 6px 10px;
-    align-items: start;
-    padding: 8px 12px;
+    min-height: 64px;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 10px;
+    backdrop-filter: none;
   }
 
   .anchor-section {
-    scroll-margin-top: 140px;
+    scroll-margin-top: 86px;
   }
 
   .site-brand {
     min-width: 0;
+    gap: 3px;
   }
 
   .site-mark {
-    font-size: 0.78rem;
+    overflow: hidden;
+    font-size: 0.76rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .nav-date {
-    padding-left: 17px;
-    font-size: 0.64rem;
+    min-width: 0;
+    padding-left: 0;
+    font-size: 0.6rem;
     line-height: 1.15;
   }
 
@@ -1736,10 +1750,20 @@ main > .panel:first-child {
   }
 
   .nav-tabs {
-    grid-column: 1 / -1;
-    width: 100%;
-    padding: 4px;
-    border-radius: 14px;
+    position: fixed;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    left: 10px;
+    z-index: 35;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    width: calc(100% - 20px);
+    max-width: none;
+    justify-self: stretch;
+    padding: 5px;
+    border-radius: 18px;
+    box-shadow: 0 16px 34px rgba(5, 5, 5, 0.16);
     scrollbar-width: none;
   }
 
@@ -1748,36 +1772,30 @@ main > .panel:first-child {
   }
 
   .nav-tabs a {
-    min-height: 28px;
-    padding: 5px 9px;
-    font-size: 0.68rem;
+    min-height: 34px;
+    justify-content: center;
+    padding: 5px 4px;
+    font-size: 0.62rem;
     white-space: nowrap;
+  }
+
+  .nav-actions {
+    min-width: max-content;
+    gap: 5px;
   }
 
   .nav-sync {
     min-height: 30px;
-    padding: 7px 10px;
-    font-size: 0.7rem;
-  }
-
-  .theme-picker {
-    min-height: 30px;
-    padding: 3px;
-  }
-
-  .theme-picker span {
-    display: none;
-  }
-
-  .theme-picker select {
-    max-width: 104px;
-    min-height: 24px;
-    padding: 3px 20px 3px 8px;
+    padding: 7px 9px;
     font-size: 0.66rem;
   }
 
+  .theme-picker {
+    display: none;
+  }
+
   main {
-    width: min(100% - 16px, 1180px);
+    width: min(100% - 14px, 1180px);
     margin-top: 10px;
   }
 
@@ -1793,18 +1811,79 @@ main > .panel:first-child {
 
   .hero-copy,
   .panel {
-    padding: 16px;
+    padding: 14px;
   }
 
   .hero-stat-grid,
-  .week-summary,
-  .daily-grid,
   .note-grid,
-  .race-card-grid,
-  .calculator-grid,
-  .calculator-result,
   .settings-grid {
     grid-template-columns: 1fr;
+  }
+
+  .week-summary,
+  .race-card-grid,
+  .calculator-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .calculator-result {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .week-metric {
+    padding: 11px;
+  }
+
+  .week-metric strong,
+  .stat-card strong,
+  .setting-card strong {
+    overflow-wrap: anywhere;
+    font-size: 1rem;
+    line-height: 1.1;
+  }
+
+  .week-progress {
+    padding: 13px;
+  }
+
+  .week-progress strong {
+    font-size: 1.55rem;
+  }
+
+  .daily-grid {
+    display: flex;
+    grid-template-columns: none;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-padding-left: 2px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .daily-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .day-card {
+    flex: 0 0 min(78vw, 285px);
+    min-height: 168px;
+    scroll-snap-align: start;
+  }
+
+  .day-card strong {
+    min-height: auto;
+    font-size: 1rem;
+  }
+
+  .day-card p,
+  .week-notes-line,
+  .section-heading p,
+  .race-note,
+  .fuel-list span {
+    overflow-wrap: anywhere;
   }
 
   .map-placeholder {
@@ -1817,6 +1896,29 @@ main > .panel:first-child {
 
   .status-pill {
     margin-top: 10px;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .countdown-pill {
+    max-width: 100%;
+    min-height: 20px;
+    padding: 3px 6px;
+    overflow: hidden;
+    font-size: 0.58rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chart-shell {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .chart-shell svg {
+    display: block;
+    height: clamp(198px, 61vw, 220px);
+    overflow: hidden;
   }
 
   .chart-support {
@@ -1845,9 +1947,24 @@ main > .panel:first-child {
   }
 
   .week-row summary {
-    grid-template-columns: 58px minmax(0, 1fr) 32px;
-    gap: 10px;
-    padding: 13px 14px;
+    grid-template-columns: 50px minmax(0, 1fr) 28px;
+    gap: 8px;
+    min-height: 64px;
+    padding: 12px;
+  }
+
+  .week-row summary::after {
+    width: 27px;
+    height: 27px;
+    font-size: 1rem;
+  }
+
+  .row-label {
+    font-size: 0.64rem;
+  }
+
+  .row-title span {
+    font-size: 0.7rem;
   }
 
   .week-row summary .mobile-hide,
@@ -1856,7 +1973,12 @@ main > .panel:first-child {
   }
 
   .row-title strong {
+    overflow-wrap: anywhere;
     white-space: normal;
+  }
+
+  .week-row-body {
+    padding: 0 12px 14px;
   }
 
   .phase-row {
@@ -1875,6 +1997,11 @@ main > .panel:first-child {
 
   .site-footer {
     display: block;
-    padding: 24px 18px;
+    padding: 24px 18px 88px;
+  }
+
+  .return-top {
+    right: 14px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
   }
 }

@@ -9,6 +9,8 @@ const GOAL_TIME = "2h 50m";
 const GOAL_PACE = "4:02 /km";
 const TROPICAL_MARATHON_PACE = "4:15 /km";
 const CURRENT_EASY_PACE = "5:15-5:30 /km";
+let latestRenderState = null;
+let resizeTimer = null;
 
 const formatDate = new Intl.DateTimeFormat("en-SG", {
   day: "numeric",
@@ -542,17 +544,27 @@ function linePath(points) {
   }, "").trim();
 }
 
+function chartLayout() {
+  const compact = window.matchMedia("(max-width: 640px)").matches;
+  return {
+    baseline: compact ? 188 : 242,
+    bottom: compact ? 32 : 42,
+    height: compact ? 220 : 284,
+    labelEvery: compact ? 5 : 2,
+    left: compact ? 34 : 48,
+    plannedDot: compact ? 4.2 : 5.2,
+    right: compact ? 10 : 18,
+    top: compact ? 20 : 24,
+    actualDot: compact ? 3.8 : 4.6,
+    width: compact ? 360 : 760
+  };
+}
+
 function renderBarChart(containerId, weeks, valueKey, options = {}) {
   const container = document.getElementById(containerId);
-  const width = 760;
-  const height = 284;
-  const left = 48;
-  const right = 18;
-  const top = 24;
-  const bottom = 42;
+  const { actualDot, baseline, bottom, height, labelEvery, left, right, top, width } = chartLayout();
   const plotWidth = width - left - right;
   const plotHeight = height - top - bottom;
-  const baseline = height - bottom;
   const actualValues = weeks.map((week) => actualWeekValue(week, options.actuals || { activities: [] }, options.actualMetric || "distance_km"));
   const maxValue = niceMax(Math.max(...weeks.map((week) => Number(week[valueKey] || 0)), ...actualValues.filter((value) => value !== null), 0));
   const current = currentWeek({ weeks });
@@ -577,7 +589,7 @@ function renderBarChart(containerId, weeks, valueKey, options = {}) {
       ? `<line class="chart-current" x1="${x + barWidth / 2}" y1="${top - 4}" x2="${x + barWidth / 2}" y2="${baseline}"></line>
          <text class="chart-now-label" x="${x + barWidth / 2 + 5}" y="${top + 8}">Now</text>`
       : "";
-    const label = index % 2 === 0 || index === weeks.length - 1
+    const label = index % labelEvery === 0 || index === weeks.length - 1
       ? `<text class="chart-label" x="${x + barWidth / 2}" y="${height - 14}" text-anchor="middle">W${week.week_number}</text>`
       : "";
     return `
@@ -598,7 +610,7 @@ function renderBarChart(containerId, weeks, valueKey, options = {}) {
   const actualLine = linePath(actualPoints);
   const actualDots = actualPoints
     .filter((point) => point.value !== null)
-    .map((point) => `<circle class="chart-dot actual" cx="${point.x}" cy="${point.y}" r="4.6"></circle>`)
+    .map((point) => `<circle class="chart-dot actual" cx="${point.x}" cy="${point.y}" r="${actualDot}"></circle>`)
     .join("");
 
   container.innerHTML = `
@@ -620,15 +632,9 @@ function renderBarChart(containerId, weeks, valueKey, options = {}) {
 
 function renderLineChart(containerId, weeks, valueKey, options = {}) {
   const container = document.getElementById(containerId);
-  const width = 760;
-  const height = 284;
-  const left = 48;
-  const right = 18;
-  const top = 24;
-  const bottom = 42;
+  const { actualDot, baseline, bottom, height, labelEvery, left, plannedDot, right, top, width } = chartLayout();
   const plotWidth = width - left - right;
   const plotHeight = height - top - bottom;
-  const baseline = height - bottom;
   const actualValues = weeks.map((week) => actualWeekValue(week, options.actuals || { activities: [] }, options.actualMetric || "longest_run_km"));
   const maxValue = niceMax(Math.max(...weeks.map((week) => Number(week[valueKey] || 0)), ...actualValues.filter((value) => value !== null), 0));
   const current = currentWeek({ weeks });
@@ -663,14 +669,14 @@ function renderLineChart(containerId, weeks, valueKey, options = {}) {
       ? `<line class="chart-current" x1="${point.x}" y1="${top - 4}" x2="${point.x}" y2="${baseline}"></line>
          <text class="chart-now-label" x="${point.x + 5}" y="${top + 8}">Now</text>`
       : "";
-    const label = index % 2 === 0 || index === points.length - 1
+    const label = index % labelEvery === 0 || index === points.length - 1
       ? `<text class="chart-label" x="${point.x}" y="${height - 14}" text-anchor="middle">W${point.week.week_number}</text>`
       : "";
-    return `${currentLine}<circle class="chart-dot planned" cx="${point.x}" cy="${point.y}" r="5.2"></circle>${label}`;
+    return `${currentLine}<circle class="chart-dot planned" cx="${point.x}" cy="${point.y}" r="${plannedDot}"></circle>${label}`;
   }).join("");
   const actualDots = actualPoints
     .filter((point) => point.value !== null)
-    .map((point) => `<circle class="chart-dot actual" cx="${point.x}" cy="${point.y}" r="4.6"></circle>`)
+    .map((point) => `<circle class="chart-dot actual" cx="${point.x}" cy="${point.y}" r="${actualDot}"></circle>`)
     .join("");
 
   container.innerHTML = `
@@ -904,6 +910,7 @@ function setupRunNotesForms() {
 }
 
 function render({ plan, actuals, runNotes }) {
+  latestRenderState = { actuals, plan, runNotes };
   renderTrainingDayProgress(plan);
   renderCurrentWeek(plan, actuals);
   renderPlanTable(plan, actuals);
@@ -915,9 +922,22 @@ function render({ plan, actuals, runNotes }) {
     `${plan.loaded_from === "google-sheet" ? "Google Sheet plan" : "Mock plan"} loaded · ${plan.weeks.length} training weeks`;
 }
 
+function setupResponsiveCharts() {
+  window.addEventListener("resize", () => {
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(() => {
+      if (!latestRenderState) return;
+      const { actuals, plan } = latestRenderState;
+      renderBarChart("mileageChart", plan.weeks, "target_weekly_mileage_km", { actuals, actualMetric: "distance_km", label: "Planned and actual weekly mileage", valueLabel: "Mileage" });
+      renderLineChart("longRunChart", plan.weeks, "long_run_distance_km", { actuals, actualMetric: "longest_run_km", label: "Planned and actual long run distance", valueLabel: "Long run" });
+    }, 160);
+  });
+}
+
 setupReturnTop();
 setupActiveNav();
 setupRunNotesForms();
+setupResponsiveCharts();
 
 Promise.all([loadPlan().then(normalizePlan), loadActuals(), loadRunNotes()])
   .then(([plan, actuals, runNotes]) => render({ plan, actuals, runNotes }))
