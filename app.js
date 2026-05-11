@@ -967,23 +967,6 @@ function renderPaceGuide() {
   `).join("");
 
   container.innerHTML = `
-    <div class="pace-summary-grid">
-      <article class="pace-summary-card">
-        <span>Anchor result</span>
-        <strong>37:00 10K tropical</strong>
-        <p>VDOT-style estimate around 57, cross-checked against 1:19 half and 2:45 cool-weather marathon history.</p>
-      </article>
-      <article class="pace-summary-card">
-        <span>Field check</span>
-        <strong>30-minute threshold test</strong>
-        <p>Run hard and even; use the full 30-minute average pace to refine lactate threshold.</p>
-      </article>
-      <article class="pace-summary-card">
-        <span>Heat rule</span>
-        <strong>Effort first</strong>
-        <p>For Singapore humidity, let HR/RPE override exact pace, especially on hills and long MP blocks.</p>
-      </article>
-    </div>
     <div class="activity-table-scroll pace-table-scroll">
       <table class="activity-table pace-table">
         <thead>

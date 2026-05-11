@@ -1318,13 +1318,6 @@ main > .panel:first-child {
   gap: 14px;
 }
 
-.pace-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.pace-summary-card,
 .pace-chip {
   min-width: 0;
   border: 1px solid var(--line);
@@ -1332,12 +1325,6 @@ main > .panel:first-child {
   transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
-.pace-summary-card {
-  padding: 14px;
-  border-radius: 14px;
-}
-
-.pace-summary-card span,
 .pace-chip span {
   display: block;
   margin-bottom: 5px;
@@ -1347,15 +1334,6 @@ main > .panel:first-child {
   text-transform: uppercase;
 }
 
-.pace-summary-card strong {
-  display: block;
-  margin-bottom: 7px;
-  font-size: 1.05rem;
-  font-weight: 900;
-  line-height: 1.1;
-}
-
-.pace-summary-card p,
 .pace-note {
   margin: 0;
   color: var(--muted);
@@ -1794,7 +1772,6 @@ html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
 
 @media (hover: hover) and (pointer: fine) {
   .day-card:hover,
-  .pace-summary-card:hover,
   .pace-chip:hover,
   .week-metric:hover,
   .note-card:hover,
@@ -1902,7 +1879,6 @@ html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
   .race-card-grid,
   .calculator-grid,
   .calculator-result,
-  .pace-summary-grid,
   .settings-grid,
   .tech-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2045,7 +2021,6 @@ html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
 
   .hero-stat-grid,
   .note-grid,
-  .pace-summary-grid,
   .settings-grid {
     grid-template-columns: 1fr;
   }
@@ -2070,7 +2045,6 @@ html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .pace-summary-card,
   .pace-chip {
     padding: 11px;
   }
