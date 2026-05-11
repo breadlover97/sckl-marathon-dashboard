@@ -2,11 +2,19 @@
 
 :root {
   --bg: #ffffff;
+  --body-start: #ffffff;
+  --body-mid: #ffffff;
+  --body-end: #faf9f7;
   --panel: #ffffff;
+  --card: #ffffff;
   --ink: #050505;
   --muted: #666666;
   --soft: #f6f6f4;
   --line: #e8e5df;
+  --subtle-line: rgba(5, 5, 5, 0.08);
+  --nav-line: rgba(232, 229, 223, 0.86);
+  --nav-bg: rgba(255, 255, 255, 0.92);
+  --inverse: #ffffff;
   --orange: #fc4c02;
   --orange-dark: #c43a00;
   --orange-soft: #fff1e9;
@@ -14,7 +22,108 @@
   --teal-soft: #e6f6f7;
   --amber: #a66b00;
   --amber-soft: #fff6df;
+  --long-bg: #fbfaf7;
+  --chart-grid: rgba(5, 5, 5, 0.08);
+  --chart-axis: rgba(5, 5, 5, 0.14);
+  --chart-crosshair: rgba(5, 5, 5, 0.5);
+  --code-bg: #111111;
+  --code-text: #ffffff;
+  --font-ui: "Inter", sans-serif;
   --shadow: 0 18px 50px rgba(5, 5, 5, 0.08);
+}
+
+html[data-theme="dark"] {
+  --bg: #101114;
+  --body-start: #101114;
+  --body-mid: #121419;
+  --body-end: #17191f;
+  --panel: #17191f;
+  --card: #20232b;
+  --ink: #f5f2ec;
+  --muted: #aaa49b;
+  --soft: #242832;
+  --line: #343944;
+  --subtle-line: rgba(245, 242, 236, 0.1);
+  --nav-line: rgba(52, 57, 68, 0.84);
+  --nav-bg: rgba(16, 17, 20, 0.92);
+  --inverse: #101114;
+  --orange: #ff7a3d;
+  --orange-dark: #ffb08a;
+  --orange-soft: #362017;
+  --teal: #52c8d0;
+  --teal-soft: #123238;
+  --amber: #efc75e;
+  --amber-soft: #332a14;
+  --long-bg: #25231f;
+  --chart-grid: rgba(245, 242, 236, 0.1);
+  --chart-axis: rgba(245, 242, 236, 0.18);
+  --chart-crosshair: rgba(245, 242, 236, 0.62);
+  --code-bg: #08090c;
+  --code-text: #f5f2ec;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+html[data-theme="editor"] {
+  --bg: #0d1117;
+  --body-start: #0d1117;
+  --body-mid: #0d1117;
+  --body-end: #161b22;
+  --panel: #161b22;
+  --card: #0d1117;
+  --ink: #c9d1d9;
+  --muted: #8b949e;
+  --soft: #21262d;
+  --line: #30363d;
+  --subtle-line: rgba(201, 209, 217, 0.1);
+  --nav-line: rgba(48, 54, 61, 0.92);
+  --nav-bg: rgba(13, 17, 23, 0.94);
+  --inverse: #0d1117;
+  --orange: #f78166;
+  --orange-dark: #ffa198;
+  --orange-soft: #2d1816;
+  --teal: #56d4dd;
+  --teal-soft: #092f35;
+  --amber: #d29922;
+  --amber-soft: #2e260c;
+  --long-bg: #161b22;
+  --chart-grid: rgba(201, 209, 217, 0.1);
+  --chart-axis: rgba(201, 209, 217, 0.18);
+  --chart-crosshair: rgba(88, 166, 255, 0.72);
+  --code-bg: #010409;
+  --code-text: #c9d1d9;
+  --font-ui: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.32);
+}
+
+html[data-theme="midnight"] {
+  --bg: #080b17;
+  --body-start: #080b17;
+  --body-mid: #0d1326;
+  --body-end: #12192d;
+  --panel: #12192d;
+  --card: #171f36;
+  --ink: #f2f5ff;
+  --muted: #9fa8c4;
+  --soft: #1d2741;
+  --line: #2b3656;
+  --subtle-line: rgba(242, 245, 255, 0.1);
+  --nav-line: rgba(43, 54, 86, 0.9);
+  --nav-bg: rgba(8, 11, 23, 0.92);
+  --inverse: #080b17;
+  --orange: #ff8a4c;
+  --orange-dark: #ffc0a1;
+  --orange-soft: #341f1b;
+  --teal: #7dd3fc;
+  --teal-soft: #102f4d;
+  --amber: #facc15;
+  --amber-soft: #312b12;
+  --long-bg: #1a2134;
+  --chart-grid: rgba(242, 245, 255, 0.1);
+  --chart-axis: rgba(242, 245, 255, 0.18);
+  --chart-crosshair: rgba(125, 211, 252, 0.68);
+  --code-bg: #050814;
+  --code-text: #f2f5ff;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
 }
 
 * {
@@ -29,9 +138,9 @@ html {
 
 body {
   margin: 0;
-  background: linear-gradient(180deg, #fff 0%, #fff 62%, #faf9f7 100%);
+  background: linear-gradient(180deg, var(--body-start) 0%, var(--body-mid) 62%, var(--body-end) 100%);
   color: var(--ink);
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-ui);
   line-height: 1.5;
 }
 
@@ -99,11 +208,11 @@ button {
 
 .action-button.primary {
   background: var(--ink);
-  color: #fff;
+  color: var(--inverse);
 }
 
 .action-button.secondary {
-  background: #fff;
+  background: var(--card);
   color: var(--ink);
 }
 
@@ -117,8 +226,8 @@ button {
   gap: 12px;
   align-items: center;
   padding: 14px min(7vw, 86px);
-  border-bottom: 1px solid rgba(232, 229, 223, 0.86);
-  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid var(--nav-line);
+  background: var(--nav-bg);
   backdrop-filter: blur(18px);
 }
 
@@ -210,21 +319,52 @@ button {
 }
 
 .nav-tabs a:hover {
-  background: #fff;
+  background: var(--card);
   color: var(--ink);
 }
 
 .nav-tabs a.active,
 .nav-tabs a[aria-current="true"] {
   background: var(--ink);
-  color: #fff;
+  color: var(--inverse);
   box-shadow: 0 10px 24px rgba(5, 5, 5, 0.16);
   transform: translateY(-1px);
 }
 
 .nav-actions {
   display: flex;
+  gap: 8px;
+  align-items: center;
   justify-content: flex-end;
+}
+
+.theme-picker {
+  display: inline-flex;
+  min-height: 34px;
+  gap: 7px;
+  align-items: center;
+  padding: 4px 5px 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.theme-picker select {
+  max-width: 118px;
+  min-height: 26px;
+  padding: 3px 24px 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+  text-transform: none;
 }
 
 .nav-sync {
@@ -301,7 +441,7 @@ main {
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: #fff;
+  background: var(--card);
 }
 
 .actual-line {
@@ -323,14 +463,14 @@ main {
 .actual-line {
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid rgba(5, 5, 5, 0.08);
+  border-top: 1px solid var(--subtle-line);
 }
 
 .activity-feed {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: #fff;
+  background: var(--card);
 }
 
 .activity-table-shell {
@@ -610,7 +750,7 @@ main > .panel:first-child {
   place-items: center;
   border-radius: 50%;
   background: var(--teal);
-  color: #fff;
+  color: var(--inverse);
   font-size: 0.78rem;
   font-weight: 900;
   line-height: 1;
@@ -627,8 +767,8 @@ main > .panel:first-child {
 }
 
 .day-card.long-day {
-  border-color: rgba(5, 5, 5, 0.2);
-  background: #fbfaf7;
+  border-color: var(--line);
+  background: var(--long-bg);
 }
 
 .day-card.completed-day {
@@ -657,7 +797,7 @@ main > .panel:first-child {
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: #fff;
+  background: var(--card);
 }
 
 .note-card span {
@@ -684,7 +824,7 @@ main > .panel:first-child {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: #fff;
+  background: var(--card);
 }
 
 .week-row.current {
@@ -714,7 +854,7 @@ main > .panel:first-child {
   place-items: center;
   border-radius: 50%;
   background: var(--ink);
-  color: #fff;
+  color: var(--inverse);
   content: "+";
   font-size: 1.2rem;
   line-height: 1;
@@ -801,7 +941,7 @@ main > .panel:first-child {
 }
 
 .chart-hit-area {
-  fill: #fff;
+  fill: var(--card);
   opacity: 0;
   pointer-events: all;
   cursor: crosshair;
@@ -814,7 +954,7 @@ main > .panel:first-child {
 }
 
 .chart-crosshair {
-  stroke: rgba(5, 5, 5, 0.5);
+  stroke: var(--chart-crosshair);
   stroke-dasharray: 3 4;
   stroke-width: 1.2;
   shape-rendering: crispEdges;
@@ -822,7 +962,7 @@ main > .panel:first-child {
 
 .chart-hover-dot {
   fill: var(--ink);
-  stroke: #fff;
+  stroke: var(--card);
   stroke-width: 3;
 }
 
@@ -832,18 +972,18 @@ main > .panel:first-child {
 }
 
 .chart-tooltip text {
-  fill: #fff;
+  fill: var(--inverse);
   font-size: 0.68rem;
   font-weight: 900;
 }
 
 .chart-axis {
-  stroke: rgba(5, 5, 5, 0.14);
+  stroke: var(--chart-axis);
   stroke-width: 1.2;
 }
 
 .chart-grid {
-  stroke: rgba(5, 5, 5, 0.08);
+  stroke: var(--chart-grid);
   stroke-dasharray: 3 5;
   stroke-width: 1;
 }
@@ -876,7 +1016,7 @@ main > .panel:first-child {
 
 .chart-dot {
   fill: var(--teal);
-  stroke: #fff;
+  stroke: var(--card);
   stroke-width: 3;
 }
 
@@ -973,7 +1113,7 @@ main > .panel:first-child {
   border: 1px solid var(--ink);
   border-radius: 50%;
   background: var(--ink);
-  color: #fff;
+  color: var(--inverse);
   cursor: pointer;
   font-size: 1.25rem;
   font-weight: 900;
@@ -1038,7 +1178,7 @@ main > .panel:first-child {
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: #fff;
+  background: var(--card);
 }
 
 .flow-step {
@@ -1055,7 +1195,7 @@ main > .panel:first-child {
   place-items: center;
   border-radius: 50%;
   background: var(--ink);
-  color: #fff;
+  color: var(--inverse);
   font-size: 0.82rem;
   font-weight: 900;
 }
@@ -1074,10 +1214,10 @@ main > .panel:first-child {
   overflow-x: auto;
   margin: 14px 0 0;
   padding: 16px;
-  border: 1px solid rgba(5, 5, 5, 0.1);
+  border: 1px solid var(--subtle-line);
   border-radius: 14px;
-  background: #111;
-  color: #fff;
+  background: var(--code-bg);
+  color: var(--code-text);
   font-size: 0.84rem;
   line-height: 1.55;
 }
@@ -1157,7 +1297,7 @@ main > .panel:first-child {
   }
 
   body {
-    background: #faf9f7;
+    background: var(--body-end);
     padding-top: 122px;
   }
 
@@ -1222,6 +1362,22 @@ main > .panel:first-child {
     min-height: 30px;
     padding: 7px 10px;
     font-size: 0.7rem;
+  }
+
+  .theme-picker {
+    min-height: 30px;
+    padding: 3px;
+  }
+
+  .theme-picker span {
+    display: none;
+  }
+
+  .theme-picker select {
+    max-width: 104px;
+    min-height: 24px;
+    padding: 3px 20px 3px 8px;
+    font-size: 0.66rem;
   }
 
   main {

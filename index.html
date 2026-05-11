@@ -3,8 +3,9 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="light">
+    <meta name="color-scheme" content="light dark">
     <title>SCKL 2026 Sub-2:50 Build</title>
+    <script src="theme.js"></script>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
@@ -24,6 +25,15 @@
         <a href="backend.html">Backend</a>
       </div>
       <div class="nav-actions">
+        <label class="theme-picker" for="themeSelect">
+          <span>Theme</span>
+          <select id="themeSelect" data-theme-select aria-label="Select site theme">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="editor">IDE editor</option>
+            <option value="midnight">Midnight</option>
+          </select>
+        </label>
         <a class="action-button primary nav-sync" href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noreferrer">Sync data</a>
       </div>
     </nav>
