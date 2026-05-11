@@ -248,8 +248,19 @@ function activitiesForDate(activities, date) {
   return activities.filter((activity) => activity.date === date);
 }
 
-function firstActivityUrl(activities) {
-  return activities.find((activity) => activity.strava_url)?.strava_url || "";
+function renderActualLine(dayActivities, actualText) {
+  const linkedActivities = dayActivities.filter((activity) => activity.strava_url);
+  if (linkedActivities.length === 1) {
+    const activity = linkedActivities[0];
+    return `<a href="${escapeHtml(activity.strava_url)}" target="_blank" rel="noreferrer" title="${escapeHtml(activity.name)}">${escapeHtml(actualText)}</a>`;
+  }
+  if (linkedActivities.length > 1) {
+    const links = linkedActivities.map((activity, index) => {
+      return `<a class="actual-link" href="${escapeHtml(activity.strava_url)}" target="_blank" rel="noreferrer" title="${escapeHtml(activity.name)}" aria-label="Open ${escapeHtml(activity.name)}">${index + 1}</a>`;
+    }).join("");
+    return `<span>${escapeHtml(actualText)}</span><span class="actual-links">${links}</span>`;
+  }
+  return escapeHtml(actualText);
 }
 
 function renderDayCard(session, actuals, options = {}) {
@@ -265,9 +276,8 @@ function renderDayCard(session, actuals, options = {}) {
   ].filter(Boolean).join(" ");
   const completedMark = isCompleted ? `<span class="completed-mark" aria-label="Completed">✓</span>` : "";
   const actualText = `${oneDecimalKm(actualKm)} actual · ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}`;
-  const activityUrl = firstActivityUrl(dayActivities);
   const actualLine = options.showActual || isCompleted
-    ? `<div class="actual-line">${activityUrl ? `<a href="${escapeHtml(activityUrl)}" target="_blank" rel="noreferrer">${escapeHtml(actualText)}</a>` : escapeHtml(actualText)}</div>`
+    ? `<div class="actual-line">${renderActualLine(dayActivities, actualText)}</div>`
     : "";
 
   return `
@@ -370,7 +380,7 @@ function renderCurrentWeek(plan, actuals) {
   status.textContent = actuals.metadata?.generated_at
     ? `Strava synced ${syncTime(actuals.metadata.generated_at)}`
     : "Strava not synced";
-  status.className = `status-pill ${actuals.loaded_from === "strava" ? "good" : "watch"}`;
+  status.className = "status-pill";
   const planned = Number(week.target_weekly_mileage_km || 0);
   const progress = planned > 0 ? Math.min((actual.distance_km / planned) * 100, 140) : 0;
 
@@ -411,7 +421,7 @@ function renderPlanTable(plan, actuals) {
     planStatus.textContent = plan.metadata?.generated_at
       ? `Sheet synced ${syncTime(plan.metadata.generated_at)}`
       : "Sheet not synced";
-    planStatus.className = `status-pill ${plan.loaded_from === "google-sheet" ? "good" : "watch"}`;
+    planStatus.className = "status-pill";
   }
   table.innerHTML = plan.weeks.map((week) => {
     const current = isCurrentWeek(week);
@@ -568,7 +578,7 @@ function renderBarChart(containerId, weeks, valueKey, options = {}) {
       : "";
     return `
       ${currentLine}
-      <rect class="chart-bar ${phaseClass(week.phase)}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${barHeight.toFixed(1)}"></rect>
+      <rect class="chart-bar planned" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${barHeight.toFixed(1)}"></rect>
       ${label}
     `;
   }).join("");
@@ -758,33 +768,33 @@ function niceMax(value) {
 }
 
 function renderPhaseBreakdown(plan) {
-  const groups = plan.weeks.reduce((result, week) => {
+  const segments = plan.weeks.reduce((result, week) => {
     const key = phaseClass(week.phase);
-    if (!result[key]) {
-      result[key] = {
+    const last = result[result.length - 1];
+    if (last && last.key === key && last.phase === week.phase) {
+      last.weeks += 1;
+    } else {
+      result.push({
         key,
         phase: week.phase,
-        weeks: 0,
-        mileage: 0
-      };
+        weeks: 1
+      });
     }
-    result[key].weeks += 1;
-    result[key].mileage += Number(week.target_weekly_mileage_km || 0);
     return result;
-  }, {});
-  const rows = Object.values(groups);
+  }, []);
 
-  const phaseItems = rows.map((row) => {
-    const average = Math.round(row.mileage / row.weeks);
-    return `
-      <span><i class="legend-dot ${row.key}"></i>${escapeHtml(row.phase)} · ${row.weeks} wk · ${average} km/wk avg</span>
-    `;
+  const phaseItems = segments.map((segment) => {
+    return `<span class="phase-segment ${segment.key}" style="flex-grow: ${segment.weeks}" title="${escapeHtml(segment.phase)} · ${segment.weeks} week${segment.weeks === 1 ? "" : "s"}">${escapeHtml(segment.phase)}</span>`;
   }).join("");
 
   document.getElementById("phaseBreakdown").innerHTML = `
-    <span><i class="legend-bar"></i>Planned mileage</span>
-    <span><i class="legend-line actual"></i>Actual mileage</span>
-    ${phaseItems}
+    <div class="chart-legend">
+      <span><i class="legend-bar"></i>Planned target</span>
+      <span><i class="legend-line actual"></i>Actual logged</span>
+    </div>
+    <div class="phase-strip" aria-label="Training phase timeline">
+      ${phaseItems}
+    </div>
   `;
 }
 

@@ -385,6 +385,12 @@ button {
   color: var(--teal);
 }
 
+.status-pill {
+  border-color: var(--line);
+  background: var(--soft);
+  color: var(--muted);
+}
+
 .status-pill.watch {
   border-color: rgba(166, 107, 0, 0.22);
   background: var(--amber-soft);
@@ -493,6 +499,7 @@ main {
   border-radius: 18px;
   background: var(--panel);
   box-shadow: var(--shadow);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .hero-copy {
@@ -554,6 +561,29 @@ main {
   text-decoration-color: var(--teal);
 }
 
+.actual-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.actual-link {
+  min-width: 21px;
+  min-height: 21px;
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 0.68rem;
+  line-height: 1.35;
+  text-align: center;
+  text-decoration: none;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
 .run-note-form {
   display: grid;
   min-width: 180px;
@@ -612,6 +642,7 @@ main {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--card);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .activity-table-shell {
@@ -838,6 +869,7 @@ main > .panel:first-child {
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--soft);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .week-metric span {
@@ -926,6 +958,7 @@ main > .panel:first-child {
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--card);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .note-card span {
@@ -953,6 +986,7 @@ main > .panel:first-child {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--card);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .week-row.current {
@@ -1122,6 +1156,11 @@ main > .panel:first-child {
   rx: 5;
 }
 
+.chart-bar.planned {
+  fill: var(--ink);
+  opacity: 0.18;
+}
+
 .chart-bar.build {
   fill: var(--teal);
 }
@@ -1207,6 +1246,10 @@ main > .panel:first-child {
   align-items: center;
 }
 
+.chart-support {
+  margin-top: 14px;
+}
+
 .legend-dot,
 .legend-line {
   display: inline-block;
@@ -1235,8 +1278,8 @@ main > .panel:first-child {
   height: 10px;
   flex: 0 0 auto;
   border-radius: 3px;
-  background: var(--orange);
-  opacity: 0.46;
+  background: var(--ink);
+  opacity: 0.18;
 }
 
 .legend-dot.recovery {
@@ -1252,6 +1295,47 @@ main > .panel:first-child {
   height: 4px;
   border-radius: 999px;
   background: var(--teal);
+}
+
+.phase-strip {
+  display: flex;
+  min-height: 26px;
+  overflow: hidden;
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--soft);
+}
+
+.phase-segment {
+  display: inline-flex;
+  min-width: 54px;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 8px;
+  color: var(--inverse);
+  font-size: 0.66rem;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.phase-segment.base {
+  background: var(--orange);
+}
+
+.phase-segment.build {
+  background: var(--teal);
+}
+
+.phase-segment.recovery {
+  background: var(--amber);
+}
+
+.phase-segment.taper {
+  background: var(--ink);
 }
 
 .empty-state {
@@ -1326,6 +1410,7 @@ main > .panel:first-child {
   border-radius: 18px;
   background: var(--panel);
   box-shadow: var(--shadow);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .info-section p {
@@ -1350,6 +1435,7 @@ main > .panel:first-child {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--card);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .flow-step {
@@ -1393,6 +1479,43 @@ main > .panel:first-child {
   line-height: 1.55;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .panel:hover,
+  .info-section:hover,
+  .week-row:hover,
+  .activity-feed:hover {
+    border-color: var(--subtle-line);
+    box-shadow: 0 18px 44px rgba(5, 5, 5, 0.12);
+    transform: translateY(-2px);
+  }
+
+  .day-card:hover,
+  .week-metric:hover,
+  .note-card:hover,
+  .flow-step:hover,
+  .tech-grid article:hover {
+    border-color: var(--subtle-line);
+    box-shadow: 0 10px 24px rgba(5, 5, 5, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .activity-table tbody tr:hover {
+    background: var(--soft);
+  }
+
+  .actual-link:hover {
+    border-color: var(--teal);
+    background: var(--teal-soft);
+    color: var(--teal);
+    transform: translateY(-1px);
+  }
+
+  .chart-dot.actual:hover,
+  .chart-dot.planned:hover {
+    transform: scale(1.08);
+  }
+}
+
 @keyframes details-reveal {
   from {
     opacity: 0;
@@ -1412,7 +1535,16 @@ main > .panel:first-child {
 
   .nav-tabs a,
   .week-row[open] .week-row-body,
+  .panel,
+  .info-section,
+  .week-row,
   .day-card,
+  .week-metric,
+  .note-card,
+  .activity-feed,
+  .actual-link,
+  .flow-step,
+  .tech-grid article,
   .return-top {
     animation: none;
     transition: none;
@@ -1585,6 +1717,31 @@ main > .panel:first-child {
 
   .status-pill {
     margin-top: 10px;
+  }
+
+  .chart-support {
+    margin-top: 10px;
+  }
+
+  .chart-legend {
+    gap: 8px 12px;
+    font-size: 0.72rem;
+  }
+
+  .phase-strip {
+    min-height: 22px;
+    border-radius: 12px;
+  }
+
+  .phase-segment {
+    min-width: 34px;
+    padding: 5px 4px;
+    font-size: 0.54rem;
+  }
+
+  .actual-links {
+    display: flex;
+    margin: 8px 0 0;
   }
 
   .week-row summary {
