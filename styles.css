@@ -33,6 +33,10 @@
   --chart-grid: rgba(5, 5, 5, 0.08);
   --chart-axis: rgba(5, 5, 5, 0.14);
   --chart-crosshair: rgba(5, 5, 5, 0.5);
+  --chart-tooltip-bg: rgba(255, 255, 255, 0.98);
+  --chart-tooltip-border: rgba(5, 5, 5, 0.12);
+  --chart-tooltip-shadow: drop-shadow(0 16px 28px rgba(5, 5, 5, 0.14));
+  --chart-tooltip-label: #777777;
   --code-bg: #111111;
   --code-text: #ffffff;
   --font-ui: "Inter", sans-serif;
@@ -72,6 +76,10 @@ html[data-theme="dark"] {
   --chart-grid: rgba(255, 255, 255, 0.14);
   --chart-axis: rgba(255, 255, 255, 0.28);
   --chart-crosshair: rgba(255, 255, 255, 0.86);
+  --chart-tooltip-bg: rgba(16, 16, 16, 0.96);
+  --chart-tooltip-border: rgba(255, 255, 255, 0.18);
+  --chart-tooltip-shadow: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.6));
+  --chart-tooltip-label: #a8a8a8;
   --code-bg: #000000;
   --code-text: #ffffff;
   --shadow: 0 18px 50px rgba(0, 0, 0, 0.72);
@@ -110,6 +118,10 @@ html[data-theme="editor"] {
   --chart-grid: rgba(240, 246, 252, 0.14);
   --chart-axis: rgba(240, 246, 252, 0.28);
   --chart-crosshair: rgba(121, 192, 255, 0.9);
+  --chart-tooltip-bg: rgba(11, 15, 20, 0.97);
+  --chart-tooltip-border: rgba(121, 192, 255, 0.26);
+  --chart-tooltip-shadow: drop-shadow(0 18px 32px rgba(0, 0, 0, 0.62));
+  --chart-tooltip-label: #8b949e;
   --code-bg: #000000;
   --code-text: #f0f6fc;
   --syntax-keyword: #ff7b72;
@@ -154,6 +166,10 @@ html[data-theme="cyberpunk"] {
   --chart-grid: rgba(0, 245, 255, 0.16);
   --chart-axis: rgba(250, 255, 0, 0.32);
   --chart-crosshair: rgba(250, 255, 0, 0.95);
+  --chart-tooltip-bg: rgba(9, 9, 22, 0.96);
+  --chart-tooltip-border: rgba(0, 245, 255, 0.36);
+  --chart-tooltip-shadow: drop-shadow(0 0 16px rgba(0, 245, 255, 0.18)) drop-shadow(0 18px 34px rgba(0, 0, 0, 0.66));
+  --chart-tooltip-label: #a9b5ff;
   --code-bg: #000000;
   --code-text: #ffffff;
   --font-ui: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -1474,36 +1490,63 @@ main > .panel:first-child {
 }
 
 .chart-tooltip rect {
-  fill: var(--ink);
-  opacity: 0.94;
+  fill: var(--chart-tooltip-bg);
 }
 
 .chart-tooltip-bg {
-  stroke: var(--subtle-line);
-  stroke-width: 1;
+  filter: var(--chart-tooltip-shadow);
+  stroke: var(--chart-tooltip-border);
+  stroke-width: 1.2;
 }
 
 .chart-tooltip text {
-  fill: var(--inverse);
-  font-size: 0.68rem;
-  font-weight: 900;
+  font-family: var(--font-ui);
+  font-size: 0.66rem;
+  font-weight: 800;
+  paint-order: stroke;
+  stroke: transparent;
+  stroke-width: 0;
 }
 
 .chart-tooltip text.chart-tooltip-title {
-  fill: var(--inverse);
-  font-size: 0.72rem;
+  fill: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.chart-tooltip text.chart-tooltip-date {
+  fill: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.chart-tooltip-divider {
+  stroke: var(--chart-tooltip-border);
+  stroke-width: 1;
+}
+
+.chart-tooltip text.chart-tooltip-label {
+  fill: var(--chart-tooltip-label);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0;
 }
 
 .chart-tooltip text.chart-tooltip-phase {
   fill: var(--amber);
+  font-size: 0.64rem;
 }
 
 .chart-tooltip text.chart-tooltip-planned {
   fill: var(--orange-dark);
+  font-size: 0.7rem;
+  font-weight: 900;
 }
 
 .chart-tooltip text.chart-tooltip-actual {
   fill: var(--teal);
+  font-size: 0.7rem;
+  font-weight: 900;
 }
 
 .tooltip-marker.phase {
@@ -1519,8 +1562,14 @@ main > .panel:first-child {
 }
 
 html[data-theme="light"] .chart-tooltip text.chart-tooltip-planned,
-html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned {
-  fill: #ff9b72;
+html:not([data-theme]) .chart-tooltip text.chart-tooltip-planned,
+html[data-theme="light"] .tooltip-marker.planned,
+html:not([data-theme]) .tooltip-marker.planned {
+  fill: #d13f00;
+}
+
+html[data-theme="cyberpunk"] .chart-tooltip-bg {
+  stroke-width: 1.4;
 }
 
 .chart-axis {

@@ -1015,6 +1015,12 @@ function renderPaceGuide() {
   `;
 }
 
+const chartTooltipSize = {
+  width: 232,
+  height: 118,
+  gap: 14
+};
+
 function chartHoverMarkup(left, top, plotWidth, plotHeight, baseline) {
   return `
     <g class="chart-hover" aria-hidden="true">
@@ -1022,14 +1028,18 @@ function chartHoverMarkup(left, top, plotWidth, plotHeight, baseline) {
       <line class="chart-crosshair" data-hover-h x1="${left}" y1="${top}" x2="${left + plotWidth}" y2="${top}"></line>
       <circle class="chart-hover-dot" data-hover-dot cx="${left}" cy="${top}" r="5"></circle>
       <g class="chart-tooltip" data-hover-tip>
-        <rect class="chart-tooltip-bg" width="198" height="92" rx="8"></rect>
-        <text class="chart-tooltip-title" data-hover-date x="12" y="20"></text>
-        <circle class="tooltip-marker phase" cx="16" cy="39" r="3.5"></circle>
-        <text class="chart-tooltip-phase" data-hover-phase x="26" y="43"></text>
-        <circle class="tooltip-marker planned" cx="16" cy="61" r="3.5"></circle>
-        <text class="chart-tooltip-planned" data-hover-value x="26" y="65"></text>
-        <circle class="tooltip-marker actual" cx="16" cy="79" r="3.5"></circle>
-        <text class="chart-tooltip-actual" data-hover-actual x="26" y="83"></text>
+        <rect class="chart-tooltip-bg" width="${chartTooltipSize.width}" height="${chartTooltipSize.height}" rx="10"></rect>
+        <text class="chart-tooltip-title" data-hover-week x="14" y="23"></text>
+        <text class="chart-tooltip-date" data-hover-date x="14" y="40"></text>
+        <line class="chart-tooltip-divider" x1="14" y1="51" x2="${chartTooltipSize.width - 14}" y2="51"></line>
+        <text class="chart-tooltip-label" x="14" y="70">Phase</text>
+        <text class="chart-tooltip-phase" data-hover-phase x="${chartTooltipSize.width - 14}" y="70" text-anchor="end"></text>
+        <circle class="tooltip-marker planned" cx="18" cy="89" r="4"></circle>
+        <text class="chart-tooltip-label" x="30" y="93">Planned</text>
+        <text class="chart-tooltip-planned" data-hover-value x="${chartTooltipSize.width - 14}" y="93" text-anchor="end"></text>
+        <circle class="tooltip-marker actual" cx="18" cy="109" r="4"></circle>
+        <text class="chart-tooltip-label" x="30" y="113">Actual</text>
+        <text class="chart-tooltip-actual" data-hover-actual x="${chartTooltipSize.width - 14}" y="113" text-anchor="end"></text>
       </g>
     </g>
     <rect class="chart-hit-area" x="${left}" y="${top}" width="${plotWidth}" height="${plotHeight}"></rect>
@@ -1046,6 +1056,7 @@ function setupChartHover(container, points, dims) {
   const hLine = container.querySelector("[data-hover-h]");
   const dot = container.querySelector("[data-hover-dot]");
   const tip = container.querySelector("[data-hover-tip]");
+  const weekText = container.querySelector("[data-hover-week]");
   const dateText = container.querySelector("[data-hover-date]");
   const phaseText = container.querySelector("[data-hover-phase]");
   const valueText = container.querySelector("[data-hover-value]");
@@ -1067,8 +1078,14 @@ function setupChartHover(container, points, dims) {
     const rawX = svgPoint.x;
     const x = Math.min(Math.max(rawX, dims.left), dims.left + dims.plotWidth);
     const point = nearestPoint(x);
-    const tooltipX = x > dims.width - 238 ? x - 210 : x + 12;
-    const tooltipY = Math.max(dims.top + 4, Math.min(point.y - 102, dims.baseline - 106));
+    const preferredTooltipX = x > dims.width - chartTooltipSize.width - dims.right - chartTooltipSize.gap
+      ? x - chartTooltipSize.width - chartTooltipSize.gap
+      : x + chartTooltipSize.gap;
+    const tooltipX = Math.max(4, Math.min(preferredTooltipX, dims.width - chartTooltipSize.width - 4));
+    const tooltipY = Math.max(
+      dims.top + 4,
+      Math.min(point.y - chartTooltipSize.height - 10, dims.baseline - chartTooltipSize.height - 8)
+    );
 
     hover.style.opacity = "1";
     vLine.setAttribute("x1", x);
@@ -1080,10 +1097,11 @@ function setupChartHover(container, points, dims) {
     dot.setAttribute("cx", point.x);
     dot.setAttribute("cy", point.y);
     tip.setAttribute("transform", `translate(${tooltipX}, ${tooltipY})`);
-    dateText.textContent = `${point.label} · ${prettyDate(point.date)}`;
-    phaseText.textContent = `Phase: ${point.phase || "-"}`;
-    valueText.textContent = `Planned: ${oneDecimalKm(point.value)}`;
-    actualText.textContent = `Actual: ${point.actualValue === null || point.actualValue === undefined ? "-" : oneDecimalKm(point.actualValue)}`;
+    weekText.textContent = point.label;
+    dateText.textContent = `Week starts ${prettyDate(point.date)}`;
+    phaseText.textContent = point.phase || "-";
+    valueText.textContent = oneDecimalKm(point.value);
+    actualText.textContent = point.actualValue === null || point.actualValue === undefined ? "-" : oneDecimalKm(point.actualValue);
   };
 
   hitArea.addEventListener("pointerenter", moveCrosshair);
