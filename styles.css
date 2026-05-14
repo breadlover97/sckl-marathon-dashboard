@@ -1322,7 +1322,7 @@ main > .panel:first-child {
 
 .week-row summary {
   display: grid;
-  grid-template-columns: 82px minmax(170px, 0.55fr) minmax(260px, 1.45fr) 34px;
+  grid-template-columns: 82px minmax(160px, 0.5fr) minmax(150px, 0.4fr) minmax(260px, 1.35fr) 34px;
   gap: 12px;
   align-items: center;
   min-height: 72px;
@@ -1380,6 +1380,29 @@ main > .panel:first-child {
   font-weight: 800;
 }
 
+.row-distance-text {
+  min-width: 0;
+}
+
+.row-distance-text small {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.row-distance-text strong {
+  display: block;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .row-summary-text {
   min-width: 0;
   color: var(--muted);
@@ -1394,6 +1417,102 @@ main > .panel:first-child {
 
 .week-row[open] .week-row-body {
   animation: details-body-reveal 190ms ease both;
+}
+
+.plan-week-table {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+}
+
+.plan-day-header,
+.plan-day-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.8fr) minmax(92px, 0.55fr) minmax(112px, 0.65fr) minmax(260px, 1.8fr) minmax(128px, 0.8fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.plan-day-header {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.plan-day-row {
+  min-height: 72px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  transition: background 180ms ease, box-shadow 180ms ease;
+}
+
+.plan-day-row:last-child {
+  border-bottom: 0;
+}
+
+.plan-day-row.past-day {
+  background: color-mix(in srgb, var(--teal-soft) 42%, var(--panel));
+}
+
+.plan-day-row.active-day {
+  background: var(--current-bg);
+  box-shadow: inset 3px 0 0 var(--current-border);
+}
+
+.plan-date-cell,
+.plan-distance-cell,
+.plan-supplement-cell {
+  min-width: 0;
+}
+
+.plan-date-cell span,
+.plan-distance-cell small,
+.plan-supplement-cell small {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.plan-date-cell strong,
+.plan-distance-cell strong {
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.plan-distance-cell.actual strong {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.plan-distance-cell.actual a {
+  color: var(--ink);
+  text-decoration-color: var(--teal);
+}
+
+.plan-run-cell {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 780;
+  line-height: 1.35;
+}
+
+.plan-supplement-cell {
+  display: grid;
+  gap: 6px;
+}
+
+.plan-supplement-cell .supplement-status-list {
+  justify-content: flex-start;
 }
 
 .week-notes-line {
@@ -2025,7 +2144,7 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   }
 
   .week-row summary {
-    grid-template-columns: 72px minmax(160px, 0.7fr) minmax(220px, 1fr) 34px;
+    grid-template-columns: 72px minmax(140px, 0.7fr) minmax(132px, 0.5fr) minmax(220px, 1fr) 34px;
   }
 
   .week-row summary .desktop-only {
@@ -2352,7 +2471,8 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   }
 
   .week-row summary .mobile-hide,
-  .week-row summary .row-summary-text {
+  .week-row summary .row-summary-text,
+  .week-row summary .row-distance-text {
     display: none;
   }
 
@@ -2363,6 +2483,43 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
 
   .week-row-body {
     padding: 0 12px 14px;
+  }
+
+  .plan-week-table {
+    border-radius: 12px;
+  }
+
+  .plan-day-header {
+    display: none;
+  }
+
+  .plan-day-row {
+    grid-template-columns: minmax(74px, 0.7fr) minmax(72px, 0.65fr) minmax(82px, 0.75fr);
+    gap: 8px;
+    align-items: start;
+    min-height: 0;
+    padding: 12px;
+  }
+
+  .plan-run-cell,
+  .plan-supplement-cell {
+    grid-column: 1 / -1;
+  }
+
+  .plan-date-cell span,
+  .plan-distance-cell small,
+  .plan-supplement-cell small {
+    font-size: 0.62rem;
+  }
+
+  .plan-date-cell strong,
+  .plan-distance-cell strong {
+    font-size: 0.84rem;
+  }
+
+  .plan-distance-cell.actual strong,
+  .plan-run-cell {
+    font-size: 0.8rem;
   }
 
   .activity-table-summary {

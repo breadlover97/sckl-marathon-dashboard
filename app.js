@@ -549,6 +549,16 @@ function wellnessCompletedCount(dayState = {}) {
   return wellnessChecks.filter((item) => dayState[item.key]).length;
 }
 
+function supplementStatus(date) {
+  const dayState = loadWellnessChecks()[date] || {};
+  const completed = wellnessCompletedCount(dayState);
+  const items = wellnessChecks.map((item) => {
+    const done = Boolean(dayState[item.key]);
+    return `<span class="supplement-status-pill ${done ? "done" : ""}" title="${escapeHtml(item.label)} ${done ? "recorded" : "not recorded"}">${escapeHtml(item.shortLabel)}</span>`;
+  }).join("");
+  return { completed, items };
+}
+
 function renderSupplementInput(date) {
   const dayState = loadWellnessChecks()[date] || {};
   const completed = wellnessCompletedCount(dayState);
@@ -575,18 +585,52 @@ function renderSupplementInput(date) {
 }
 
 function renderDaySupplements(session) {
-  const dayState = loadWellnessChecks()[session.date] || {};
-  const completed = wellnessCompletedCount(dayState);
-  const items = wellnessChecks.map((item) => {
-    const done = Boolean(dayState[item.key]);
-    return `<span class="supplement-status-pill ${done ? "done" : ""}" title="${escapeHtml(item.label)} ${done ? "recorded" : "not recorded"}">${escapeHtml(item.shortLabel)}</span>`;
-  }).join("");
+  const { completed, items } = supplementStatus(session.date);
 
   return `
     <div class="day-supplement-line" data-wellness-row-date="${escapeHtml(session.date)}">
       <span>Supplements</span>
       <small>${completed}/${wellnessChecks.length}</small>
       <div class="supplement-status-list" aria-label="${completed} of ${wellnessChecks.length} supplements recorded">${items}</div>
+    </div>
+  `;
+}
+
+function renderPlanDayRow(session, actuals) {
+  const dayActivities = activitiesForDate(actuals.activities || [], session.date);
+  const actualKm = dayActivities.reduce((sum, activity) => sum + Number(activity.distance_km || 0), 0);
+  const todayKey = dateKey(singaporeToday());
+  const isActive = session.date === todayKey;
+  const isPast = String(session.date) < todayKey;
+  const isCompleted = dayActivities.length > 0 || actualKm > 0;
+  const { completed, items } = supplementStatus(session.date);
+  const actualText = `${oneDecimalKm(actualKm)} · ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}`;
+  const classes = [
+    "plan-day-row",
+    isActive ? "active-day" : "",
+    isPast ? "past-day" : "",
+    isCompleted ? "completed-day" : "",
+  ].filter(Boolean).join(" ");
+
+  return `
+    <div class="${classes}" role="row">
+      <div class="plan-date-cell" role="cell">
+        <span>${escapeHtml(session.day)}</span>
+        <strong>${escapeHtml(shortDate(session.date))}</strong>
+      </div>
+      <div class="plan-distance-cell" role="cell">
+        <small>Planned</small>
+        <strong>${oneDecimalKm(session.planned_km)}</strong>
+      </div>
+      <div class="plan-distance-cell actual" role="cell">
+        <small>Actual</small>
+        <strong>${renderActualLine(dayActivities, actualText)}</strong>
+      </div>
+      <p class="plan-run-cell" role="cell">${escapeHtml(session.plan)}</p>
+      <div class="plan-supplement-cell" data-wellness-row-date="${escapeHtml(session.date)}" role="cell">
+        <small>${completed}/${wellnessChecks.length}</small>
+        <div class="supplement-status-list" aria-label="${completed} of ${wellnessChecks.length} supplements recorded">${items}</div>
+      </div>
     </div>
   `;
 }
@@ -652,7 +696,8 @@ function renderPlanTable(plan, actuals) {
   }
   table.innerHTML = plan.weeks.map((week) => {
     const current = isCurrentWeek(week);
-    const details = week.daily_sessions.map((session) => renderDayCard(session, actuals)).join("");
+    const actual = summarizeWeekActual(week, actuals);
+    const details = week.daily_sessions.map((session) => renderPlanDayRow(session, actuals)).join("");
 
     return `
       <details class="week-row ${current ? "current" : ""}" data-week-number="${escapeHtml(week.week_number)}" ${current ? "open" : ""}>
@@ -662,10 +707,23 @@ function renderPlanTable(plan, actuals) {
             <strong>${escapeHtml(week.phase)}</strong>
             <span>${prettyDate(week.week_start_date)} to ${prettyDate(weekEndDate(week))}</span>
           </span>
+          <span class="row-distance-text">
+            <small>Planned / actual</small>
+            <strong>${km(week.target_weekly_mileage_km)} · ${oneDecimalKm(actual.distance_km)}</strong>
+          </span>
           <span class="row-summary-text">${escapeHtml(week.week_summary)}</span>
         </summary>
         <div class="week-row-body">
-          <div class="daily-grid">${details}</div>
+          <div class="plan-week-table" role="table" aria-label="Week ${escapeHtml(week.week_number)} training plan">
+            <div class="plan-day-header" role="row">
+              <span>Date</span>
+              <span>Planned</span>
+              <span>Actual</span>
+              <span>Run description</span>
+              <span>Supplements</span>
+            </div>
+            ${details}
+          </div>
           <p class="week-notes-line"><strong>Notes:</strong> ${escapeHtml(week.notes || "No notes for this week.")}</p>
         </div>
       </details>
