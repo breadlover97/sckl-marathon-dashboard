@@ -412,13 +412,15 @@ function renderDayCard(session, actuals, options = {}) {
   const actualKm = dayActivities.reduce((sum, activity) => sum + Number(activity.distance_km || 0), 0);
   const todayKey = dateKey(singaporeToday());
   const isActive = session.date === todayKey;
+  const isPast = Boolean(options.markPast) && String(session.date) < todayKey;
   const isCompleted = dayActivities.length > 0 || actualKm > 0;
   const classes = [
     "day-card",
     isActive ? "active-day" : "",
+    isPast ? "past-day" : "",
     isCompleted ? "completed-day" : "",
   ].filter(Boolean).join(" ");
-  const completedMark = isCompleted ? `<span class="completed-mark" aria-label="Completed">✓</span>` : "";
+  const completedMark = isPast || isCompleted ? `<span class="completed-mark" aria-label="${isCompleted ? "Completed" : "Past day"}">✓</span>` : "";
   const actualText = `${oneDecimalKm(actualKm)} actual · ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}`;
   const actualLine = options.showActual || isCompleted
     ? `<div class="actual-line">${renderActualLine(dayActivities, actualText)}</div>`
@@ -619,7 +621,7 @@ function renderCurrentWeek(plan, actuals) {
   document.getElementById("currentWeekLabel").textContent =
     `Week ${week.week_number}: ${prettyDate(week.week_start_date)} to ${prettyDate(weekEndDate(week))} · ${week.phase}`;
 
-  const dayCards = week.daily_sessions.map((session) => renderDayCard(session, actuals, { showActual: true })).join("");
+  const dayCards = week.daily_sessions.map((session) => renderDayCard(session, actuals, { showActual: true, markPast: true })).join("");
 
   document.getElementById("currentWeekPlan").innerHTML = `
     <div class="week-progress">
@@ -755,20 +757,22 @@ function renderActivityFeed(actuals, runNotes = {}) {
   const profileImage = safeExternalUrl(athlete.profile_medium || athlete.profile || "");
   const activityRows = activities.map((activity, index) => {
     const stravaUrl = safeExternalUrl(activity.strava_url, ["strava.com"]);
+    const activityName = stravaUrl
+      ? `<a class="activity-name-link" href="${escapeHtml(stravaUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(activity.name)}</a>`
+      : escapeHtml(activity.name);
     const note = runNotes[String(activity.id)]?.note || "";
     const detailId = `activity-detail-${safeDomId(activity.id, `row-${index}`)}`;
     const noteLabel = note ? "Edit note" : "Note";
     return `
       <tr class="activity-main-row">
         <td>${escapeHtml(prettyDate(activity.date))}</td>
-        <td><strong>${escapeHtml(activity.name)}</strong></td>
+        <td><strong>${activityName}</strong></td>
         <td><strong>${oneDecimalKm(activity.distance_km)}</strong></td>
         <td>${duration(activity.moving_time_seconds)}</td>
         <td>${activityPace(activity)}</td>
         <td>${heartRate(activity.average_heartrate)}</td>
         <td>${cadence(activity.average_cadence)}</td>
         <td>${Math.round(Number(activity.elevation_gain_m || 0))} m</td>
-        <td>${stravaUrl ? `<a href="${escapeHtml(stravaUrl)}" target="_blank" rel="noopener noreferrer">Open</a>` : "-"}</td>
         <td>
           <button class="table-action-button ${note ? "has-note" : ""}" type="button" data-activity-toggle aria-expanded="false" aria-controls="${detailId}">
             ${escapeHtml(noteLabel)}
@@ -776,7 +780,7 @@ function renderActivityFeed(actuals, runNotes = {}) {
         </td>
       </tr>
       <tr id="${detailId}" class="activity-detail-row" hidden>
-        <td colspan="10">
+        <td colspan="9">
           <div class="activity-detail-panel">
             ${renderRunNotePanel(activity, runNotes)}
           </div>
@@ -805,7 +809,6 @@ function renderActivityFeed(actuals, runNotes = {}) {
               <th>Avg HR</th>
               <th>Avg cadence</th>
               <th>Elev</th>
-              <th>Link</th>
               <th>Details</th>
             </tr>
           </thead>
@@ -1039,17 +1042,17 @@ function chartHoverMarkup(left, top, plotWidth, plotHeight, baseline) {
       <circle class="chart-hover-dot" data-hover-dot cx="${left}" cy="${top}" r="5"></circle>
       <g class="chart-tooltip" data-hover-tip>
         <rect class="chart-tooltip-bg" width="${chartTooltipSize.width}" height="${chartTooltipSize.height}" rx="10"></rect>
-        <text class="chart-tooltip-title" data-hover-week x="14" y="23"></text>
-        <text class="chart-tooltip-date" data-hover-date x="14" y="40"></text>
-        <line class="chart-tooltip-divider" x1="14" y1="51" x2="${chartTooltipSize.width - 14}" y2="51"></line>
-        <text class="chart-tooltip-label" x="14" y="70">Phase</text>
-        <text class="chart-tooltip-phase" data-hover-phase x="${chartTooltipSize.width - 14}" y="70" text-anchor="end"></text>
-        <circle class="tooltip-marker planned" cx="18" cy="89" r="4"></circle>
-        <text class="chart-tooltip-label" x="30" y="93">Planned</text>
-        <text class="chart-tooltip-planned" data-hover-value x="${chartTooltipSize.width - 14}" y="93" text-anchor="end"></text>
-        <circle class="tooltip-marker actual" cx="18" cy="109" r="4"></circle>
-        <text class="chart-tooltip-label" x="30" y="113">Actual</text>
-        <text class="chart-tooltip-actual" data-hover-actual x="${chartTooltipSize.width - 14}" y="113" text-anchor="end"></text>
+        <text class="chart-tooltip-title" data-hover-week x="16" y="21"></text>
+        <text class="chart-tooltip-date" data-hover-date x="16" y="39"></text>
+        <line class="chart-tooltip-divider" x1="16" y1="53" x2="${chartTooltipSize.width - 16}" y2="53"></line>
+        <text class="chart-tooltip-label" x="16" y="70">Phase</text>
+        <text class="chart-tooltip-phase" data-hover-phase x="${chartTooltipSize.width - 16}" y="70" text-anchor="end"></text>
+        <circle class="tooltip-marker planned" cx="20" cy="91" r="4"></circle>
+        <text class="chart-tooltip-label" x="34" y="91">Planned</text>
+        <text class="chart-tooltip-planned" data-hover-value x="${chartTooltipSize.width - 16}" y="91" text-anchor="end"></text>
+        <circle class="tooltip-marker actual" cx="20" cy="109" r="4"></circle>
+        <text class="chart-tooltip-label" x="34" y="109">Actual</text>
+        <text class="chart-tooltip-actual" data-hover-actual x="${chartTooltipSize.width - 16}" y="109" text-anchor="end"></text>
       </g>
     </g>
     <rect class="chart-hit-area" x="${left}" y="${top}" width="${plotWidth}" height="${plotHeight}"></rect>

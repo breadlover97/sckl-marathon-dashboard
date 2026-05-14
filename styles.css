@@ -276,7 +276,7 @@ p {
 h1 {
   max-width: 13ch;
   margin-bottom: 14px;
-  font-size: clamp(2.5rem, 5.8vw, 5.25rem);
+  font-size: 5.25rem;
   font-weight: 900;
   letter-spacing: 0;
   line-height: 0.92;
@@ -284,7 +284,7 @@ h1 {
 
 h2 {
   margin-bottom: 6px;
-  font-size: clamp(1.35rem, 2.3vw, 2rem);
+  font-size: 1.9rem;
   font-weight: 900;
   letter-spacing: 0;
   line-height: 1.05;
@@ -717,7 +717,7 @@ main {
 
 .activity-table {
   width: 100%;
-  min-width: 1040px;
+  min-width: 950px;
   border-collapse: collapse;
 }
 
@@ -748,6 +748,10 @@ main {
 .activity-table a {
   color: var(--ink);
   font-weight: 900;
+}
+
+.activity-name-link {
+  text-decoration-color: var(--orange);
 }
 
 .table-action-button {
@@ -1026,7 +1030,7 @@ main > .panel:first-child {
 
 .week-progress strong {
   margin-top: 3px;
-  font-size: clamp(1.45rem, 3vw, 2.25rem);
+  font-size: 2rem;
   font-weight: 900;
   line-height: 1;
 }
@@ -1241,6 +1245,16 @@ main > .panel:first-child {
 .day-card.completed-day {
   border-color: var(--complete-border);
   background: var(--complete-bg);
+}
+
+.day-card.past-day {
+  border-color: color-mix(in srgb, var(--teal) 34%, var(--line));
+  background: color-mix(in srgb, var(--teal-soft) 70%, var(--card));
+}
+
+.day-card.past-day .completed-mark {
+  background: color-mix(in srgb, var(--teal) 86%, var(--ink));
+  color: var(--inverse);
 }
 
 .day-card.active-day {
@@ -1524,6 +1538,7 @@ main > .panel:first-child {
   font-family: var(--font-ui);
   font-size: 0.66rem;
   font-weight: 800;
+  dominant-baseline: middle;
   paint-order: stroke;
   stroke: transparent;
   stroke-width: 0;
@@ -1897,6 +1912,11 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     background: color-mix(in srgb, var(--complete-bg) 82%, var(--orange-soft));
   }
 
+  .day-card.past-day:hover {
+    border-color: color-mix(in srgb, var(--teal) 55%, var(--line));
+    background: color-mix(in srgb, var(--teal-soft) 78%, var(--orange-soft));
+  }
+
   .day-card.active-day:hover {
     border-color: var(--current-border);
     background: color-mix(in srgb, var(--current-bg) 88%, var(--orange-soft));
@@ -1975,6 +1995,15 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
 
   .nav-actions {
     justify-content: flex-end;
+  }
+
+  h1 {
+    font-size: 3.15rem;
+    line-height: 0.96;
+  }
+
+  h2 {
+    font-size: 1.55rem;
   }
 
   .dashboard-hero,
@@ -2131,7 +2160,13 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   }
 
   h1 {
-    font-size: clamp(2.4rem, 13vw, 3.7rem);
+    font-size: 2.35rem;
+    line-height: 0.98;
+  }
+
+  h2 {
+    font-size: 1.45rem;
+    line-height: 1.08;
   }
 
   .hero-copy,
