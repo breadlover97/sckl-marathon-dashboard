@@ -42,11 +42,11 @@ cp cloudflare-worker/wrangler.toml.example cloudflare-worker/wrangler.toml
 
 ```bash
 cd cloudflare-worker
-wrangler secret put GOOGLE_SERVICE_ACCOUNT_JSON
+base64 -i ../service-account.json | wrangler secret put GOOGLE_SERVICE_ACCOUNT_JSON_B64
 wrangler secret put RUN_NOTES_TOKEN
 ```
 
-Use the same Google service account JSON used by GitHub Actions. `RUN_NOTES_TOKEN` is the passcode the website will ask for before saving or loading notes.
+Use the same Google service account JSON used by GitHub Actions. Base64 is preferred because it avoids broken multi-line private keys in terminal prompts. `RUN_NOTES_TOKEN` is the passcode the website will ask for before saving or loading notes.
 
 4. Deploy the Worker.
 

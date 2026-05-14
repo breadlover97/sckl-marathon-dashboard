@@ -285,7 +285,7 @@ async function getAccessToken(env) {
     return cachedGoogleAccessToken.value;
   }
 
-  const serviceAccount = JSON.parse(env.GOOGLE_SERVICE_ACCOUNT_JSON);
+  const serviceAccount = parseServiceAccount(env);
   const claim = {
     aud: TOKEN_URL,
     exp: now + 3600,
@@ -313,6 +313,68 @@ async function getAccessToken(env) {
     expiresAt: now + Number(body.expires_in || 3600)
   };
   return body.access_token;
+}
+
+function parseServiceAccount(env) {
+  const rawSecret = env.GOOGLE_SERVICE_ACCOUNT_JSON_B64 || env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  const secretName = env.GOOGLE_SERVICE_ACCOUNT_JSON_B64 ? "GOOGLE_SERVICE_ACCOUNT_JSON_B64" : "GOOGLE_SERVICE_ACCOUNT_JSON";
+  const candidates = serviceAccountCandidates(rawSecret, Boolean(env.GOOGLE_SERVICE_ACCOUNT_JSON_B64));
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate);
+      if (parsed?.client_email && parsed?.private_key) return parsed;
+    } catch (error) {
+      const repaired = repairJsonMultilineStrings(candidate);
+      if (repaired !== candidate) {
+        try {
+          const parsed = JSON.parse(repaired);
+          if (parsed?.client_email && parsed?.private_key) return parsed;
+        } catch (repairedError) {
+          // Continue to the next candidate before reporting a configuration error.
+        }
+      }
+    }
+  }
+
+  const error = new Error(`${secretName} is not valid Google service account JSON. Re-upload the full key as one-line JSON or base64-encoded JSON.`);
+  error.status = 500;
+  throw error;
+}
+
+function serviceAccountCandidates(value, isBase64Only = false) {
+  const raw = String(value || "").trim();
+  if (!raw) return [];
+  const candidates = [];
+  if (!isBase64Only) candidates.push(raw);
+  try {
+    candidates.push(atob(raw));
+  } catch (error) {
+    // The existing secret may be plain JSON, so a base64 decode failure is fine.
+  }
+  return [...new Set(candidates)];
+}
+
+function repairJsonMultilineStrings(value) {
+  let repaired = "";
+  let inString = false;
+  let escaped = false;
+  for (const character of String(value)) {
+    if (inString && (character === "\n" || character === "\r")) {
+      if (character === "\n") repaired += "\\n";
+      continue;
+    }
+    repaired += character;
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (character === "\\") {
+      escaped = true;
+      continue;
+    }
+    if (character === "\"") inString = !inString;
+  }
+  return repaired;
 }
 
 async function signJwt(privateKeyPem, claim) {
