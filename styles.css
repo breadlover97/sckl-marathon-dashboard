@@ -1096,6 +1096,27 @@ main > .panel:first-child {
   gap: 5px;
 }
 
+.supplement-sync-message {
+  display: block;
+  grid-column: 1 / -1;
+  min-height: 1em;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 900;
+}
+
+.supplement-sync-message.ok {
+  color: var(--teal);
+}
+
+.supplement-sync-message.saving {
+  color: var(--muted);
+}
+
+.supplement-sync-message.error {
+  color: var(--orange-dark);
+}
+
 .supplement-toggle {
   display: inline-flex;
   min-width: 0;

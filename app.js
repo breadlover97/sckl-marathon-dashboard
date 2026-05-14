@@ -8,6 +8,7 @@ const RUN_NOTES_TOKEN_KEY = "sckl-run-notes-token";
 const WELLNESS_STORAGE_KEY = "sckl-wellness-checks";
 let latestRenderState = null;
 let resizeTimer = null;
+let supplementSyncState = { message: "", tone: "" };
 
 const wellnessChecks = [
   { key: "protein", label: "Protein shake", shortLabel: "Protein" },
@@ -534,6 +535,14 @@ function saveWellnessChecks(state) {
   }
 }
 
+function setSupplementSyncMessage(message, tone = "") {
+  supplementSyncState = { message, tone };
+  document.querySelectorAll("[data-supplement-sync-status]").forEach((node) => {
+    node.textContent = message;
+    node.className = `supplement-sync-message ${tone}`.trim();
+  });
+}
+
 function wellnessCompletedCount(dayState = {}) {
   return wellnessChecks.filter((item) => dayState[item.key]).length;
 }
@@ -558,6 +567,7 @@ function renderSupplementInput(date) {
         <strong>${completed}/${wellnessChecks.length}</strong>
       </div>
       <div class="supplement-toggles" aria-label="${completed} of ${wellnessChecks.length} supplements recorded">${items}</div>
+      <small class="supplement-sync-message ${escapeHtml(supplementSyncState.tone, "")}" data-supplement-sync-status>${escapeHtml(supplementSyncState.message, "")}</small>
     </div>
   `;
 }
@@ -1246,38 +1256,53 @@ function setupActivityDetails() {
   });
 }
 
+function rerenderSupplementViews() {
+  if (!latestRenderState) return;
+  const opened = openWeekNumbers();
+  renderCurrentWeek(latestRenderState.plan, latestRenderState.actuals);
+  renderPlanTable(latestRenderState.plan, latestRenderState.actuals);
+  restoreOpenWeeks(opened);
+}
+
 function setupWellnessTracker() {
-  document.addEventListener("change", (event) => {
+  document.addEventListener("change", async (event) => {
     const checkbox = event.target.closest("[data-wellness-check]");
     if (!checkbox) return;
     const state = loadWellnessChecks();
     const date = checkbox.dataset.date;
     const key = checkbox.dataset.key;
     if (!date || !key) return;
+    const previousDayState = { ...(state[date] || {}) };
     state[date] = {
       ...(state[date] || {}),
       [key]: checkbox.checked
     };
     saveWellnessChecks(state);
-    saveSupplementCheck(date, state[date]);
+    setSupplementSyncMessage("Saving to Google Sheets...", "saving");
+    rerenderSupplementViews();
 
-    if (latestRenderState) {
-      const opened = openWeekNumbers();
-      renderCurrentWeek(latestRenderState.plan, latestRenderState.actuals);
-      renderPlanTable(latestRenderState.plan, latestRenderState.actuals);
-      restoreOpenWeeks(opened);
+    const result = await saveSupplementCheck(date, state[date]);
+    if (result.ok) {
+      setSupplementSyncMessage(result.message, result.tone || "ok");
+      return;
     }
+
+    const rollbackState = loadWellnessChecks();
+    rollbackState[date] = previousDayState;
+    saveWellnessChecks(rollbackState);
+    setSupplementSyncMessage(result.message, "error");
+    rerenderSupplementViews();
   });
 }
 
 async function saveSupplementCheck(date, dayState) {
-  if (!RUN_NOTES_API_URL) return;
+  if (!RUN_NOTES_API_URL) return { ok: true, message: "Saved locally only.", tone: "saving" };
   let token = storedRunNotesToken();
   if (!token) {
     token = window.prompt("Enter dashboard passcode") || "";
     setStoredRunNotesToken(token);
   }
-  if (!token) return;
+  if (!token) return { ok: false, message: "Not saved. Dashboard passcode is required." };
 
   try {
     const response = await fetch(`${RUN_NOTES_API_URL}/supplements`, {
@@ -1293,13 +1318,24 @@ async function saveSupplementCheck(date, dayState) {
         vitaminD: Boolean(dayState.vitaminD)
       })
     });
-    if (response.status === 401 || response.status === 403) {
+    const payload = await response.json().catch(() => ({}));
+    if (response.status === 401) {
       setStoredRunNotesToken("");
-      throw new Error("Passcode rejected");
+      return { ok: false, message: "Not saved. Passcode was rejected." };
     }
-    if (!response.ok) throw new Error(`Supplement save failed (${response.status})`);
+    if (response.status === 403) {
+      return {
+        ok: false,
+        message: "Not saved. Google Sheet permission is still Reader, not Editor."
+      };
+    }
+    if (!response.ok) {
+      return { ok: false, message: `Not saved. ${payload.error || `Worker returned ${response.status}`}` };
+    }
+    return { ok: true, message: "Saved to Google Sheets.", tone: "ok" };
   } catch (error) {
     console.error(error);
+    return { ok: false, message: "Not saved. Could not reach the sync Worker." };
   }
 }
 

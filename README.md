@@ -205,7 +205,8 @@ The `Run Notes` tab is created automatically by the Worker the first time notes 
 Setup:
 
 1. Copy `cloudflare-worker/wrangler.toml.example` to `cloudflare-worker/wrangler.toml`.
-2. In `cloudflare-worker`, run:
+2. Share the Google Sheet with the service account email as **Editor**. Viewer access is enough for the scheduled plan sync, but the Worker needs Editor access to save run notes and supplement checks.
+3. In `cloudflare-worker`, run:
 
 ```bash
 wrangler secret put GOOGLE_SERVICE_ACCOUNT_JSON
@@ -213,7 +214,7 @@ wrangler secret put RUN_NOTES_TOKEN
 wrangler deploy
 ```
 
-3. Copy the deployed Worker URL into `config.js`:
+4. Copy the deployed Worker URL into `config.js`:
 
 ```js
 window.SCKL_CONFIG = {
@@ -221,7 +222,7 @@ window.SCKL_CONFIG = {
 };
 ```
 
-4. Commit and push `config.js`.
+5. Commit and push `config.js`.
 
 The first time you save a note from the website, it asks for `RUN_NOTES_TOKEN` and stores it in browser localStorage. Reading existing notes also requires that stored passcode, so notes are not exposed as a public unauthenticated API.
 
