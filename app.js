@@ -10,8 +10,6 @@ let latestRenderState = null;
 let resizeTimer = null;
 let supplementSyncState = { message: "", tone: "" };
 let hasScrolledThisWeekToToday = false;
-let showPastCalendarWeeks = false;
-let visibleFutureCalendarWeeks = 5;
 
 const wellnessChecks = [
   { key: "protein", label: "Protein shake", shortLabel: "Protein" },
@@ -698,34 +696,68 @@ function renderCalendarWeek(week, actuals) {
   `;
 }
 
-function calendarWindow(weeks) {
-  const currentIndex = Math.max(0, weeks.findIndex((week) => isCurrentWeek(week)));
-  const start = showPastCalendarWeeks ? 0 : currentIndex;
-  const end = Math.min(weeks.length, currentIndex + visibleFutureCalendarWeeks);
-  return {
-    currentIndex,
-    end: Math.max(end, start + 1),
-    start
-  };
+function phaseGroups(weeks) {
+  return weeks.reduce((groups, week) => {
+    const last = groups[groups.length - 1];
+    if (last && last.phase === week.phase) {
+      last.weeks.push(week);
+      return groups;
+    }
+    groups.push({
+      key: `${safeDomId(week.phase)}-${week.week_number}`,
+      phase: week.phase,
+      weeks: [week]
+    });
+    return groups;
+  }, []);
 }
 
-function renderCalendarControls(plan, windowState) {
-  const totalWeeks = plan.weeks.length;
-  const visibleStart = windowState.start + 1;
-  const visibleEnd = windowState.end;
-  const hasPastWeeks = windowState.currentIndex > 0;
-  const hasMoreFuture = windowState.end < totalWeeks;
+function summarizePhaseGroup(group, actuals) {
+  return group.weeks.reduce((summary, week) => {
+    const actual = summarizeWeekActual(week, actuals);
+    summary.plannedKm += Number(week.target_weekly_mileage_km || 0);
+    summary.actualKm += Number(actual.distance_km || 0);
+    summary.runDays += week.daily_sessions.filter((session) => Number(session.planned_km || 0) > 0).length;
+    summary.startDate = summary.startDate || week.week_start_date;
+    summary.endDate = weekEndDate(week);
+    summary.hasCurrent = summary.hasCurrent || isCurrentWeek(week);
+    return summary;
+  }, {
+    actualKm: 0,
+    endDate: "",
+    hasCurrent: false,
+    plannedKm: 0,
+    runDays: 0,
+    startDate: ""
+  });
+}
+
+function renderCalendarPhaseGroup(group, actuals, openPhases) {
+  const summary = summarizePhaseGroup(group, actuals);
+  const isOpen = openPhases ? openPhases.has(group.key) : summary.hasCurrent;
+  const weeks = group.weeks.map((week) => renderCalendarWeek(week, actuals)).join("");
+  const weekLabel = group.weeks.length === 1 ? "1 week" : `${group.weeks.length} weeks`;
 
   return `
-    <div class="calendar-range-controls">
-      <span>Showing weeks ${visibleStart}-${visibleEnd} of ${totalWeeks}</span>
-      <div>
-        ${hasPastWeeks ? `<button class="action-button secondary compact-action" type="button" data-calendar-range="past">
-          ${showPastCalendarWeeks ? "Hide past weeks" : "Show past weeks"}
-        </button>` : ""}
-        ${hasMoreFuture ? `<button class="action-button secondary compact-action" type="button" data-calendar-range="future">Show 5 more weeks</button>` : ""}
+    <details class="calendar-phase-group ${summary.hasCurrent ? "current" : ""}" data-phase-key="${escapeHtml(group.key)}" ${isOpen ? "open" : ""}>
+      <summary>
+        <span class="phase-title">
+          <small>${escapeHtml(group.phase)}</small>
+          <strong>${prettyDate(summary.startDate)} to ${prettyDate(summary.endDate)}</strong>
+        </span>
+        <span class="phase-stat">${escapeHtml(weekLabel)}</span>
+        <span class="phase-stat">${km(summary.plannedKm)} planned</span>
+        <span class="phase-stat">${oneDecimalKm(summary.actualKm)} actual</span>
+        <span class="phase-stat">${summary.runDays} runs</span>
+      </summary>
+      <div class="calendar-phase-body">
+        <div class="calendar-day-labels" aria-hidden="true">
+          <span></span>
+          ${dayNames.map((day) => `<span>${escapeHtml(day.slice(0, 3))}</span>`).join("")}
+        </div>
+        ${weeks}
       </div>
-    </div>
+    </details>
   `;
 }
 
@@ -796,34 +828,32 @@ function renderPlanTable(plan, actuals) {
     planStatus.textContent = lastSyncedText("Sheet", plan.metadata?.generated_at, "Sheet not synced");
     planStatus.className = "status-pill";
   }
-  const windowState = calendarWindow(plan.weeks);
-  const visibleWeeks = plan.weeks.slice(windowState.start, windowState.end);
-  const rows = visibleWeeks.map((week) => renderCalendarWeek(week, actuals)).join("");
+  const currentPhaseGroups = document.querySelectorAll(".calendar-phase-group");
+  const openPhases = openPhaseKeys();
+  const shouldPreserveOpenState = currentPhaseGroups.length > 0;
+  const rows = phaseGroups(plan.weeks)
+    .map((group) => renderCalendarPhaseGroup(group, actuals, shouldPreserveOpenState ? openPhases : null))
+    .join("");
   table.innerHTML = `
-    ${renderCalendarControls(plan, windowState)}
     <div class="calendar-plan" aria-label="Week-by-week calendar training plan">
-      <div class="calendar-day-labels" aria-hidden="true">
-        <span></span>
-        ${dayNames.map((day) => `<span>${escapeHtml(day.slice(0, 3))}</span>`).join("")}
-      </div>
       ${rows}
     </div>
   `;
   updateWeekToggleLabel();
 }
 
-function openWeekNumbers() {
+function openPhaseKeys() {
   return new Set(
-    Array.from(document.querySelectorAll(".week-row[open]"))
-      .map((row) => row.dataset.weekNumber)
+    Array.from(document.querySelectorAll(".calendar-phase-group[open]"))
+      .map((group) => group.dataset.phaseKey)
       .filter(Boolean)
   );
 }
 
-function restoreOpenWeeks(openWeeks) {
-  if (!openWeeks?.size) return;
-  document.querySelectorAll(".week-row").forEach((row) => {
-    if (openWeeks.has(row.dataset.weekNumber)) row.open = true;
+function restoreOpenPhases(openPhases) {
+  if (!openPhases?.size) return;
+  document.querySelectorAll(".calendar-phase-group").forEach((group) => {
+    group.open = openPhases.has(group.dataset.phaseKey);
   });
   updateWeekToggleLabel();
 }
@@ -841,21 +871,12 @@ function setupWeekToggle() {
   if (!button || !planTable) return;
 
   button.addEventListener("click", () => {
-    document.querySelector("[data-current-week='true']")?.scrollIntoView({ block: "start", behavior: "smooth" });
-  });
-}
-
-function setupCalendarRangeControls() {
-  document.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-calendar-range]");
-    if (!button || !latestRenderState) return;
-    if (button.dataset.calendarRange === "past") {
-      showPastCalendarWeeks = !showPastCalendarWeeks;
-    }
-    if (button.dataset.calendarRange === "future") {
-      visibleFutureCalendarWeeks += 5;
-    }
-    renderPlanTable(latestRenderState.plan, latestRenderState.actuals);
+    const currentWeek = document.querySelector("[data-current-week='true']");
+    const phase = currentWeek?.closest(".calendar-phase-group");
+    if (phase) phase.open = true;
+    window.requestAnimationFrame(() => {
+      currentWeek?.scrollIntoView({ block: "start", behavior: "smooth" });
+    });
   });
 }
 
@@ -1429,10 +1450,10 @@ function setupActivityDetails() {
 
 function rerenderSupplementViews() {
   if (!latestRenderState) return;
-  const opened = openWeekNumbers();
+  const opened = openPhaseKeys();
   renderCurrentWeek(latestRenderState.plan, latestRenderState.actuals);
   renderPlanTable(latestRenderState.plan, latestRenderState.actuals);
-  restoreOpenWeeks(opened);
+  restoreOpenPhases(opened);
 }
 
 function setupWellnessTracker() {
@@ -1539,7 +1560,6 @@ function setupResponsiveCharts() {
 setupReturnTop();
 setupActiveNav();
 setupWeekToggle();
-setupCalendarRangeControls();
 setupRunNotesForms();
 setupActivityDetails();
 setupWellnessTracker();

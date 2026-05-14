@@ -1565,25 +1565,119 @@ main > .panel:first-child {
   transform: translate(-50%, 0);
 }
 
-.calendar-range-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+.calendar-phase-group {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
 
-.calendar-range-controls > span {
-  color: var(--muted);
-  font-size: 0.74rem;
-  font-weight: 900;
+.calendar-phase-group + .calendar-phase-group {
+  margin-top: 10px;
 }
 
-.calendar-range-controls > div {
-  display: flex;
-  flex-wrap: wrap;
+.calendar-phase-group[open] {
+  animation: details-shell-reveal 170ms ease both;
+}
+
+.calendar-phase-group.current {
+  border-color: color-mix(in srgb, var(--orange) 40%, var(--line));
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--orange) 10%, transparent);
+}
+
+.calendar-phase-group summary {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) repeat(4, auto) 30px;
   gap: 8px;
+  align-items: center;
+  min-height: 58px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.calendar-phase-group summary::-webkit-details-marker {
+  display: none;
+}
+
+.calendar-phase-group summary::after {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--inverse);
+  content: "+";
+  font-size: 1.06rem;
+  font-weight: 900;
+  line-height: 1;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.calendar-phase-group[open] summary::after {
+  content: "-";
+  transform: rotate(180deg);
+}
+
+.calendar-phase-group.current summary {
+  background: color-mix(in srgb, var(--current-bg) 58%, transparent);
+}
+
+.calendar-phase-group summary:hover,
+.calendar-phase-group summary:focus-visible {
+  background: color-mix(in srgb, var(--orange) 7%, var(--card));
+  outline: none;
+}
+
+.phase-title {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.phase-title small {
+  color: var(--orange-dark);
+  font-size: 0.62rem;
+  font-weight: 950;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.phase-title strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phase-stat {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--soft) 70%, var(--card));
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.calendar-phase-body {
+  display: grid;
+  gap: 8px;
+  padding: 0 12px 12px;
+  transform-origin: top;
+}
+
+.calendar-phase-group[open] .calendar-phase-body {
+  animation: details-body-reveal 190ms ease both;
 }
 
 .week-row {
@@ -2334,6 +2428,23 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     grid-template-columns: 72px minmax(140px, 0.7fr) minmax(132px, 0.5fr) minmax(220px, 1fr) 34px;
   }
 
+  .calendar-phase-group summary {
+    grid-template-columns: minmax(190px, 1fr) repeat(2, auto) 30px;
+  }
+
+  .calendar-phase-group summary::after {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .phase-title {
+    grid-column: 1 / 2;
+  }
+
+  .phase-stat:nth-of-type(n + 4) {
+    display: none;
+  }
+
   .calendar-day-labels,
   .calendar-week {
     grid-template-columns: minmax(150px, 0.72fr) repeat(7, minmax(86px, 1fr));
@@ -2664,9 +2775,52 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     gap: 14px;
   }
 
-  .calendar-range-controls {
-    align-items: flex-start;
-    justify-content: flex-start;
+  .calendar-phase-group {
+    border-radius: 14px;
+  }
+
+  .calendar-phase-group summary {
+    grid-template-columns: 1fr 28px;
+    gap: 7px;
+    min-height: 0;
+    padding: 11px;
+  }
+
+  .calendar-phase-group summary::after {
+    grid-column: 2;
+    grid-row: 1;
+    width: 26px;
+    height: 26px;
+    font-size: 0.98rem;
+  }
+
+  .phase-title {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .phase-title strong {
+    font-size: 0.82rem;
+    white-space: normal;
+  }
+
+  .phase-stat {
+    min-height: 24px;
+    padding: 4px 7px;
+    font-size: 0.58rem;
+  }
+
+  .phase-stat:nth-of-type(n + 4) {
+    display: inline-flex;
+  }
+
+  .phase-stat:nth-of-type(2),
+  .phase-stat:nth-of-type(5) {
+    display: none;
+  }
+
+  .calendar-phase-body {
+    padding: 0 10px 10px;
   }
 
   .calendar-week {
