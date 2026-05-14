@@ -1313,193 +1313,249 @@ main > .panel:first-child {
   gap: 0;
 }
 
-.plan-log-table {
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--panel);
-}
-
-.plan-log-header,
-.plan-log-row {
+.calendar-plan {
   display: grid;
-  grid-template-columns: 120px 88px 92px minmax(320px, 1fr) 118px;
-  gap: 14px;
-  align-items: center;
+  gap: 8px;
 }
 
-.plan-log-header {
-  padding: 11px 16px;
-  border-bottom: 1px solid var(--line);
-  background: color-mix(in srgb, var(--soft) 88%, var(--panel));
+.calendar-day-labels,
+.calendar-week {
+  display: grid;
+  grid-template-columns: minmax(188px, 0.85fr) repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.calendar-day-labels {
+  align-items: center;
+  padding: 0 4px;
   color: var(--muted);
   font-size: 0.66rem;
   font-weight: 900;
+  text-align: center;
   text-transform: uppercase;
 }
 
-.plan-log-header span:nth-child(2),
-.plan-log-header span:nth-child(3),
-.plan-log-distance {
-  font-variant-numeric: tabular-nums;
-  text-align: right;
+.calendar-week {
+  position: relative;
+  align-items: stretch;
 }
 
-.plan-log-week {
-  border-bottom: 1px solid var(--line);
-}
-
-.plan-log-week:last-child {
-  border-bottom: 0;
-}
-
-.plan-log-week.current {
-  background: color-mix(in srgb, var(--current-bg) 24%, var(--panel));
-}
-
-.plan-log-week-header {
+.calendar-days {
   display: grid;
-  grid-template-columns: minmax(190px, 0.75fr) auto minmax(320px, 1fr);
-  gap: 14px;
-  align-items: center;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--subtle-line);
-  background: color-mix(in srgb, var(--card) 84%, var(--soft));
+  grid-column: 2 / -1;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
 }
 
-.plan-log-week.current .plan-log-week-header {
+.calendar-week-meta,
+.calendar-day {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.calendar-week-meta {
+  display: grid;
+  gap: 8px;
+  align-content: center;
+  padding: 10px;
+}
+
+.calendar-week.current .calendar-week-meta {
+  border-color: var(--current-border);
+  background: color-mix(in srgb, var(--current-bg) 58%, var(--card));
   box-shadow: inset 4px 0 0 var(--current-border);
 }
 
-.plan-log-week-header span {
+.calendar-week-meta span {
   display: block;
   margin-bottom: 3px;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.6rem;
   font-weight: 900;
   text-transform: uppercase;
 }
 
-.plan-log-week-header strong {
+.calendar-week-meta strong {
   display: block;
   color: var(--ink);
-  font-size: 0.96rem;
+  font-size: 0.84rem;
   font-weight: 900;
   line-height: 1.2;
 }
 
-.plan-log-week-header p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.86rem;
-  font-weight: 800;
-  line-height: 1.35;
-}
-
-.plan-log-week-stats {
+.calendar-week-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
+  gap: 5px;
 }
 
-.plan-log-week-stats span {
+.calendar-week-stats span {
   margin: 0;
-  padding: 5px 8px;
+  padding: 3px 6px;
   border: 1px solid var(--subtle-line);
   border-radius: 999px;
   background: var(--soft);
   color: var(--ink);
-  font-size: 0.66rem;
+  font-size: 0.56rem;
+  font-weight: 900;
   text-transform: none;
 }
 
-.plan-log-week-rows {
+.calendar-day {
+  appearance: none;
+  position: relative;
   display: grid;
+  min-height: 98px;
+  grid-template-rows: auto 1fr auto;
+  gap: 7px;
+  padding: 9px;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  outline: none;
+  text-align: left;
 }
 
-.plan-log-row {
-  min-height: 62px;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--subtle-line);
-  transition: background 160ms ease, box-shadow 160ms ease;
+.calendar-day.past-day {
+  border-color: color-mix(in srgb, var(--muted) 18%, var(--line));
+  background: color-mix(in srgb, var(--soft) 62%, var(--card));
 }
 
-.plan-log-row:last-child {
-  border-bottom: 0;
+.calendar-day.past-day.completed-day {
+  border-color: color-mix(in srgb, var(--teal) 32%, var(--line));
+  background: color-mix(in srgb, var(--teal-soft) 46%, var(--card));
 }
 
-.plan-log-row.past-day {
-  background: color-mix(in srgb, var(--teal-soft) 34%, transparent);
+.calendar-day.active-day {
+  border-color: var(--current-border);
+  background: var(--current-bg);
+  box-shadow: 0 0 0 2px var(--current-glow);
 }
 
-.plan-log-row.active-day {
-  background: color-mix(in srgb, var(--current-bg) 72%, var(--panel));
-  box-shadow: inset 4px 0 0 var(--current-border);
+.calendar-day.rest-day {
+  background: color-mix(in srgb, var(--soft) 68%, var(--card));
 }
 
-.plan-log-date,
-.plan-log-distance,
-.plan-log-supplements {
-  min-width: 0;
+.calendar-day-head {
+  display: flex;
+  gap: 6px;
+  align-items: start;
+  justify-content: space-between;
 }
 
-.plan-log-date span,
-.plan-log-distance span,
-.plan-log-supplements > span {
-  display: block;
-  margin-bottom: 3px;
+.calendar-day-head span,
+.calendar-day-main span,
+.calendar-supplements > span {
   color: var(--muted);
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 900;
   text-transform: uppercase;
 }
 
-.plan-log-date strong,
-.plan-log-distance strong {
+.calendar-day-head strong {
+  color: var(--ink);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-align: right;
+}
+
+.calendar-day-main strong {
   display: block;
   color: var(--ink);
-  font-size: 0.88rem;
+  font-size: 0.98rem;
+  font-variant-numeric: tabular-nums;
   font-weight: 900;
+  line-height: 1.05;
+}
+
+.calendar-day.rest-day .calendar-day-main strong {
+  font-size: 0.88rem;
+}
+
+.calendar-day-main small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 850;
   line-height: 1.2;
 }
 
-.plan-log-date small {
-  display: none;
-}
-
-.plan-log-distance.actual strong {
-  color: var(--muted);
-}
-
-.plan-log-distance.actual a {
-  color: var(--ink);
+.calendar-day-main a {
+  color: inherit;
   text-decoration-color: var(--teal);
 }
 
-.plan-log-session {
-  margin: 0;
-  color: var(--ink);
-  font-size: 0.86rem;
-  font-weight: 760;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
-}
-
-.plan-log-supplements {
+.calendar-supplements {
   display: grid;
-  gap: 6px;
+  gap: 4px;
 }
 
-.plan-log-supplements .supplement-status-list {
+.calendar-supplements .supplement-status-list {
   justify-content: flex-start;
 }
 
-.plan-log-week > .week-notes-line {
-  margin: 0;
-  padding: 11px 16px 13px;
-  border-top: 1px solid var(--subtle-line);
-  background: color-mix(in srgb, var(--soft) 52%, transparent);
+.calendar-supplements .supplement-status-pill {
+  padding: 1px 5px;
+  font-size: 0.54rem;
+}
+
+.calendar-tooltip {
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  z-index: 20;
+  display: grid;
+  width: min(280px, 70vw);
+  gap: 6px;
+  padding: 11px 12px;
+  border: 1px solid var(--chart-tooltip-border);
+  border-radius: 12px;
+  background: var(--chart-tooltip-bg);
+  box-shadow: 0 16px 34px rgba(5, 5, 5, 0.16);
+  color: var(--ink);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 6px);
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.calendar-tooltip strong {
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.calendar-tooltip em {
+  color: var(--orange-dark);
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.calendar-tooltip span,
+.calendar-tooltip small {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.calendar-day:hover,
+.calendar-day:focus-visible {
+  z-index: 25;
+  border-color: color-mix(in srgb, var(--orange) 45%, var(--line));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--orange) 13%, transparent);
+}
+
+.calendar-day:hover .calendar-tooltip,
+.calendar-day:focus-visible .calendar-tooltip,
+.calendar-day.tooltip-open .calendar-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 .week-row {
@@ -2250,19 +2306,23 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     grid-template-columns: 72px minmax(140px, 0.7fr) minmax(132px, 0.5fr) minmax(220px, 1fr) 34px;
   }
 
-  .plan-log-header,
-  .plan-log-row {
-    grid-template-columns: 104px 80px 84px minmax(260px, 1fr) 106px;
+  .calendar-day-labels,
+  .calendar-week {
+    grid-template-columns: minmax(150px, 0.72fr) repeat(7, minmax(86px, 1fr));
     gap: 10px;
   }
 
-  .plan-log-week-header {
-    grid-template-columns: minmax(180px, 1fr);
-    align-items: start;
+  .calendar-days {
+    gap: 10px;
   }
 
-  .plan-log-week-stats {
-    justify-content: flex-start;
+  .calendar-week-meta {
+    padding: 10px;
+  }
+
+  .calendar-day {
+    min-height: 100px;
+    padding: 9px;
   }
 
   .week-row summary .desktop-only {
@@ -2531,91 +2591,92 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     margin-top: 10px;
   }
 
-  .plan-log-table {
-    border-radius: 14px;
-  }
-
-  .plan-log-header {
+  .calendar-day-labels {
     display: none;
   }
 
-  .plan-log-week-header {
-    grid-template-columns: 1fr;
-    gap: 8px;
+  .calendar-plan {
+    gap: 14px;
+  }
+
+  .calendar-week {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .calendar-week-meta {
+    width: 100%;
+    margin-bottom: 8px;
     padding: 12px;
   }
 
-  .plan-log-week.current .plan-log-week-header {
+  .calendar-week.current .calendar-week-meta {
     box-shadow: inset 3px 0 0 var(--current-border);
   }
 
-  .plan-log-week-header span {
+  .calendar-week-meta span {
     font-size: 0.62rem;
   }
 
-  .plan-log-week-header strong {
+  .calendar-week-meta strong {
     font-size: 0.9rem;
   }
 
-  .plan-log-week-header p {
-    font-size: 0.78rem;
-  }
-
-  .plan-log-week-stats {
+  .calendar-week-stats {
     gap: 5px;
-    justify-content: flex-start;
   }
 
-  .plan-log-week-stats span {
+  .calendar-week-stats span {
     padding: 4px 7px;
     font-size: 0.6rem;
   }
 
-  .plan-log-row {
-    grid-template-columns: minmax(74px, 0.75fr) minmax(70px, 0.6fr) minmax(70px, 0.6fr);
+  .calendar-days {
+    display: flex;
+    max-width: 100%;
     gap: 8px;
-    align-items: start;
-    min-height: 0;
-    padding: 11px 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-padding-left: 2px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
   }
 
-  .plan-log-session,
-  .plan-log-supplements {
-    grid-column: 1 / -1;
+  .calendar-days::-webkit-scrollbar {
+    display: none;
   }
 
-  .plan-log-date small {
-    display: block;
-    margin-top: 2px;
-    color: var(--muted);
-    font-size: 0.58rem;
-    font-weight: 850;
+  .calendar-day {
+    width: 116px;
+    min-height: 116px;
+    flex: 0 0 116px;
+    padding: 10px;
+    scroll-snap-align: start;
   }
 
-  .plan-log-date span,
-  .plan-log-distance span,
-  .plan-log-supplements > span {
-    font-size: 0.58rem;
+  .calendar-day-main strong {
+    font-size: 0.96rem;
   }
 
-  .plan-log-date strong,
-  .plan-log-distance strong {
-    font-size: 0.8rem;
+  .calendar-day-main small {
+    font-size: 0.62rem;
   }
 
-  .plan-log-distance,
-  .plan-log-header span:nth-child(2),
-  .plan-log-header span:nth-child(3) {
-    text-align: left;
+  .calendar-tooltip {
+    position: fixed;
+    right: 14px;
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    left: 14px;
+    width: auto;
+    max-width: none;
+    transform: translateY(8px);
   }
 
-  .plan-log-session {
-    font-size: 0.8rem;
-  }
-
-  .plan-log-week > .week-notes-line {
-    padding: 10px 12px 12px;
-    font-size: 0.78rem;
+  .calendar-day:hover .calendar-tooltip,
+  .calendar-day:focus-visible .calendar-tooltip,
+  .calendar-day.tooltip-open .calendar-tooltip {
+    transform: translateY(0);
   }
 
   .status-pill {
