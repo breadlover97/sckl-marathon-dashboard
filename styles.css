@@ -1310,7 +1310,196 @@ main > .panel:first-child {
 
 .plan-list {
   display: grid;
-  gap: 10px;
+  gap: 0;
+}
+
+.plan-log-table {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+}
+
+.plan-log-header,
+.plan-log-row {
+  display: grid;
+  grid-template-columns: 120px 88px 92px minmax(320px, 1fr) 118px;
+  gap: 14px;
+  align-items: center;
+}
+
+.plan-log-header {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--soft) 88%, var(--panel));
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.plan-log-header span:nth-child(2),
+.plan-log-header span:nth-child(3),
+.plan-log-distance {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.plan-log-week {
+  border-bottom: 1px solid var(--line);
+}
+
+.plan-log-week:last-child {
+  border-bottom: 0;
+}
+
+.plan-log-week.current {
+  background: color-mix(in srgb, var(--current-bg) 24%, var(--panel));
+}
+
+.plan-log-week-header {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.75fr) auto minmax(320px, 1fr);
+  gap: 14px;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--subtle-line);
+  background: color-mix(in srgb, var(--card) 84%, var(--soft));
+}
+
+.plan-log-week.current .plan-log-week-header {
+  box-shadow: inset 4px 0 0 var(--current-border);
+}
+
+.plan-log-week-header span {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.plan-log-week-header strong {
+  display: block;
+  color: var(--ink);
+  font-size: 0.96rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.plan-log-week-header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.plan-log-week-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.plan-log-week-stats span {
+  margin: 0;
+  padding: 5px 8px;
+  border: 1px solid var(--subtle-line);
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 0.66rem;
+  text-transform: none;
+}
+
+.plan-log-week-rows {
+  display: grid;
+}
+
+.plan-log-row {
+  min-height: 62px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--subtle-line);
+  transition: background 160ms ease, box-shadow 160ms ease;
+}
+
+.plan-log-row:last-child {
+  border-bottom: 0;
+}
+
+.plan-log-row.past-day {
+  background: color-mix(in srgb, var(--teal-soft) 34%, transparent);
+}
+
+.plan-log-row.active-day {
+  background: color-mix(in srgb, var(--current-bg) 72%, var(--panel));
+  box-shadow: inset 4px 0 0 var(--current-border);
+}
+
+.plan-log-date,
+.plan-log-distance,
+.plan-log-supplements {
+  min-width: 0;
+}
+
+.plan-log-date span,
+.plan-log-distance span,
+.plan-log-supplements > span {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.plan-log-date strong,
+.plan-log-distance strong {
+  display: block;
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.plan-log-date small {
+  display: none;
+}
+
+.plan-log-distance.actual strong {
+  color: var(--muted);
+}
+
+.plan-log-distance.actual a {
+  color: var(--ink);
+  text-decoration-color: var(--teal);
+}
+
+.plan-log-session {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-weight: 760;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.plan-log-supplements {
+  display: grid;
+  gap: 6px;
+}
+
+.plan-log-supplements .supplement-status-list {
+  justify-content: flex-start;
+}
+
+.plan-log-week > .week-notes-line {
+  margin: 0;
+  padding: 11px 16px 13px;
+  border-top: 1px solid var(--subtle-line);
+  background: color-mix(in srgb, var(--soft) 52%, transparent);
 }
 
 .week-row {
@@ -1427,102 +1616,6 @@ main > .panel:first-child {
 
 .week-row[open] .week-row-body {
   animation: details-body-reveal 190ms ease both;
-}
-
-.plan-week-table {
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--panel);
-}
-
-.plan-day-header,
-.plan-day-row {
-  display: grid;
-  grid-template-columns: minmax(110px, 0.8fr) minmax(92px, 0.55fr) minmax(112px, 0.65fr) minmax(260px, 1.8fr) minmax(128px, 0.8fr);
-  gap: 12px;
-  align-items: center;
-}
-
-.plan-day-header {
-  padding: 11px 14px;
-  border-bottom: 1px solid var(--line);
-  background: var(--soft);
-  color: var(--muted);
-  font-size: 0.66rem;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.plan-day-row {
-  min-height: 72px;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--line);
-  transition: background 180ms ease, box-shadow 180ms ease;
-}
-
-.plan-day-row:last-child {
-  border-bottom: 0;
-}
-
-.plan-day-row.past-day {
-  background: color-mix(in srgb, var(--teal-soft) 42%, var(--panel));
-}
-
-.plan-day-row.active-day {
-  background: var(--current-bg);
-  box-shadow: inset 3px 0 0 var(--current-border);
-}
-
-.plan-date-cell,
-.plan-distance-cell,
-.plan-supplement-cell {
-  min-width: 0;
-}
-
-.plan-date-cell span,
-.plan-distance-cell small,
-.plan-supplement-cell small {
-  display: block;
-  margin-bottom: 3px;
-  color: var(--muted);
-  font-size: 0.66rem;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.plan-date-cell strong,
-.plan-distance-cell strong {
-  color: var(--ink);
-  font-size: 0.92rem;
-  font-weight: 900;
-}
-
-.plan-distance-cell.actual strong {
-  color: var(--muted);
-  font-size: 0.84rem;
-}
-
-.plan-distance-cell.actual a {
-  color: var(--ink);
-  text-decoration-color: var(--teal);
-}
-
-.plan-run-cell {
-  margin: 0;
-  color: var(--ink);
-  font-size: 0.88rem;
-  font-weight: 780;
-  line-height: 1.35;
-}
-
-.plan-supplement-cell {
-  display: grid;
-  gap: 6px;
-}
-
-.plan-supplement-cell .supplement-status-list {
-  justify-content: flex-start;
 }
 
 .week-notes-line {
@@ -2157,6 +2250,21 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     grid-template-columns: 72px minmax(140px, 0.7fr) minmax(132px, 0.5fr) minmax(220px, 1fr) 34px;
   }
 
+  .plan-log-header,
+  .plan-log-row {
+    grid-template-columns: 104px 80px 84px minmax(260px, 1fr) 106px;
+    gap: 10px;
+  }
+
+  .plan-log-week-header {
+    grid-template-columns: minmax(180px, 1fr);
+    align-items: start;
+  }
+
+  .plan-log-week-stats {
+    justify-content: flex-start;
+  }
+
   .week-row summary .desktop-only {
     display: none;
   }
@@ -2423,6 +2531,93 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     margin-top: 10px;
   }
 
+  .plan-log-table {
+    border-radius: 14px;
+  }
+
+  .plan-log-header {
+    display: none;
+  }
+
+  .plan-log-week-header {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .plan-log-week.current .plan-log-week-header {
+    box-shadow: inset 3px 0 0 var(--current-border);
+  }
+
+  .plan-log-week-header span {
+    font-size: 0.62rem;
+  }
+
+  .plan-log-week-header strong {
+    font-size: 0.9rem;
+  }
+
+  .plan-log-week-header p {
+    font-size: 0.78rem;
+  }
+
+  .plan-log-week-stats {
+    gap: 5px;
+    justify-content: flex-start;
+  }
+
+  .plan-log-week-stats span {
+    padding: 4px 7px;
+    font-size: 0.6rem;
+  }
+
+  .plan-log-row {
+    grid-template-columns: minmax(74px, 0.75fr) minmax(70px, 0.6fr) minmax(70px, 0.6fr);
+    gap: 8px;
+    align-items: start;
+    min-height: 0;
+    padding: 11px 12px;
+  }
+
+  .plan-log-session,
+  .plan-log-supplements {
+    grid-column: 1 / -1;
+  }
+
+  .plan-log-date small {
+    display: block;
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 0.58rem;
+    font-weight: 850;
+  }
+
+  .plan-log-date span,
+  .plan-log-distance span,
+  .plan-log-supplements > span {
+    font-size: 0.58rem;
+  }
+
+  .plan-log-date strong,
+  .plan-log-distance strong {
+    font-size: 0.8rem;
+  }
+
+  .plan-log-distance,
+  .plan-log-header span:nth-child(2),
+  .plan-log-header span:nth-child(3) {
+    text-align: left;
+  }
+
+  .plan-log-session {
+    font-size: 0.8rem;
+  }
+
+  .plan-log-week > .week-notes-line {
+    padding: 10px 12px 12px;
+    font-size: 0.78rem;
+  }
+
   .status-pill {
     margin-top: 10px;
     max-width: 100%;
@@ -2498,43 +2693,6 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
 
   .week-row-body {
     padding: 0 12px 14px;
-  }
-
-  .plan-week-table {
-    border-radius: 12px;
-  }
-
-  .plan-day-header {
-    display: none;
-  }
-
-  .plan-day-row {
-    grid-template-columns: minmax(74px, 0.7fr) minmax(72px, 0.65fr) minmax(82px, 0.75fr);
-    gap: 8px;
-    align-items: start;
-    min-height: 0;
-    padding: 12px;
-  }
-
-  .plan-run-cell,
-  .plan-supplement-cell {
-    grid-column: 1 / -1;
-  }
-
-  .plan-date-cell span,
-  .plan-distance-cell small,
-  .plan-supplement-cell small {
-    font-size: 0.62rem;
-  }
-
-  .plan-date-cell strong,
-  .plan-distance-cell strong {
-    font-size: 0.84rem;
-  }
-
-  .plan-distance-cell.actual strong,
-  .plan-run-cell {
-    font-size: 0.8rem;
   }
 
   .activity-table-summary {

@@ -596,7 +596,7 @@ function renderDaySupplements(session) {
   `;
 }
 
-function renderPlanDayRow(session, actuals) {
+function renderPlanLogDayRow(week, session, actuals) {
   const dayActivities = activitiesForDate(actuals.activities || [], session.date);
   const actualKm = dayActivities.reduce((sum, activity) => sum + Number(activity.distance_km || 0), 0);
   const todayKey = dateKey(singaporeToday());
@@ -604,9 +604,9 @@ function renderPlanDayRow(session, actuals) {
   const isPast = String(session.date) < todayKey;
   const isCompleted = dayActivities.length > 0 || actualKm > 0;
   const { completed, items } = supplementStatus(session.date);
-  const actualText = `${oneDecimalKm(actualKm)} · ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}`;
+  const actualText = dayActivities.length ? renderActualLine(dayActivities, oneDecimalKm(actualKm)) : "-";
   const classes = [
-    "plan-day-row",
+    "plan-log-row",
     isActive ? "active-day" : "",
     isPast ? "past-day" : "",
     isCompleted ? "completed-day" : "",
@@ -614,24 +614,51 @@ function renderPlanDayRow(session, actuals) {
 
   return `
     <div class="${classes}" role="row">
-      <div class="plan-date-cell" role="cell">
+      <div class="plan-log-date" role="cell">
         <span>${escapeHtml(session.day)}</span>
         <strong>${escapeHtml(shortDate(session.date))}</strong>
+        <small>Week ${escapeHtml(week.week_number)}</small>
       </div>
-      <div class="plan-distance-cell" role="cell">
-        <small>Planned</small>
+      <div class="plan-log-distance" role="cell">
+        <span>Planned</span>
         <strong>${oneDecimalKm(session.planned_km)}</strong>
       </div>
-      <div class="plan-distance-cell actual" role="cell">
-        <small>Actual</small>
-        <strong>${renderActualLine(dayActivities, actualText)}</strong>
+      <div class="plan-log-distance actual" role="cell">
+        <span>Actual</span>
+        <strong>${actualText}</strong>
       </div>
-      <p class="plan-run-cell" role="cell">${escapeHtml(session.plan)}</p>
-      <div class="plan-supplement-cell" data-wellness-row-date="${escapeHtml(session.date)}" role="cell">
-        <small>${completed}/${wellnessChecks.length}</small>
+      <p class="plan-log-session" role="cell">${escapeHtml(session.plan)}</p>
+      <div class="plan-log-supplements" data-wellness-row-date="${escapeHtml(session.date)}" role="cell">
+        <span>Supplements ${completed}/${wellnessChecks.length}</span>
         <div class="supplement-status-list" aria-label="${completed} of ${wellnessChecks.length} supplements recorded">${items}</div>
       </div>
     </div>
+  `;
+}
+
+function renderPlanLogWeek(week, actuals) {
+  const current = isCurrentWeek(week);
+  const actual = summarizeWeekActual(week, actuals);
+  const rows = week.daily_sessions.map((session) => renderPlanLogDayRow(week, session, actuals)).join("");
+  const runDays = week.daily_sessions.filter((session) => Number(session.planned_km || 0) > 0).length;
+
+  return `
+    <section class="plan-log-week ${current ? "current" : ""}" data-week-number="${escapeHtml(week.week_number)}" ${current ? `data-current-week="true"` : ""}>
+      <div class="plan-log-week-header">
+        <div>
+          <span>Week ${escapeHtml(week.week_number)} · ${escapeHtml(week.phase)}</span>
+          <strong>${prettyDate(week.week_start_date)} to ${prettyDate(weekEndDate(week))}</strong>
+        </div>
+        <div class="plan-log-week-stats" aria-label="Week mileage summary">
+          <span>${km(week.target_weekly_mileage_km)} planned</span>
+          <span>${oneDecimalKm(actual.distance_km)} actual</span>
+          <span>${runDays} planned runs</span>
+        </div>
+        <p>${escapeHtml(week.week_summary)}</p>
+      </div>
+      <div class="plan-log-week-rows">${rows}</div>
+      <p class="week-notes-line"><strong>Notes:</strong> ${escapeHtml(week.notes || "No notes for this week.")}</p>
+    </section>
   `;
 }
 
@@ -694,41 +721,19 @@ function renderPlanTable(plan, actuals) {
     planStatus.textContent = lastSyncedText("Sheet", plan.metadata?.generated_at, "Sheet not synced");
     planStatus.className = "status-pill";
   }
-  table.innerHTML = plan.weeks.map((week) => {
-    const current = isCurrentWeek(week);
-    const actual = summarizeWeekActual(week, actuals);
-    const details = week.daily_sessions.map((session) => renderPlanDayRow(session, actuals)).join("");
-
-    return `
-      <details class="week-row ${current ? "current" : ""}" data-week-number="${escapeHtml(week.week_number)}" ${current ? "open" : ""}>
-        <summary>
-          <span class="row-label">Week ${week.week_number}</span>
-          <span class="row-title">
-            <strong>${escapeHtml(week.phase)}</strong>
-            <span>${prettyDate(week.week_start_date)} to ${prettyDate(weekEndDate(week))}</span>
-          </span>
-          <span class="row-distance-text">
-            <small>Planned / actual</small>
-            <strong>${km(week.target_weekly_mileage_km)} · ${oneDecimalKm(actual.distance_km)}</strong>
-          </span>
-          <span class="row-summary-text">${escapeHtml(week.week_summary)}</span>
-        </summary>
-        <div class="week-row-body">
-          <div class="plan-week-table" role="table" aria-label="Week ${escapeHtml(week.week_number)} training plan">
-            <div class="plan-day-header" role="row">
-              <span>Date</span>
-              <span>Planned</span>
-              <span>Actual</span>
-              <span>Run description</span>
-              <span>Supplements</span>
-            </div>
-            ${details}
-          </div>
-          <p class="week-notes-line"><strong>Notes:</strong> ${escapeHtml(week.notes || "No notes for this week.")}</p>
-        </div>
-      </details>
-    `;
-  }).join("");
+  const rows = plan.weeks.map((week) => renderPlanLogWeek(week, actuals)).join("");
+  table.innerHTML = `
+    <div class="plan-log-table" role="table" aria-label="Week-by-week training plan">
+      <div class="plan-log-header" role="row">
+        <span role="columnheader">Date</span>
+        <span role="columnheader">Planned</span>
+        <span role="columnheader">Actual</span>
+        <span role="columnheader">Run description</span>
+        <span role="columnheader">Supplements</span>
+      </div>
+      ${rows}
+    </div>
+  `;
   updateWeekToggleLabel();
 }
 
@@ -750,11 +755,9 @@ function restoreOpenWeeks(openWeeks) {
 
 function updateWeekToggleLabel() {
   const button = document.getElementById("toggleWeeks");
-  const rows = Array.from(document.querySelectorAll(".week-row"));
-  if (!button || !rows.length) return;
-  const allOpen = rows.every((row) => row.open);
-  button.textContent = allOpen ? "Close all" : "Open all";
-  button.setAttribute("aria-expanded", String(allOpen));
+  if (!button) return;
+  button.textContent = "Current week";
+  button.setAttribute("aria-label", "Jump to current week in the training plan");
 }
 
 function setupWeekToggle() {
@@ -763,17 +766,8 @@ function setupWeekToggle() {
   if (!button || !planTable) return;
 
   button.addEventListener("click", () => {
-    const rows = Array.from(document.querySelectorAll(".week-row"));
-    const shouldOpen = rows.some((row) => !row.open);
-    rows.forEach((row) => {
-      row.open = shouldOpen;
-    });
-    updateWeekToggleLabel();
+    document.querySelector("[data-current-week='true']")?.scrollIntoView({ block: "start", behavior: "smooth" });
   });
-
-  planTable.addEventListener("toggle", (event) => {
-    if (event.target.matches(".week-row")) updateWeekToggleLabel();
-  }, true);
 }
 
 function renderRunNotePanel(activity, runNotes) {
