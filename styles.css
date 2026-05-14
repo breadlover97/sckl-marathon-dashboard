@@ -1361,6 +1361,8 @@ main > .panel:first-child {
   gap: 8px;
   align-content: center;
   padding: 10px;
+  border-color: color-mix(in srgb, var(--amber) 28%, var(--line));
+  background: color-mix(in srgb, var(--amber-soft) 54%, var(--card));
 }
 
 .calendar-week.current .calendar-week-meta {
@@ -1422,6 +1424,11 @@ main > .panel:first-child {
 .calendar-day.past-day {
   border-color: color-mix(in srgb, var(--muted) 18%, var(--line));
   background: color-mix(in srgb, var(--soft) 62%, var(--card));
+}
+
+.calendar-day.past-day:not(.completed-day) {
+  border-style: dashed;
+  color: color-mix(in srgb, var(--ink) 78%, var(--muted));
 }
 
 .calendar-day.past-day.completed-day {
@@ -1556,6 +1563,27 @@ main > .panel:first-child {
 .calendar-day.tooltip-open .calendar-tooltip {
   opacity: 1;
   transform: translate(-50%, 0);
+}
+
+.calendar-range-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.calendar-range-controls > span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.calendar-range-controls > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .week-row {
@@ -2330,6 +2358,43 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   }
 }
 
+@media (max-width: 860px) {
+  body {
+    padding-bottom: calc(78px + env(safe-area-inset-bottom));
+  }
+
+  .nav-tabs {
+    position: fixed;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    left: 10px;
+    z-index: 35;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    width: calc(100% - 20px);
+    max-width: none;
+    justify-self: stretch;
+    padding: 5px;
+    overflow-x: auto;
+    border-radius: 18px;
+    box-shadow: 0 16px 34px rgba(5, 5, 5, 0.16);
+    scrollbar-width: none;
+  }
+
+  .nav-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-tabs a {
+    min-height: 34px;
+    justify-content: center;
+    padding: 5px 4px;
+    font-size: 0.62rem;
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 640px) {
   html,
   body {
@@ -2597,6 +2662,11 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
 
   .calendar-plan {
     gap: 14px;
+  }
+
+  .calendar-range-controls {
+    align-items: flex-start;
+    justify-content: flex-start;
   }
 
   .calendar-week {

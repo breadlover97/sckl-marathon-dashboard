@@ -9,6 +9,9 @@ const WELLNESS_STORAGE_KEY = "sckl-wellness-checks";
 let latestRenderState = null;
 let resizeTimer = null;
 let supplementSyncState = { message: "", tone: "" };
+let hasScrolledThisWeekToToday = false;
+let showPastCalendarWeeks = false;
+let visibleFutureCalendarWeeks = 5;
 
 const wellnessChecks = [
   { key: "protein", label: "Protein shake", shortLabel: "Protein" },
@@ -695,6 +698,37 @@ function renderCalendarWeek(week, actuals) {
   `;
 }
 
+function calendarWindow(weeks) {
+  const currentIndex = Math.max(0, weeks.findIndex((week) => isCurrentWeek(week)));
+  const start = showPastCalendarWeeks ? 0 : currentIndex;
+  const end = Math.min(weeks.length, currentIndex + visibleFutureCalendarWeeks);
+  return {
+    currentIndex,
+    end: Math.max(end, start + 1),
+    start
+  };
+}
+
+function renderCalendarControls(plan, windowState) {
+  const totalWeeks = plan.weeks.length;
+  const visibleStart = windowState.start + 1;
+  const visibleEnd = windowState.end;
+  const hasPastWeeks = windowState.currentIndex > 0;
+  const hasMoreFuture = windowState.end < totalWeeks;
+
+  return `
+    <div class="calendar-range-controls">
+      <span>Showing weeks ${visibleStart}-${visibleEnd} of ${totalWeeks}</span>
+      <div>
+        ${hasPastWeeks ? `<button class="action-button secondary compact-action" type="button" data-calendar-range="past">
+          ${showPastCalendarWeeks ? "Hide past weeks" : "Show past weeks"}
+        </button>` : ""}
+        ${hasMoreFuture ? `<button class="action-button secondary compact-action" type="button" data-calendar-range="future">Show 5 more weeks</button>` : ""}
+      </div>
+    </div>
+  `;
+}
+
 function renderTrainingDayProgress(plan) {
   const today = singaporeToday();
   const raceDay = parseLocalDate(RACE_DATE);
@@ -739,12 +773,20 @@ function renderCurrentWeek(plan, actuals) {
       ${renderSupplementInput(dateKey(singaporeToday()))}
     </div>
     <div class="daily-grid">${dayCards}</div>
-    <div class="note-grid">
-      <article class="note-card"><span>Long run notes</span><p>${escapeHtml(week.long_run_notes)}</p></article>
-      <article class="note-card"><span>Fuel practice</span><p>${escapeHtml(week.fuel_practice)}</p></article>
-      <article class="note-card"><span>Sleep / recovery</span><p>${escapeHtml(week.sleep_recovery_focus)}</p></article>
-    </div>
   `;
+  scrollThisWeekToToday();
+}
+
+function scrollThisWeekToToday() {
+  if (hasScrolledThisWeekToToday) return;
+  window.requestAnimationFrame(() => {
+    const grid = document.querySelector("#currentWeekPlan .daily-grid");
+    const activeDay = grid?.querySelector(".day-card.active-day");
+    if (!grid || !activeDay || grid.scrollWidth <= grid.clientWidth) return;
+    const target = activeDay.offsetLeft - ((grid.clientWidth - activeDay.clientWidth) / 2);
+    grid.scrollTo({ left: Math.max(0, target), behavior: "auto" });
+    hasScrolledThisWeekToToday = true;
+  });
 }
 
 function renderPlanTable(plan, actuals) {
@@ -754,8 +796,11 @@ function renderPlanTable(plan, actuals) {
     planStatus.textContent = lastSyncedText("Sheet", plan.metadata?.generated_at, "Sheet not synced");
     planStatus.className = "status-pill";
   }
-  const rows = plan.weeks.map((week) => renderCalendarWeek(week, actuals)).join("");
+  const windowState = calendarWindow(plan.weeks);
+  const visibleWeeks = plan.weeks.slice(windowState.start, windowState.end);
+  const rows = visibleWeeks.map((week) => renderCalendarWeek(week, actuals)).join("");
   table.innerHTML = `
+    ${renderCalendarControls(plan, windowState)}
     <div class="calendar-plan" aria-label="Week-by-week calendar training plan">
       <div class="calendar-day-labels" aria-hidden="true">
         <span></span>
@@ -797,6 +842,20 @@ function setupWeekToggle() {
 
   button.addEventListener("click", () => {
     document.querySelector("[data-current-week='true']")?.scrollIntoView({ block: "start", behavior: "smooth" });
+  });
+}
+
+function setupCalendarRangeControls() {
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-calendar-range]");
+    if (!button || !latestRenderState) return;
+    if (button.dataset.calendarRange === "past") {
+      showPastCalendarWeeks = !showPastCalendarWeeks;
+    }
+    if (button.dataset.calendarRange === "future") {
+      visibleFutureCalendarWeeks += 5;
+    }
+    renderPlanTable(latestRenderState.plan, latestRenderState.actuals);
   });
 }
 
@@ -1480,6 +1539,7 @@ function setupResponsiveCharts() {
 setupReturnTop();
 setupActiveNav();
 setupWeekToggle();
+setupCalendarRangeControls();
 setupRunNotesForms();
 setupActivityDetails();
 setupWellnessTracker();
