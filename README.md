@@ -209,10 +209,12 @@ Setup:
 3. In `cloudflare-worker`, run:
 
 ```bash
-wrangler secret put GOOGLE_SERVICE_ACCOUNT_JSON
+base64 -i service-account.json | wrangler secret put GOOGLE_SERVICE_ACCOUNT_JSON_B64
 wrangler secret put RUN_NOTES_TOKEN
 wrangler deploy
 ```
+
+`GOOGLE_SERVICE_ACCOUNT_JSON_B64` is preferred because it avoids broken multi-line JSON when pasting private keys into the terminal. The Worker still supports `GOOGLE_SERVICE_ACCOUNT_JSON` for older deployments.
 
 4. Copy the deployed Worker URL into `config.js`:
 
