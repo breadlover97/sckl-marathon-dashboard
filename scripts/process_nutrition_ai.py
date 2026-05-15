@@ -309,6 +309,7 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=int(os.environ.get("NUTRITION_AI_LIMIT", "20")))
     parser.add_argument("--force", action="store_true", help="Reprocess rows even if AI Status is done")
     parser.add_argument("--dry-run", action="store_true", help="Print rows that would be processed without calling OpenAI or writing results")
+    parser.add_argument("--fail-on-error", action="store_true", help="Exit non-zero when one or more nutrition rows fail AI processing")
     args = parser.parse_args()
 
     api_key = os.environ.get("OPENAI_API_KEY")
@@ -332,7 +333,7 @@ def main() -> int:
             dry_run=args.dry_run,
         )
         print(f"Nutrition AI processing complete: {processed} row(s), {errors} error(s).")
-        return 1 if errors else 0
+        return 1 if errors and args.fail_on_error else 0
     except (SheetConfigError, NutritionAIError, OSError, ValueError, requests.RequestException) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
