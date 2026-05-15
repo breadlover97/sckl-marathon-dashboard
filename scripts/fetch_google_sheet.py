@@ -16,7 +16,7 @@ from typing import Any
 DEFAULT_SHEET_ID = "1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo"
 DEFAULT_RANGE = "A:AG"
 DEFAULT_OUTPUT = "data/training-plan.json"
-DEFAULT_SUPPLEMENTS_RANGE = "Supplements!A:D"
+DEFAULT_SUPPLEMENTS_RANGE = "Supplements!A:G"
 DEFAULT_SUPPLEMENTS_OUTPUT = "data/supplements.json"
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
