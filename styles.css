@@ -2453,7 +2453,7 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   }
 
   .site-brand {
-    width: calc(100vw - 128px);
+    width: calc(100vw - 178px);
     min-width: 0;
     padding-right: 0;
     gap: 3px;
@@ -2518,18 +2518,18 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     gap: 5px;
   }
 
-  .nav-actions .action-button.secondary:not(.race-action) {
+  .nav-actions .action-button.secondary[href="index.html"] {
     display: none;
   }
 
   .nav-sync {
     min-height: 30px;
-    padding: 7px 9px;
-    font-size: 0.66rem;
+    padding: 7px 8px;
+    font-size: 0.62rem;
   }
 
   .nav-actions .action-button.primary {
-    width: 44px;
+    width: 40px;
     padding-right: 0;
     padding-left: 0;
     overflow: hidden;
