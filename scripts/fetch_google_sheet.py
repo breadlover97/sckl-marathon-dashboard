@@ -18,6 +18,8 @@ DEFAULT_RANGE = "A:AF"
 DEFAULT_OUTPUT = "data/training-plan.json"
 DEFAULT_NUTRITION_RANGE = "Nutrition!A:T"
 DEFAULT_NUTRITION_OUTPUT = "data/nutrition.json"
+DEFAULT_SUPPLEMENTS_RANGE = "Supplements!A:F"
+DEFAULT_SUPPLEMENTS_OUTPUT = "data/supplements.json"
 CHALLENGE_YEAR = 2026
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
@@ -61,6 +63,12 @@ NUTRITION_COLUMNS = {
     "assumptions": "Assumptions",
     "source": "Source",
     "notes": "Notes",
+}
+
+SUPPLEMENT_BASE_COLUMNS = {
+    "date": "Date",
+    "week": "Week",
+    "phase": "Training Phase",
 }
 
 
@@ -418,6 +426,100 @@ def build_nutrition(values: list[list[Any]], source: str) -> dict[str, Any]:
     }
 
 
+def supplement_key(value: Any) -> str:
+    key = normalize_header(value)
+    return key or "supplement"
+
+
+def supplements_empty_payload(source: str, warnings: list[str] | None = None) -> dict[str, Any]:
+    return {
+        "metadata": {
+            "source": source,
+            "generated_at": datetime.now().astimezone().replace(microsecond=0).isoformat(),
+            "included_days": 0,
+            "supplement_names": [],
+            "warnings": warnings or [],
+        },
+        "days": [],
+    }
+
+
+def build_supplements(values: list[list[Any]], source: str) -> dict[str, Any]:
+    if not values:
+        return supplements_empty_payload(source)
+
+    headers = list(values[0])
+    normalized_headers = [normalize_header(value) for value in headers]
+    missing = [
+        column
+        for column in SUPPLEMENT_BASE_COLUMNS.values()
+        if normalize_header(column) not in normalized_headers
+    ]
+    if missing:
+        return supplements_empty_payload(
+            source,
+            [f"Supplements tab missing column(s): {', '.join(missing)}"],
+        )
+
+    date_index = normalized_headers.index(normalize_header(SUPPLEMENT_BASE_COLUMNS["date"]))
+    week_index = normalized_headers.index(normalize_header(SUPPLEMENT_BASE_COLUMNS["week"]))
+    phase_index = normalized_headers.index(normalize_header(SUPPLEMENT_BASE_COLUMNS["phase"]))
+    supplement_columns = [
+        (index, str(label or "").strip(), supplement_key(label))
+        for index, label in enumerate(headers)
+        if index not in {date_index, week_index, phase_index} and str(label or "").strip()
+    ]
+
+    days = []
+    warnings = []
+    for row_number, raw_row in enumerate(values[1:], start=2):
+        padded = list(raw_row) + [""] * max(len(headers) - len(raw_row), 0)
+        if not any(str(value or "").strip() for value in padded):
+            continue
+        date_value = padded[date_index] if date_index < len(padded) else ""
+        if not str(date_value or "").strip():
+            warnings.append(f"Row {row_number}: skipped supplement row without a date")
+            continue
+        try:
+            supplement_date = parse_date(str(date_value), "Supplement Date", row_number)
+        except SheetParseError as exc:
+            warnings.append(str(exc))
+            continue
+
+        items = [
+            {
+                "key": key,
+                "label": label,
+                "taken": truthy_sheet_value(padded[index] if index < len(padded) else ""),
+            }
+            for index, label, key in supplement_columns
+        ]
+        completed_count = sum(1 for item in items if item["taken"])
+        day = {
+            "date": supplement_date,
+            "week": parse_optional_number(padded[week_index] if week_index < len(padded) else ""),
+            "phase": str(padded[phase_index] if phase_index < len(padded) else "").strip(),
+            "completed_count": completed_count,
+            "total_count": len(items),
+            "items": items,
+        }
+        for item in items:
+            day[item["key"]] = item["taken"]
+        days.append(day)
+
+    days.sort(key=lambda item: item["date"])
+    return {
+        "metadata": {
+            "source": source,
+            "generated_at": datetime.now().astimezone().replace(microsecond=0).isoformat(),
+            "included_days": len(days),
+            "supplement_names": [label for _index, label, _key in supplement_columns],
+            "warnings": warnings,
+        },
+        "days": days,
+    }
+
+
 def credentials_from_env(credentials_file: str | None, credentials_json: str | None):
     try:
         from google.oauth2 import service_account
@@ -542,9 +644,14 @@ def main() -> int:
     parser.add_argument("--output", default=os.environ.get("GOOGLE_SHEET_OUTPUT", DEFAULT_OUTPUT))
     nutrition_range_default = os.environ.get("GOOGLE_NUTRITION_RANGE", DEFAULT_NUTRITION_RANGE)
     nutrition_output_default = os.environ.get("GOOGLE_NUTRITION_OUTPUT", DEFAULT_NUTRITION_OUTPUT)
+    supplements_range_default = os.environ.get("GOOGLE_SUPPLEMENTS_RANGE", DEFAULT_SUPPLEMENTS_RANGE)
+    supplements_output_default = os.environ.get("GOOGLE_SUPPLEMENTS_OUTPUT", DEFAULT_SUPPLEMENTS_OUTPUT)
     parser.add_argument("--nutrition-range", dest="nutrition_range", default=nutrition_range_default)
     parser.add_argument("--nutrition-output", dest="nutrition_output", default=nutrition_output_default)
+    parser.add_argument("--supplements-range", dest="supplements_range", default=supplements_range_default)
+    parser.add_argument("--supplements-output", dest="supplements_output", default=supplements_output_default)
     parser.add_argument("--skip-nutrition", dest="skip_nutrition", action="store_true", help="Fetch only the training plan JSON")
+    parser.add_argument("--skip-supplements", dest="skip_supplements", action="store_true", help="Skip supplement history JSON")
     parser.add_argument("--credentials-file", help="Path to a Google service account JSON key")
     parser.add_argument("--credentials-json", help="Raw Google service account JSON")
     parser.add_argument("--input-json", help="Developer helper: parse an existing plan JSON instead of calling Google")
@@ -572,10 +679,31 @@ def main() -> int:
                 )
                 nutrition_payload = build_nutrition(nutrition_values, f"google-sheet:{args.spreadsheet_id}:{args.nutrition_range}")
                 print(f"Parsed {len(nutrition_payload['nutrition'])} nutrition meal row(s) across {len(nutrition_payload['days'])} day(s).")
+            if not args.input_json and not args.skip_supplements:
+                supplements_values = fetch_sheet_values(
+                    args.spreadsheet_id,
+                    args.supplements_range,
+                    args.credentials_file,
+                    args.credentials_json,
+                    value_render_option="UNFORMATTED_VALUE",
+                )
+                supplements_payload = build_supplements(supplements_values, f"google-sheet:{args.spreadsheet_id}:{args.supplements_range}")
+                print(f"Parsed {len(supplements_payload['days'])} supplement day row(s).")
             return 0
 
         write_json(Path(args.output), payload)
         print(f"Wrote {len(payload['weeks'])} training week(s) to {args.output}.")
+        if not args.input_json and not args.skip_supplements:
+            supplements_values = fetch_sheet_values(
+                args.spreadsheet_id,
+                args.supplements_range,
+                args.credentials_file,
+                args.credentials_json,
+                value_render_option="UNFORMATTED_VALUE",
+            )
+            supplements_payload = build_supplements(supplements_values, f"google-sheet:{args.spreadsheet_id}:{args.supplements_range}")
+            write_json(Path(args.supplements_output), supplements_payload)
+            print(f"Wrote {len(supplements_payload['days'])} supplement day row(s) to {args.supplements_output}.")
         if not args.input_json and not args.skip_nutrition:
             nutrition_values = fetch_sheet_values(
                 args.spreadsheet_id,

@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "source": "placeholder",
+    "generated_at": "2026-05-15T00:00:00+08:00",
+    "included_days": 0,
+    "supplement_names": [],
+    "warnings": [
+      "Run the Google Sheets sync workflow to generate supplement history."
+    ]
+  },
+  "days": []
+}

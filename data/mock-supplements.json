@@ -1,0 +1,75 @@
+{
+  "metadata": {
+    "source": "mock",
+    "generated_at": "2026-05-15T00:00:00+08:00",
+    "included_days": 5,
+    "supplement_names": [
+      "Protein Shake",
+      "Omega 3",
+      "Vitamin D"
+    ],
+    "warnings": []
+  },
+  "days": [
+    {
+      "date": "2026-05-11",
+      "week": 1,
+      "phase": "Base",
+      "completed_count": 1,
+      "total_count": 3,
+      "items": [
+        { "key": "proteinshake", "label": "Protein Shake", "taken": true },
+        { "key": "omega3", "label": "Omega 3", "taken": false },
+        { "key": "vitamind", "label": "Vitamin D", "taken": false }
+      ]
+    },
+    {
+      "date": "2026-05-12",
+      "week": 1,
+      "phase": "Base",
+      "completed_count": 0,
+      "total_count": 3,
+      "items": [
+        { "key": "proteinshake", "label": "Protein Shake", "taken": false },
+        { "key": "omega3", "label": "Omega 3", "taken": false },
+        { "key": "vitamind", "label": "Vitamin D", "taken": false }
+      ]
+    },
+    {
+      "date": "2026-05-13",
+      "week": 1,
+      "phase": "Base",
+      "completed_count": 1,
+      "total_count": 3,
+      "items": [
+        { "key": "proteinshake", "label": "Protein Shake", "taken": true },
+        { "key": "omega3", "label": "Omega 3", "taken": false },
+        { "key": "vitamind", "label": "Vitamin D", "taken": false }
+      ]
+    },
+    {
+      "date": "2026-05-14",
+      "week": 1,
+      "phase": "Base",
+      "completed_count": 2,
+      "total_count": 3,
+      "items": [
+        { "key": "proteinshake", "label": "Protein Shake", "taken": true },
+        { "key": "omega3", "label": "Omega 3", "taken": true },
+        { "key": "vitamind", "label": "Vitamin D", "taken": false }
+      ]
+    },
+    {
+      "date": "2026-05-15",
+      "week": 1,
+      "phase": "Base",
+      "completed_count": 0,
+      "total_count": 3,
+      "items": [
+        { "key": "proteinshake", "label": "Protein Shake", "taken": false },
+        { "key": "omega3", "label": "Omega 3", "taken": false },
+        { "key": "vitamind", "label": "Vitamin D", "taken": false }
+      ]
+    }
+  ]
+}

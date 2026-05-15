@@ -6,7 +6,7 @@ The site is intentionally simple: Google Sheets is the editable plan, Strava is 
 
 ## What The Dashboard Shows
 
-- This week’s planned sessions, actual Strava mileage, and read-only nutrition status synced from Google Sheets.
+- This week’s planned sessions, actual Strava mileage, and read-only supplement status synced from Google Sheets.
 - Week-by-week marathon plan from Google Sheets.
 - Planned vs actual weekly mileage and long-run trends.
 - Recent Strava activity feed with pace, time, elevation, heart rate, cadence, and Strava links.
@@ -21,7 +21,7 @@ python3 -m http.server 8010
 
 Open `http://localhost:8010`.
 
-The dashboard loads `data/training-plan.json`, `data/strava-activities.json`, and `data/nutrition.json` when available. If live files are missing, it falls back to the mock JSON files in `data/`.
+The dashboard loads `data/training-plan.json`, `data/strava-activities.json`, and `data/supplements.json` when available. The standalone nutrition page loads `data/nutrition.json`. If live files are missing, the site falls back to the mock JSON files in `data/`.
 
 ## Repository Map
 
@@ -104,7 +104,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/google-service-account.j
 python scripts/fetch_google_sheet.py
 ```
 
-The script writes `data/training-plan.json` and `data/nutrition.json`.
+The script writes `data/training-plan.json`, `data/supplements.json`, and `data/nutrition.json`.
 
 Recommended sheet formatting:
 
@@ -152,8 +152,9 @@ The workflow:
 1. Installs the Python dependencies.
 2. Fetches the latest planned training from Google Sheets.
 3. Fetches Strava run activities from 1 May 2026 onward.
-4. Optionally estimates raw nutrition logs with OpenAI and writes the results back to Google Sheets.
-5. Publishes the static site files and generated dashboard JSON files to GitHub Pages.
+4. Fetches supplement checkbox history from the `Supplements` tab.
+5. Optionally estimates raw nutrition logs with OpenAI and writes the results back to Google Sheets.
+6. Publishes the static site files and generated dashboard JSON files to GitHub Pages.
 
 Required repository secrets:
 
@@ -175,6 +176,7 @@ Optional repository variables:
 ```text
 GOOGLE_SHEET_ID
 GOOGLE_SHEET_RANGE
+GOOGLE_SUPPLEMENTS_RANGE
 OPENAI_NUTRITION_MODEL
 ```
 
@@ -183,6 +185,7 @@ If the optional variables are not set, the workflow uses:
 ```text
 GOOGLE_SHEET_ID=1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo
 GOOGLE_SHEET_RANGE=A:AF
+GOOGLE_SUPPLEMENTS_RANGE=Supplements!A:F
 ```
 
 To enable Pages:
@@ -197,6 +200,12 @@ To enable Pages:
 The workflow also runs daily at 12:15am Singapore time and whenever `main` is pushed.
 
 Important Strava note: if a workflow run says Strava returned a rotated refresh token, generate or copy the new refresh token and update the `STRAVA_REFRESH_TOKEN` repository secret before the next sync.
+
+## Supplement History
+
+Supplement rows live in the `Supplements` tab. The first three columns are `Date`, `Week`, and `Training Phase`; every column after that is treated as a supplement checkbox and synced to `data/supplements.json`.
+
+The main dashboard shows this supplement history in the current week cards and week-by-week calendar. Nutrition macro data stays on the standalone nutrition page.
 
 ## Nutrition History
 
@@ -236,7 +245,7 @@ Typical workflow:
 
 If `OPENAI_API_KEY` is not set, the AI step safely skips and the normal dashboard sync still runs.
 
-The main dashboard shows a compact daily nutrition status, while `nutrition.html` shows the full daily and meal-level history.
+The main dashboard shows compact daily supplement status, while `nutrition.html` shows the full daily and meal-level nutrition history.
 
 The generated JSON structure is:
 
@@ -291,7 +300,7 @@ The generated JSON structure is:
 }
 ```
 
-Google Sheets is the cross-device source of truth. The website displays nutrition history only after the scheduled or manual GitHub Actions sync regenerates `data/nutrition.json`.
+Google Sheets is the cross-device source of truth. The website displays supplement and nutrition history only after the scheduled or manual GitHub Actions sync regenerates `data/supplements.json` and `data/nutrition.json`.
 
 ## Security Notes
 
