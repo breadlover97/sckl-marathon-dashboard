@@ -1529,6 +1529,20 @@ main > .panel:first-child {
   transform: translate(-50%, 0);
 }
 
+@media (min-width: 641px) {
+  .calendar-week:first-of-type .calendar-tooltip {
+    top: calc(100% + 9px);
+    bottom: auto;
+    transform: translate(-50%, -6px);
+  }
+
+  .calendar-week:first-of-type .calendar-day:hover .calendar-tooltip,
+  .calendar-week:first-of-type .calendar-day:focus-visible .calendar-tooltip,
+  .calendar-week:first-of-type .calendar-day.tooltip-open .calendar-tooltip {
+    transform: translate(-50%, 0);
+  }
+}
+
 .calendar-phase-group {
   overflow: hidden;
   border: 1px solid var(--line);

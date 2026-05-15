@@ -789,7 +789,6 @@ function renderCurrentWeek(plan, actuals) {
       <div class="progress-track" aria-label="This week mileage progress">
         <span style="width: ${progress}%"></span>
       </div>
-      ${renderSupplementInput(dateKey(singaporeToday()))}
     </div>
     <div class="daily-grid">${dayCards}</div>
   `;
