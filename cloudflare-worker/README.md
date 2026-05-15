@@ -1,14 +1,14 @@
 # SCKL Dashboard Worker
 
-This Worker lets the static GitHub Pages dashboard write run notes and supplement checks into the Google Sheet without exposing Google credentials in the browser.
+This Worker lets the static GitHub Pages dashboard write run notes into the Google Sheet without exposing Google credentials in the browser.
 
 ## Data Flow
 
 ```text
-Dashboard note form or supplement checkbox
--> Cloudflare Worker /notes or /supplements with bearer passcode
+Dashboard note form
+-> Cloudflare Worker /notes with bearer passcode
 -> Google Sheets API
--> Run Notes or Supplements tab
+-> Run Notes tab
 ```
 
 The Worker stores notes in a separate `Run Notes` tab using this schema. If the tab does not exist yet, the Worker creates it on the first successful notes request.
@@ -17,11 +17,7 @@ The Worker stores notes in a separate `Run Notes` tab using this schema. If the 
 Activity ID | Date | Activity | Note | Strava URL | Updated At
 ```
 
-The Worker stores supplement checks in a separate `Supplements` tab using this schema:
-
-```text
-Date | Protein Shake | Omega 3 | Vitamin D | Updated At
-```
+Supplement history is no longer written by the Worker. Edit the `Supplements` tab manually in Google Sheets; the GitHub Pages sync reads it into static JSON.
 
 ## Setup
 
@@ -68,10 +64,10 @@ window.SCKL_CONFIG = {
 ## Security Notes
 
 - Google credentials stay only in Cloudflare Worker secrets.
-- Reading and writing notes or supplement checks both require the passcode.
+- Reading and writing notes requires the passcode.
 - Notes are capped at 500 characters per activity.
 - Keep `ALLOWED_ORIGIN` set to the GitHub Pages origin unless you are testing locally.
 - The browser stores only your dashboard passcode in localStorage after the first save.
-- Anyone with both the public site and the passcode can edit run notes and supplement checks, so keep the passcode private.
+- Anyone with both the public site and the passcode can edit run notes, so keep the passcode private.
 - Rotate `RUN_NOTES_TOKEN` and the Google service account key if either one is pasted into chat, committed, or shared.
-- The Worker is intentionally scoped to run notes and supplement checks only, not arbitrary sheet editing.
+- The Worker is intentionally scoped to run notes only, not arbitrary sheet editing.

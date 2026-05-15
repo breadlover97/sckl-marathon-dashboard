@@ -6,7 +6,7 @@ The site is intentionally simple: Google Sheets is the editable plan, Strava is 
 
 ## What The Dashboard Shows
 
-- This week’s planned sessions, actual Strava mileage, supplement input under the weekly progress bar, and read-only supplement status inside each day card.
+- This week’s planned sessions, actual Strava mileage, and read-only supplement history synced from Google Sheets.
 - Week-by-week marathon plan from Google Sheets.
 - Planned vs actual weekly mileage and long-run trends.
 - Recent Strava activity feed with pace, time, elevation, heart rate, cadence, links, and optional run notes.
@@ -20,7 +20,7 @@ python3 -m http.server 8010
 
 Open `http://localhost:8010`.
 
-The dashboard loads `data/training-plan.json` and `data/strava-activities.json` when available. If live files are missing, it falls back to the mock JSON files in `data/`.
+The dashboard loads `data/training-plan.json`, `data/strava-activities.json`, and `data/supplements.json` when available. If live files are missing, it falls back to the mock JSON files in `data/`.
 
 ## Repository Map
 
@@ -189,15 +189,14 @@ The workflow also runs daily at 12:15am Singapore time and whenever `main` is pu
 
 Important Strava note: if a workflow run says Strava returned a rotated refresh token, generate or copy the new refresh token and update the `STRAVA_REFRESH_TOKEN` repository secret before the next sync.
 
-## Run Notes And Supplements Writeback
+## Run Notes Writeback
 
-Run notes and supplement checks are written through a Cloudflare Worker so Google credentials are not exposed on GitHub Pages.
+Run notes are written through a Cloudflare Worker so Google credentials are not exposed on GitHub Pages.
 
 Flow:
 
 ```text
 Website note form -> Cloudflare Worker /notes -> Google Sheets API -> Run Notes tab
-Supplement checkbox -> Cloudflare Worker /supplements -> Google Sheets API -> Supplements tab
 ```
 
 The `Run Notes` tab is created automatically by the Worker the first time notes are loaded or saved. It may not exist yet if no note has been saved.
@@ -205,7 +204,7 @@ The `Run Notes` tab is created automatically by the Worker the first time notes 
 Setup:
 
 1. Copy `cloudflare-worker/wrangler.toml.example` to `cloudflare-worker/wrangler.toml`.
-2. Share the Google Sheet with the service account email as **Editor**. Viewer access is enough for the scheduled plan sync, but the Worker needs Editor access to save run notes and supplement checks.
+2. Share the Google Sheet with the service account email as **Editor**. Viewer access is enough for the scheduled plan and supplement sync, but the Worker needs Editor access to save run notes.
 3. In `cloudflare-worker`, run:
 
 ```bash
@@ -228,19 +227,33 @@ window.SCKL_CONFIG = {
 
 The first time you save a note from the website, it asks for `RUN_NOTES_TOKEN` and stores it in browser localStorage. Reading existing notes also requires that stored passcode, so notes are not exposed as a public unauthenticated API.
 
-## Supplement Checks
+## Supplement History
 
-Supplement checks are saved to the `Supplements` tab through the Cloudflare Worker when `runNotesApiUrl` is configured. The browser also keeps a local cache under the `sckl-wellness-checks` localStorage key so the dashboard still displays recent checks if the Worker is unavailable.
+Supplement checks are edited manually in the Google Sheet, not from the website. The `Supplements` tab has one row for every challenge date and checkbox columns for:
 
-The local cache structure is keyed by date:
+- `Protein Shake`
+- `Omega 3`
+- `Vitamin D`
+
+The scheduled GitHub Actions sync reads that tab into `data/supplements.json`, and the dashboard displays the resulting read-only history.
+
+The generated JSON structure is:
 
 ```json
 {
-  "2026-05-12": {
-    "protein": true,
-    "omega3": true,
-    "vitaminD": false
-  }
+  "metadata": {
+    "source": "google-sheet:...",
+    "generated_at": "2026-05-12T14:16:59+08:00",
+    "included_days": 147
+  },
+  "supplements": [
+    {
+      "date": "2026-05-12",
+      "protein": true,
+      "omega3": true,
+      "vitaminD": false
+    }
+  ]
 }
 ```
 

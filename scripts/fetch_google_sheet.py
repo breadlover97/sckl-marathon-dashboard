@@ -16,6 +16,8 @@ from typing import Any
 DEFAULT_SHEET_ID = "1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo"
 DEFAULT_RANGE = "A:AG"
 DEFAULT_OUTPUT = "data/training-plan.json"
+DEFAULT_SUPPLEMENTS_RANGE = "Supplements!A:D"
+DEFAULT_SUPPLEMENTS_OUTPUT = "data/supplements.json"
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
 EXPECTED_COLUMNS = {
@@ -43,6 +45,13 @@ DAY_COLUMNS = [
     ("sunday", "Sunday"),
 ]
 
+SUPPLEMENT_COLUMNS = {
+    "date": "Date",
+    "protein": "Protein Shake",
+    "omega3": "Omega 3",
+    "vitaminD": "Vitamin D",
+}
+
 
 class SheetConfigError(Exception):
     pass
@@ -62,6 +71,14 @@ def row_value(row: dict[str, str], key: str) -> str:
 
 def row_header_value(row: dict[str, str], header: str) -> str:
     return row.get(normalize_header(header), "").strip()
+
+
+def truthy_sheet_value(value: Any) -> bool:
+    if value is True:
+        return True
+    if value is False or value is None:
+        return False
+    return str(value).strip().lower() in {"true", "yes", "y", "1", "checked", "done"}
 
 
 def parse_number(value: str, field_name: str, row_number: int) -> float:
@@ -225,6 +242,55 @@ def build_plan(values: list[list[Any]], source: str) -> dict[str, Any]:
     }
 
 
+def build_supplements(values: list[list[Any]], source: str) -> dict[str, Any]:
+    if not values:
+        return {
+            "metadata": {
+                "source": source,
+                "generated_at": datetime.now().astimezone().replace(microsecond=0).isoformat(),
+                "included_days": 0,
+            },
+            "supplements": [],
+        }
+
+    headers = [normalize_header(value) for value in values[0]]
+    missing = [
+        column
+        for column in SUPPLEMENT_COLUMNS.values()
+        if normalize_header(column) not in headers
+    ]
+    if missing:
+        raise SheetParseError(f"Supplements tab missing required column(s): {', '.join(missing)}")
+
+    supplements = []
+    for index, raw_row in enumerate(values[1:], start=2):
+        padded = list(raw_row) + [""] * max(len(headers) - len(raw_row), 0)
+        row = {
+            header: value
+            for header, value in zip(headers, padded)
+            if header
+        }
+        date_value = row.get(normalize_header(SUPPLEMENT_COLUMNS["date"]), "")
+        if not str(date_value or "").strip():
+            continue
+        supplements.append({
+            "date": parse_date(str(date_value), "Supplement Date", index),
+            "protein": truthy_sheet_value(row.get(normalize_header(SUPPLEMENT_COLUMNS["protein"]))),
+            "omega3": truthy_sheet_value(row.get(normalize_header(SUPPLEMENT_COLUMNS["omega3"]))),
+            "vitaminD": truthy_sheet_value(row.get(normalize_header(SUPPLEMENT_COLUMNS["vitaminD"]))),
+        })
+
+    supplements.sort(key=lambda item: item["date"])
+    return {
+        "metadata": {
+            "source": source,
+            "generated_at": datetime.now().astimezone().replace(microsecond=0).isoformat(),
+            "included_days": len(supplements),
+        },
+        "supplements": supplements,
+    }
+
+
 def credentials_from_env(credentials_file: str | None, credentials_json: str | None):
     try:
         from google.oauth2 import service_account
@@ -343,6 +409,9 @@ def main() -> int:
     parser.add_argument("--spreadsheet-id", default=os.environ.get("GOOGLE_SHEET_ID", DEFAULT_SHEET_ID))
     parser.add_argument("--range", default=os.environ.get("GOOGLE_SHEET_RANGE", DEFAULT_RANGE))
     parser.add_argument("--output", default=os.environ.get("GOOGLE_SHEET_OUTPUT", DEFAULT_OUTPUT))
+    parser.add_argument("--supplements-range", default=os.environ.get("GOOGLE_SUPPLEMENTS_RANGE", DEFAULT_SUPPLEMENTS_RANGE))
+    parser.add_argument("--supplements-output", default=os.environ.get("GOOGLE_SUPPLEMENTS_OUTPUT", DEFAULT_SUPPLEMENTS_OUTPUT))
+    parser.add_argument("--skip-supplements", action="store_true", help="Fetch only the training plan JSON")
     parser.add_argument("--credentials-file", help="Path to a Google service account JSON key")
     parser.add_argument("--credentials-json", help="Raw Google service account JSON")
     parser.add_argument("--input-json", help="Developer helper: parse an existing plan JSON instead of calling Google")
@@ -360,10 +429,19 @@ def main() -> int:
         payload = build_plan(values, source)
         if args.dry_run:
             print(f"Parsed {len(payload['weeks'])} training week(s).")
+            if not args.input_json and not args.skip_supplements:
+                supplement_values = fetch_sheet_values(args.spreadsheet_id, args.supplements_range, args.credentials_file, args.credentials_json)
+                supplement_payload = build_supplements(supplement_values, f"google-sheet:{args.spreadsheet_id}:{args.supplements_range}")
+                print(f"Parsed {len(supplement_payload['supplements'])} supplement day(s).")
             return 0
 
         write_json(Path(args.output), payload)
         print(f"Wrote {len(payload['weeks'])} training week(s) to {args.output}.")
+        if not args.input_json and not args.skip_supplements:
+            supplement_values = fetch_sheet_values(args.spreadsheet_id, args.supplements_range, args.credentials_file, args.credentials_json)
+            supplement_payload = build_supplements(supplement_values, f"google-sheet:{args.spreadsheet_id}:{args.supplements_range}")
+            write_json(Path(args.supplements_output), supplement_payload)
+            print(f"Wrote {len(supplement_payload['supplements'])} supplement day(s) to {args.supplements_output}.")
         return 0
     except (SheetConfigError, SheetParseError, OSError, json.JSONDecodeError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)

@@ -79,8 +79,10 @@ jobs:
           cp index.html backend.html race.html styles.css app.js race.js theme.js config.js _site/
           cp data/training-plan.json _site/data/
           cp data/strava-activities.json _site/data/
+          cp data/supplements.json _site/data/
           cp data/mock-training-plan.json _site/data/
           cp data/mock-strava-activities.json _site/data/
+          cp data/mock-supplements.json _site/data/
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

@@ -1110,13 +1110,6 @@ main > .panel:first-child {
   text-transform: uppercase;
 }
 
-.supplement-toggles {
-  display: flex;
-  grid-column: 1 / -1;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
 .supplement-sync-message {
   display: block;
   grid-column: 1 / -1;
@@ -1124,47 +1117,6 @@ main > .panel:first-child {
   color: var(--muted);
   font-size: 0.64rem;
   font-weight: 900;
-}
-
-.supplement-sync-message.ok {
-  color: var(--teal);
-}
-
-.supplement-sync-message.saving {
-  color: var(--muted);
-}
-
-.supplement-sync-message.error {
-  color: var(--orange-dark);
-}
-
-.supplement-toggle {
-  display: inline-flex;
-  min-width: 0;
-  gap: 4px;
-  align-items: center;
-  padding: 4px 6px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--soft);
-  color: var(--muted);
-  cursor: pointer;
-  font-size: 0.62rem;
-  font-weight: 900;
-  line-height: 1;
-}
-
-.supplement-toggle input {
-  width: 11px;
-  height: 11px;
-  flex: 0 0 auto;
-  accent-color: var(--teal);
-}
-
-.supplement-toggle:has(input:checked) {
-  border-color: color-mix(in srgb, var(--teal) 42%, var(--line));
-  background: var(--teal-soft);
-  color: var(--teal);
 }
 
 .supplement-status-list {
@@ -2723,7 +2675,7 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     justify-content: space-between;
   }
 
-  .supplement-toggles {
+  .week-supplement-input .supplement-status-list {
     justify-content: flex-start;
   }
 

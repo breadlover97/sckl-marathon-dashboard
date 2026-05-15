@@ -2,17 +2,18 @@ const LIVE_DATA_URL = "data/training-plan.json";
 const MOCK_DATA_URL = "data/mock-training-plan.json";
 const ACTUAL_DATA_URL = "data/strava-activities.json";
 const MOCK_ACTUAL_DATA_URL = "data/mock-strava-activities.json";
+const SUPPLEMENTS_DATA_URL = "data/supplements.json";
+const MOCK_SUPPLEMENTS_DATA_URL = "data/mock-supplements.json";
 const RUN_NOTES_API_URL = String(window.SCKL_CONFIG?.runNotesApiUrl || "").replace(/\/$/, "");
 const RACE_DATE = "2026-10-04";
 const RUN_NOTES_TOKEN_KEY = "sckl-run-notes-token";
-const WELLNESS_STORAGE_KEY = "sckl-wellness-checks";
 const ACTIVITY_PAGE_SIZE = 10;
 let latestRenderState = null;
 let resizeTimer = null;
-let supplementSyncState = { message: "", tone: "" };
 let hasScrolledThisWeekToToday = false;
 let hasScrolledPlanToToday = false;
 let activityFeedVisibleCount = ACTIVITY_PAGE_SIZE;
+let supplementHistory = {};
 
 const wellnessChecks = [
   { key: "protein", label: "Protein shake", shortLabel: "Protein" },
@@ -300,36 +301,31 @@ async function loadRunNotes() {
 }
 
 async function loadSupplements() {
-  if (!RUN_NOTES_API_URL) return loadWellnessChecks();
-  const token = storedRunNotesToken();
-  if (!token) return loadWellnessChecks();
   try {
-    const response = await fetch(`${RUN_NOTES_API_URL}/supplements?v=${Date.now()}`, {
-      cache: "no-store",
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-    if (response.status === 401 || response.status === 403) {
-      setStoredRunNotesToken("");
-      return loadWellnessChecks();
-    }
-    if (!response.ok) throw new Error(`Could not load supplements (${response.status})`);
-    const payload = await response.json();
-    const supplements = (payload.supplements || []).reduce((result, row) => {
-      if (!row.date) return result;
-      result[row.date] = {
-        protein: Boolean(row.protein),
-        omega3: Boolean(row.omega3),
-        vitaminD: Boolean(row.vitaminD)
-      };
-      return result;
-    }, {});
-    const merged = { ...loadWellnessChecks(), ...supplements };
-    saveWellnessChecks(merged);
-    return merged;
+    const payload = await fetchJson(SUPPLEMENTS_DATA_URL);
+    return normalizeSupplementHistory(payload);
   } catch (error) {
-    console.info("Supplement history unavailable.", error);
-    return loadWellnessChecks();
+    console.info("Live supplement history unavailable; using mock supplements.", error);
+    try {
+      const payload = await fetchJson(MOCK_SUPPLEMENTS_DATA_URL);
+      return normalizeSupplementHistory(payload);
+    } catch (mockError) {
+      console.info("No mock supplement history available.", mockError);
+      return {};
+    }
   }
+}
+
+function normalizeSupplementHistory(payload) {
+  return (payload.supplements || []).reduce((result, row) => {
+    if (!row.date) return result;
+    result[row.date] = {
+      protein: Boolean(row.protein),
+      omega3: Boolean(row.omega3),
+      vitaminD: Boolean(row.vitaminD)
+    };
+    return result;
+  }, {});
 }
 
 function normalizePlan(plan) {
@@ -530,36 +526,12 @@ function activityPace(activity) {
   return distance > 0 && moving > 0 ? pace(moving / distance) : "-";
 }
 
-function loadWellnessChecks() {
-  try {
-    return JSON.parse(window.localStorage.getItem(WELLNESS_STORAGE_KEY) || "{}");
-  } catch (error) {
-    return {};
-  }
-}
-
-function saveWellnessChecks(state) {
-  try {
-    window.localStorage.setItem(WELLNESS_STORAGE_KEY, JSON.stringify(state));
-  } catch (error) {
-    // Local wellness tracking is optional; ignore storage failures.
-  }
-}
-
-function setSupplementSyncMessage(message, tone = "") {
-  supplementSyncState = { message, tone };
-  document.querySelectorAll("[data-supplement-sync-status]").forEach((node) => {
-    node.textContent = message;
-    node.className = `supplement-sync-message ${tone}`.trim();
-  });
-}
-
 function wellnessCompletedCount(dayState = {}) {
   return wellnessChecks.filter((item) => dayState[item.key]).length;
 }
 
 function supplementStatus(date) {
-  const dayState = loadWellnessChecks()[date] || {};
+  const dayState = supplementHistory[date] || {};
   const completed = wellnessCompletedCount(dayState);
   const items = wellnessChecks.map((item) => {
     const done = Boolean(dayState[item.key]);
@@ -569,26 +541,21 @@ function supplementStatus(date) {
 }
 
 function renderSupplementInput(date) {
-  const dayState = loadWellnessChecks()[date] || {};
+  const dayState = supplementHistory[date] || {};
   const completed = wellnessCompletedCount(dayState);
   const items = wellnessChecks.map((item) => {
-    const checked = dayState[item.key] ? "checked" : "";
-    return `
-      <label class="supplement-toggle" title="${escapeHtml(item.label)}">
-        <input type="checkbox" data-wellness-check data-date="${escapeHtml(date)}" data-key="${escapeHtml(item.key)}" ${checked}>
-        <span>${escapeHtml(item.shortLabel)}</span>
-      </label>
-    `;
+    const done = Boolean(dayState[item.key]);
+    return `<span class="supplement-status-pill ${done ? "done" : ""}" title="${escapeHtml(item.label)} ${done ? "recorded" : "not recorded"}">${escapeHtml(item.shortLabel)}</span>`;
   }).join("");
 
   return `
-    <div class="week-supplement-input" data-wellness-input-date="${escapeHtml(date)}">
+    <div class="week-supplement-input" data-wellness-history-date="${escapeHtml(date)}">
       <div>
         <span>Today's supplements</span>
         <strong>${completed}/${wellnessChecks.length}</strong>
       </div>
-      <div class="supplement-toggles" aria-label="${completed} of ${wellnessChecks.length} supplements recorded">${items}</div>
-      <small class="supplement-sync-message ${escapeHtml(supplementSyncState.tone, "")}" data-supplement-sync-status>${escapeHtml(supplementSyncState.message, "")}</small>
+      <div class="supplement-status-list" aria-label="${completed} of ${wellnessChecks.length} supplements recorded">${items}</div>
+      <small class="supplement-sync-message">Synced from Google Sheets</small>
     </div>
   `;
 }
@@ -1551,91 +1518,9 @@ function setupActivityFeedControls() {
   });
 }
 
-function rerenderSupplementViews() {
-  if (!latestRenderState) return;
-  const opened = openPlanGroupKeys();
-  renderCurrentWeek(latestRenderState.plan, latestRenderState.actuals);
-  renderPlanTable(latestRenderState.plan, latestRenderState.actuals);
-  restoreOpenPlanGroups(opened);
-}
-
-function setupWellnessTracker() {
-  document.addEventListener("change", async (event) => {
-    const checkbox = event.target.closest("[data-wellness-check]");
-    if (!checkbox) return;
-    const state = loadWellnessChecks();
-    const date = checkbox.dataset.date;
-    const key = checkbox.dataset.key;
-    if (!date || !key) return;
-    const previousDayState = { ...(state[date] || {}) };
-    state[date] = {
-      ...(state[date] || {}),
-      [key]: checkbox.checked
-    };
-    saveWellnessChecks(state);
-    setSupplementSyncMessage("Saving to Google Sheets...", "saving");
-    rerenderSupplementViews();
-
-    const result = await saveSupplementCheck(date, state[date]);
-    if (result.ok) {
-      setSupplementSyncMessage(result.message, result.tone || "ok");
-      return;
-    }
-
-    const rollbackState = loadWellnessChecks();
-    rollbackState[date] = previousDayState;
-    saveWellnessChecks(rollbackState);
-    setSupplementSyncMessage(result.message, "error");
-    rerenderSupplementViews();
-  });
-}
-
-async function saveSupplementCheck(date, dayState) {
-  if (!RUN_NOTES_API_URL) return { ok: true, message: "Saved locally only.", tone: "saving" };
-  let token = storedRunNotesToken();
-  if (!token) {
-    token = window.prompt("Enter dashboard passcode") || "";
-    setStoredRunNotesToken(token);
-  }
-  if (!token) return { ok: false, message: "Not saved. Dashboard passcode is required." };
-
-  try {
-    const response = await fetch(`${RUN_NOTES_API_URL}/supplements`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        date,
-        protein: Boolean(dayState.protein),
-        omega3: Boolean(dayState.omega3),
-        vitaminD: Boolean(dayState.vitaminD)
-      })
-    });
-    const payload = await response.json().catch(() => ({}));
-    if (response.status === 401) {
-      setStoredRunNotesToken("");
-      return { ok: false, message: "Not saved. Passcode was rejected." };
-    }
-    if (response.status === 403) {
-      return {
-        ok: false,
-        message: "Not saved. Google Sheet permission is still Reader, not Editor."
-      };
-    }
-    if (!response.ok) {
-      return { ok: false, message: `Not saved. ${payload.error || `Worker returned ${response.status}`}` };
-    }
-    return { ok: true, message: "Saved to Google Sheets.", tone: "ok" };
-  } catch (error) {
-    console.error(error);
-    return { ok: false, message: "Not saved. Could not reach the sync Worker." };
-  }
-}
-
-function render({ plan, actuals, runNotes }) {
-  latestRenderState = { actuals, plan, runNotes };
+function render({ plan, actuals, runNotes, supplements }) {
+  supplementHistory = supplements || {};
+  latestRenderState = { actuals, plan, runNotes, supplements: supplementHistory };
   renderTrainingDayProgress(plan);
   renderCurrentWeek(plan, actuals);
   renderPlanTable(plan, actuals);
@@ -1667,12 +1552,11 @@ setupPlanGroupToggle();
 setupRunNotesForms();
 setupActivityDetails();
 setupActivityFeedControls();
-setupWellnessTracker();
 setupCalendarTooltips();
 setupResponsiveCharts();
 
 Promise.all([loadPlan().then(normalizePlan), loadActuals(), loadRunNotes(), loadSupplements()])
-  .then(([plan, actuals, runNotes]) => render({ plan, actuals, runNotes }))
+  .then(([plan, actuals, runNotes, supplements]) => render({ plan, actuals, runNotes, supplements }))
   .catch((error) => {
     console.error(error);
     document.getElementById("syncStatus").textContent = "Unable to load mock training plan.";

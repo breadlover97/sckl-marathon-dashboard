@@ -2,7 +2,6 @@ const SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SHEETS_BASE_URL = "https://sheets.googleapis.com/v4/spreadsheets";
 const NOTE_HEADER_ROW = ["Activity ID", "Date", "Activity", "Note", "Strava URL", "Updated At"];
-const SUPPLEMENT_HEADER_ROW = ["Date", "Protein Shake", "Omega 3", "Vitamin D", "Updated At"];
 const MAX_NOTE_LENGTH = 500;
 const MAX_REQUEST_BODY_LENGTH = 4096;
 const TOKEN_REFRESH_BUFFER_SECONDS = 60;
@@ -26,19 +25,6 @@ export default {
         const payload = await readJson(request);
         const note = await upsertNote(env, payload);
         return json({ ok: true, note }, corsHeaders);
-      }
-
-      if (url.pathname === "/supplements" && request.method === "GET") {
-        requireAuth(request, env);
-        const supplements = await listSupplements(env);
-        return json({ supplements }, corsHeaders);
-      }
-
-      if (url.pathname === "/supplements" && request.method === "POST") {
-        requireAuth(request, env);
-        const payload = await readJson(request);
-        const supplement = await upsertSupplement(env, payload);
-        return json({ ok: true, supplement }, corsHeaders);
       }
 
       return json({ error: "Not found" }, corsHeaders, 404);
@@ -158,47 +144,6 @@ async function upsertNote(env, payload) {
   return note;
 }
 
-async function listSupplements(env) {
-  await ensureSheet(env, supplementSheetName(env), SUPPLEMENT_HEADER_ROW);
-  const rows = await sheetsGet(env, `${a1SheetName(supplementSheetName(env))}!A2:E`);
-  return rows.map((row) => ({
-    date: String(row[0] || "").trim(),
-    protein: sheetBool(row[1]),
-    omega3: sheetBool(row[2]),
-    vitaminD: sheetBool(row[3]),
-    updated_at: row[4] || ""
-  })).filter((row) => row.date);
-}
-
-async function upsertSupplement(env, payload) {
-  await ensureSheet(env, supplementSheetName(env), SUPPLEMENT_HEADER_ROW);
-  const supplement = {
-    date: String(payload.date || "").trim(),
-    protein: Boolean(payload.protein),
-    omega3: Boolean(payload.omega3),
-    vitaminD: Boolean(payload.vitaminD),
-    updated_at: new Date().toISOString()
-  };
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(supplement.date)) {
-    const error = new Error("Missing or invalid date");
-    error.status = 400;
-    throw error;
-  }
-
-  const sheet = a1SheetName(supplementSheetName(env));
-  const rows = await sheetsGet(env, `${sheet}!A2:E`);
-  const existingIndex = rows.findIndex((row) => String(row[0] || "").trim() === supplement.date);
-  const values = [[supplement.date, supplement.protein, supplement.omega3, supplement.vitaminD, supplement.updated_at]];
-
-  if (existingIndex >= 0) {
-    const rowNumber = existingIndex + 2;
-    await sheetsPut(env, `${sheet}!A${rowNumber}:E${rowNumber}`, values);
-  } else {
-    await sheetsAppend(env, `${sheet}!A:E`, values);
-  }
-  return supplement;
-}
-
 async function ensureSheet(env, title, headerRow) {
   const metadata = await sheetsFetch(env, "", { method: "GET" });
   const exists = metadata.sheets?.some((sheet) => sheet.properties?.title === title);
@@ -224,16 +169,8 @@ function noteSheetName(env) {
   return env.RUN_NOTES_SHEET_NAME || "Run Notes";
 }
 
-function supplementSheetName(env) {
-  return env.SUPPLEMENTS_SHEET_NAME || "Supplements";
-}
-
 function a1SheetName(name) {
   return `'${name.replace(/'/g, "''")}'`;
-}
-
-function sheetBool(value) {
-  return value === true || String(value || "").toUpperCase() === "TRUE";
 }
 
 async function sheetsGet(env, range) {
