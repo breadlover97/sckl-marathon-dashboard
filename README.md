@@ -6,11 +6,11 @@ The site is intentionally simple: Google Sheets is the editable plan, Strava is 
 
 ## What The Dashboard Shows
 
-- This week’s planned sessions, actual Strava mileage, and read-only supplement status synced from Google Sheets.
+- This week’s planned sessions and actual Strava mileage.
 - Week-by-week marathon plan from Google Sheets.
 - Planned vs actual weekly mileage and long-run trends.
 - Recent Strava activity feed with pace, time, elevation, heart rate, cadence, and Strava links.
-- Standalone nutrition tracker with daily totals, targets, rolling averages, meal rows, confidence, and notes.
+- Standalone nutrition tracker with calendar view, supplement checkboxes, targets, meal rows, confidence, and notes.
 - Race execution draft page with pace calculator and split table.
 
 ## Local Preview
@@ -21,7 +21,7 @@ python3 -m http.server 8010
 
 Open `http://localhost:8010`.
 
-The dashboard loads `data/training-plan.json`, `data/strava-activities.json`, and `data/supplements.json` when available. The standalone nutrition page loads `data/nutrition.json`. If live files are missing, the site falls back to the mock JSON files in `data/`.
+The dashboard loads `data/training-plan.json` and `data/strava-activities.json` when available. The standalone nutrition page loads `data/nutrition.json` and `data/supplements.json`. If live files are missing, the site falls back to the mock JSON files in `data/`.
 
 ## Repository Map
 
@@ -205,7 +205,7 @@ Important Strava note: if a workflow run says Strava returned a rotated refresh 
 
 Supplement rows live in the `Supplements` tab. The first three columns are `Date`, `Week`, and `Training Phase`; every column after that is treated as a supplement checkbox and synced to `data/supplements.json`.
 
-The main dashboard shows this supplement history in the current week cards and week-by-week calendar. Nutrition macro data stays on the standalone nutrition page.
+The standalone nutrition page shows this supplement history alongside daily nutrition totals in its calendar view. The main dashboard does not display supplement or nutrition detail.
 
 ## Nutrition History
 
@@ -245,7 +245,7 @@ Typical workflow:
 
 If `OPENAI_API_KEY` is not set, the AI step safely skips and the normal dashboard sync still runs.
 
-The main dashboard shows compact daily supplement status, while `nutrition.html` shows the full daily and meal-level nutrition history.
+The main dashboard stays focused on training and Strava. `nutrition.html` shows supplement completion, daily nutrition totals, and meal-level history.
 
 The generated JSON structure is:
 

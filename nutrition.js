@@ -1,5 +1,7 @@
 const NUTRITION_DATA_URL = "data/nutrition.json";
 const MOCK_NUTRITION_DATA_URL = "data/mock-nutrition.json";
+const SUPPLEMENTS_DATA_URL = "data/supplements.json";
+const MOCK_SUPPLEMENTS_DATA_URL = "data/mock-supplements.json";
 
 const formatDate = new Intl.DateTimeFormat("en-SG", {
   day: "numeric",
@@ -113,6 +115,25 @@ async function loadNutrition() {
   }
 }
 
+async function loadSupplements() {
+  try {
+    const payload = await fetchJson(SUPPLEMENTS_DATA_URL);
+    if (!Array.isArray(payload.days) || !payload.days.length) {
+      throw new Error("Supplement history has not been synced yet.");
+    }
+    return normalizeSupplements(payload);
+  } catch (error) {
+    console.info("Live supplements unavailable; using mock supplements.", error);
+    try {
+      const payload = await fetchJson(MOCK_SUPPLEMENTS_DATA_URL);
+      return normalizeSupplements(payload);
+    } catch (mockError) {
+      console.info("No mock supplements available.", mockError);
+      return normalizeSupplements({ metadata: { included_days: 0 }, days: [] });
+    }
+  }
+}
+
 function normalizeNutrition(payload) {
   const meals = Array.isArray(payload.nutrition) ? payload.nutrition : [];
   const days = Array.isArray(payload.days) && payload.days.length
@@ -123,6 +144,65 @@ function normalizeNutrition(payload) {
     days: [...days].sort((a, b) => String(b.date).localeCompare(String(a.date))),
     meals: [...meals].sort((a, b) => `${b.date} ${b.meal}`.localeCompare(`${a.date} ${a.meal}`)),
   };
+}
+
+function normalizeSupplements(payload) {
+  const days = Array.isArray(payload.days) ? payload.days : [];
+  return {
+    metadata: payload.metadata || {},
+    days: [...days].sort((a, b) => String(b.date).localeCompare(String(a.date))),
+  };
+}
+
+function supplementsByDate(days) {
+  return days.reduce((result, day) => {
+    if (day.date) result[day.date] = day;
+    return result;
+  }, {});
+}
+
+function nutritionByDate(days) {
+  return days.reduce((result, day) => {
+    if (day.date) result[day.date] = day;
+    return result;
+  }, {});
+}
+
+function supplementShortLabel(label) {
+  const words = String(label || "").trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return "Item";
+  if (words.length > 1 && words[1].length <= 2) return `${words[0]} ${words[1]}`;
+  return words[0];
+}
+
+function monthLabel(value) {
+  const date = parseLocalDate(value);
+  if (!date) return "Unscheduled";
+  return new Intl.DateTimeFormat("en-SG", { month: "long", year: "numeric" }).format(date);
+}
+
+function monthKey(value) {
+  const date = parseLocalDate(value);
+  if (!date) return "unscheduled";
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function groupCalendarDays(dates, nutritionDays, supplementDays) {
+  return dates.reduce((groups, date) => {
+    const key = monthKey(date);
+    const last = groups[groups.length - 1];
+    const entry = {
+      date,
+      nutrition: nutritionDays[date] || null,
+      supplements: supplementDays[date] || null,
+    };
+    if (last && last.key === key) {
+      last.days.push(entry);
+      return groups;
+    }
+    groups.push({ key, label: monthLabel(date), days: [entry] });
+    return groups;
+  }, []);
 }
 
 function aggregateDays(meals) {
@@ -196,52 +276,70 @@ function progressCell(value, target, formatter) {
   `;
 }
 
-function renderDailyTable(days) {
-  const container = document.getElementById("nutritionDaily");
-  if (!days.length) {
-    container.innerHTML = `<div class="empty-state">No nutrition rows have been synced yet. Add meal rows to the Nutrition tab, then run the sync workflow.</div>`;
-    return;
-  }
-  const rows = days.map((day) => `
-    <tr>
-      <td><strong>${escapeHtml(prettyDate(day.date))}</strong></td>
-      <td>${progressCell(day.calories, day.calorie_target, kcal)}</td>
-      <td>${progressCell(day.protein_g, day.protein_target_g, grams)}</td>
-      <td>${escapeHtml(grams(day.carbs_g))}</td>
-      <td>${escapeHtml(grams(day.fat_g))}</td>
-      <td>${Number(day.fibre_g || 0) ? escapeHtml(grams(day.fibre_g)) : "-"}</td>
-      <td>${milligrams(day.sodium_mg)}</td>
-      <td>${day.seven_day_average_calories ? escapeHtml(kcal(day.seven_day_average_calories)) : "-"}</td>
-      <td>${day.seven_day_average_protein_g ? escapeHtml(grams(day.seven_day_average_protein_g)) : "-"}</td>
-      <td>${percent(day.confidence)}</td>
-      <td>${escapeHtml(day.assumptions || day.notes || "-")}</td>
-    </tr>
-  `).join("");
-  container.innerHTML = `
-    <div class="activity-table-scroll">
-      <table class="activity-table nutrition-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Calories</th>
-            <th>Protein</th>
-            <th>Carbs</th>
-            <th>Fat</th>
-            <th>Fibre</th>
-            <th>Sodium</th>
-            <th>7-day kcal</th>
-            <th>7-day protein</th>
-            <th>AI confidence</th>
-            <th>Assumptions / notes</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
+function renderSupplementPills(day) {
+  const items = Array.isArray(day?.items) ? day.items : [];
+  if (!items.length) return `<span class="nutrition-calendar-empty">No supplements</span>`;
+  return items.map((item) => {
+    const done = Boolean(item.taken);
+    return `<span class="nutrition-status-pill ${done ? "done" : ""}" title="${escapeHtml(item.label)} ${done ? "taken" : "not taken"}">${escapeHtml(supplementShortLabel(item.label))}</span>`;
+  }).join("");
+}
+
+function renderCalendarDay(entry) {
+  const nutrition = entry.nutrition;
+  const supplements = entry.supplements;
+  const supplementTotal = Number(supplements?.total_count || supplements?.items?.length || 0);
+  const supplementDone = Number(supplements?.completed_count || 0);
+  const mealCount = Number(nutrition?.meal_count || nutrition?.meals?.length || 0);
+  const hasNutrition = Boolean(nutrition && (Number(nutrition.calories || 0) || Number(nutrition.protein_g || 0) || mealCount));
+
+  return `
+    <article class="nutrition-calendar-day ${hasNutrition ? "has-nutrition" : ""} ${supplementTotal ? "has-supplements" : ""}">
+      <div class="nutrition-calendar-head">
+        <span>${escapeHtml(prettyDate(entry.date))}</span>
+        <strong>${supplementTotal ? `${supplementDone}/${supplementTotal}` : "-"}</strong>
+      </div>
+      <div class="nutrition-calendar-macros">
+        <strong>${hasNutrition ? escapeHtml(kcal(nutrition.calories)) : "-"}</strong>
+        <span>${hasNutrition ? `${escapeHtml(grams(nutrition.protein_g))} protein` : "No meals"}</span>
+      </div>
+      <div class="nutrition-calendar-meta">
+        <span>${mealCount ? `${mealCount} meal${mealCount === 1 ? "" : "s"}` : "0 meals"}</span>
+      </div>
+      <div class="nutrition-status-list" aria-label="${supplementDone} of ${supplementTotal} supplements taken">
+        ${renderSupplementPills(supplements)}
+      </div>
+    </article>
   `;
 }
 
+function renderCalendar(nutritionDays, supplementDays) {
+  const container = document.getElementById("nutritionCalendar");
+  const byNutrition = nutritionByDate(nutritionDays);
+  const bySupplements = supplementsByDate(supplementDays);
+  const dates = [...new Set([...Object.keys(byNutrition), ...Object.keys(bySupplements)])].sort();
+  if (!dates.length) {
+    container.innerHTML = `<div class="empty-state">Nutrition and supplement history will appear after the next sync.</div>`;
+    return;
+  }
+  const groups = groupCalendarDays(dates, byNutrition, bySupplements);
+  container.innerHTML = groups.map((group, index) => `
+    <details class="calendar-phase-group nutrition-calendar-group" ${index === groups.length - 1 ? "open" : ""}>
+      <summary>
+        <span class="phase-title">${escapeHtml(group.label)}</span>
+        <span class="phase-stat">${escapeHtml(group.days.length)} days</span>
+      </summary>
+      <div class="nutrition-calendar-grid">
+        ${group.days.map(renderCalendarDay).join("")}
+      </div>
+    </details>
+  `).join("");
+}
+
 function mealRows(meals) {
+  function noteText(meal) {
+    return meal.assumptions || meal.notes || "-";
+  }
   return meals.map((meal) => `
     <tr>
       <td>${escapeHtml(meal.meal || "Unspecified")}</td>
@@ -254,7 +352,7 @@ function mealRows(meals) {
       <td>${milligrams(meal.sodium_mg)}</td>
       <td>${percent(meal.confidence)}</td>
       <td>${escapeHtml(meal.source || "-")}</td>
-      <td>${escapeHtml(meal.assumptions || meal.notes || "-")}</td>
+      <td class="nutrition-note-cell"><span title="${escapeHtml(noteText(meal))}">${escapeHtml(noteText(meal))}</span></td>
     </tr>
   `).join("");
 }
@@ -305,18 +403,18 @@ function setupReturnTop() {
 }
 
 function render(payload) {
-  renderSummary(payload);
-  renderDailyTable(payload.days);
-  renderMeals(payload.days);
+  renderSummary(payload.nutrition);
+  renderCalendar(payload.nutrition.days, payload.supplements.days);
+  renderMeals(payload.nutrition.days);
 }
 
 setupReturnTop();
 
-loadNutrition()
-  .then(render)
+Promise.all([loadNutrition(), loadSupplements()])
+  .then(([nutrition, supplements]) => render({ nutrition, supplements }))
   .catch((error) => {
     console.error(error);
     document.getElementById("nutritionStatus").textContent = "Nutrition unavailable";
-    document.getElementById("nutritionDaily").innerHTML = `<div class="empty-state">Unable to load nutrition data.</div>`;
+    document.getElementById("nutritionCalendar").innerHTML = `<div class="empty-state">Unable to load nutrition calendar.</div>`;
     document.getElementById("nutritionMeals").innerHTML = `<div class="empty-state">Unable to load meal-level nutrition data.</div>`;
   });

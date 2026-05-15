@@ -19,10 +19,10 @@
       </a>
       <div class="nav-tabs" aria-label="Dashboard sections">
         <a href="#week">This Week</a>
-        <a href="#plan">Weekly Plan</a>
+        <a href="#plan">Plan</a>
         <a href="#trends">Trends</a>
         <a href="#pace">Pace</a>
-        <a href="#activity">Activities</a>
+        <a href="#activity">Runs</a>
       </div>
       <div class="nav-actions">
         <label class="theme-picker" for="themeSelect">
@@ -55,8 +55,8 @@
       <section id="plan" class="panel anchor-section">
         <div class="section-heading">
           <div>
-            <h2>Week-by-week plan</h2>
-            <p>Compact calendar view of planned distance, actual distance, and supplement status.</p>
+            <h2>Plan</h2>
+            <p>Plan vs actual.</p>
           </div>
           <div class="plan-heading-actions">
             <span id="planSyncStatus" class="status-pill">Sheet sync loading</span>
@@ -71,8 +71,8 @@
         <article class="panel">
           <div class="section-heading compact-heading">
             <div>
-              <h2>Planned mileage</h2>
-              <p>Weekly target progression and taper shape.</p>
+              <h2>Mileage</h2>
+              <p>Weekly targets.</p>
             </div>
           </div>
           <div id="mileageChart" class="chart-shell" aria-label="Planned weekly mileage chart"></div>
@@ -82,8 +82,8 @@
         <article class="panel">
           <div class="section-heading compact-heading">
             <div>
-              <h2>Long run build</h2>
-              <p>Saturday long-run distance target where possible.</p>
+              <h2>Long runs</h2>
+              <p>Distance build.</p>
             </div>
           </div>
           <div id="longRunChart" class="chart-shell" aria-label="Planned long run progression chart"></div>
@@ -98,7 +98,7 @@
         <div class="section-heading">
           <div>
             <h2>Pace</h2>
-            <p>Estimated workout targets ranked from slowest to fastest, adjusted for Singapore heat and humidity. <a href="backend.html#pace-derivation">How these ranges were derived</a>.</p>
+            <p>Training ranges. <a href="backend.html#pace-derivation">Method</a>.</p>
           </div>
         </div>
         <div id="paceGuide" class="pace-guide"></div>
@@ -107,8 +107,8 @@
       <section id="activity" class="panel anchor-section">
         <div class="section-heading">
           <div>
-            <h2>Activity feed</h2>
-            <p>Recent Strava runs with training metrics for checking counted mileage.</p>
+            <h2>Recent runs</h2>
+            <p>Latest Strava activity.</p>
           </div>
         </div>
         <div id="activityFeed" class="activity-feed"></div>

@@ -19,8 +19,8 @@
       </a>
       <div class="nav-tabs" aria-label="Nutrition sections">
         <a href="index.html#week">This Week</a>
-        <a href="index.html#plan">Weekly Plan</a>
-        <a href="#daily">Daily</a>
+        <a href="index.html#plan">Plan</a>
+        <a href="#calendar">Calendar</a>
         <a href="#meals">Meals</a>
       </div>
       <div class="nav-actions">
@@ -44,28 +44,28 @@
         <div class="section-heading">
           <div>
             <h2>Nutrition tracker</h2>
-            <p>Read-only nutrition history synced from the Google Sheet. Meal estimates, confidence, and assumptions stay in the sheet.</p>
+            <p>Food, macros, and supplements.</p>
           </div>
           <span id="nutritionStatus" class="status-pill">Nutrition sync loading</span>
         </div>
         <div id="nutritionSummary" class="race-card-grid"></div>
       </section>
 
-      <section id="daily" class="panel anchor-section">
+      <section id="calendar" class="panel anchor-section">
         <div class="section-heading compact-heading">
           <div>
-            <h2>Daily nutrition</h2>
-            <p>Daily totals, targets, and rolling seven-day averages.</p>
+            <h2>Calendar</h2>
+            <p>Daily macros and supplement completion.</p>
           </div>
         </div>
-        <div id="nutritionDaily" class="nutrition-section-body"></div>
+        <div id="nutritionCalendar" class="nutrition-section-body"></div>
       </section>
 
       <section id="meals" class="panel anchor-section">
         <div class="section-heading compact-heading">
           <div>
             <h2>Meal breakdown</h2>
-            <p>Meal-level rows grouped by date, including source, confidence, assumptions, and notes where available.</p>
+            <p>Meal rows by date.</p>
           </div>
         </div>
         <div id="nutritionMeals" class="nutrition-section-body"></div>

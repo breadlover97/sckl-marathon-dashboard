@@ -2,8 +2,6 @@ const LIVE_DATA_URL = "data/training-plan.json";
 const MOCK_DATA_URL = "data/mock-training-plan.json";
 const ACTUAL_DATA_URL = "data/strava-activities.json";
 const MOCK_ACTUAL_DATA_URL = "data/mock-strava-activities.json";
-const SUPPLEMENTS_DATA_URL = "data/supplements.json";
-const MOCK_SUPPLEMENTS_DATA_URL = "data/mock-supplements.json";
 const RACE_DATE = "2026-10-04";
 const ACTIVITY_PAGE_SIZE = 10;
 let latestRenderState = null;
@@ -11,7 +9,6 @@ let resizeTimer = null;
 let hasScrolledThisWeekToToday = false;
 let hasScrolledPlanToToday = false;
 let activityFeedVisibleCount = ACTIVITY_PAGE_SIZE;
-let supplementHistory = {};
 
 const paceZones = [
   {
@@ -250,40 +247,6 @@ async function loadActuals() {
   }
 }
 
-async function loadSupplements() {
-  try {
-    const payload = await fetchJson(SUPPLEMENTS_DATA_URL);
-    const history = normalizeSupplementHistory(payload);
-    if (!Object.keys(history).length && payload.metadata?.source === "placeholder") {
-      throw new Error("Placeholder supplement history has not been synced yet.");
-    }
-    return history;
-  } catch (error) {
-    console.info("Live supplement history unavailable; using mock supplement data.", error);
-    try {
-      const payload = await fetchJson(MOCK_SUPPLEMENTS_DATA_URL);
-      return normalizeSupplementHistory(payload);
-    } catch (mockError) {
-      console.info("No mock supplement history available.", mockError);
-      return {};
-    }
-  }
-}
-
-function normalizeSupplementHistory(payload) {
-  const days = Array.isArray(payload.days) ? payload.days : [];
-  return days.reduce((result, row) => {
-    if (!row.date) return result;
-    result[row.date] = {
-      ...row,
-      items: Array.isArray(row.items) ? row.items : [],
-      completed_count: Number(row.completed_count || 0),
-      total_count: Number(row.total_count || (Array.isArray(row.items) ? row.items.length : 0)),
-    };
-    return result;
-  }, {});
-}
-
 function normalizePlan(plan) {
   plan.weeks = (plan.weeks || []).map((week) => {
     const sessions = dailySessions(week);
@@ -382,7 +345,7 @@ function renderDayCard(session, actuals, options = {}) {
     isCompleted ? "completed-day" : "",
   ].filter(Boolean).join(" ");
   const completedMark = isPast || isCompleted ? `<span class="completed-mark" aria-label="${isCompleted ? "Completed" : "Past day"}">✓</span>` : "";
-  const actualText = `${oneDecimalKm(actualKm)} actual · ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}`;
+  const actualText = `Actual ${oneDecimalKm(actualKm)} · ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}`;
   const actualLine = options.showActual || isCompleted
     ? `<div class="actual-line">${renderActualLine(dayActivities, actualText)}</div>`
     : "";
@@ -393,10 +356,9 @@ function renderDayCard(session, actuals, options = {}) {
         <span>${escapeHtml(session.day)} · ${escapeHtml(shortDate(session.date))}</span>
         ${completedMark}
       </div>
-      <strong>${oneDecimalKm(session.planned_km)}<br>planned</strong>
+      <strong>${oneDecimalKm(session.planned_km)}<br>plan</strong>
       <p>${escapeHtml(session.plan)}</p>
       ${actualLine}
-      ${renderDaySupplements(session)}
     </article>
   `;
 }
@@ -482,43 +444,7 @@ function activityPace(activity) {
   return distance > 0 && moving > 0 ? pace(moving / distance) : "-";
 }
 
-function supplementItems(date) {
-  return supplementHistory[date]?.items || [];
-}
-
-function supplementShortLabel(label) {
-  const words = String(label || "").trim().split(/\s+/).filter(Boolean);
-  if (!words.length) return "Item";
-  if (words.length > 1 && words[1].length <= 2) return `${words[0]} ${words[1]}`;
-  return words[0];
-}
-
-function supplementStatus(date) {
-  const dayState = supplementHistory[date] || {};
-  const supplements = supplementItems(date);
-  const completed = Number(dayState.completed_count || supplements.filter((item) => item.taken).length || 0);
-  const total = Number(dayState.total_count || supplements.length || 0);
-  const items = supplements.map((item) => {
-    const done = Boolean(item.taken);
-    return `<span class="nutrition-status-pill ${done ? "done" : ""}" title="${escapeHtml(item.label)} ${done ? "taken" : "not taken"}">${escapeHtml(supplementShortLabel(item.label))}</span>`;
-  }).join("");
-  return { completed, total, items };
-}
-
-function renderDaySupplements(session) {
-  const { completed, total, items } = supplementStatus(session.date);
-  const summary = total > 0 ? `${completed}/${total}` : "-";
-
-  return `
-    <div class="day-nutrition-line" data-nutrition-row-date="${escapeHtml(session.date)}">
-      <span>Supplements</span>
-      <small>${escapeHtml(summary)}</small>
-      <div class="nutrition-status-list" aria-label="${completed} of ${total} supplements taken">${items}</div>
-    </div>
-  `;
-}
-
-function planDayTooltip(week, session, dayActivities, actualKm, supplementSummary) {
+function planDayTooltip(week, session, dayActivities, actualKm) {
   const activityNames = dayActivities.map((activity) => activity.name).filter(Boolean).join(", ");
   const plannedKm = Number(session.planned_km || 0);
   const details = [
@@ -526,7 +452,6 @@ function planDayTooltip(week, session, dayActivities, actualKm, supplementSummar
     `${session.day}, ${prettyDate(session.date)}`,
     `Planned: ${plannedKm > 0 ? oneDecimalKm(plannedKm) : "Rest"}`,
     `Actual: ${dayActivities.length ? `${oneDecimalKm(actualKm)} from ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}` : "No run logged"}`,
-    `Supplements: ${supplementSummary}`,
     `Session: ${session.plan || "No planned session"}`
   ];
   if (activityNames) details.splice(4, 0, `Activities: ${activityNames}`);
@@ -553,11 +478,9 @@ function renderCalendarDay(week, session, actuals) {
   const isActive = session.date === todayKey;
   const isPast = String(session.date) < todayKey;
   const isCompleted = dayActivities.length > 0 || actualKm > 0;
-  const { completed, total, items } = supplementStatus(session.date);
   const plannedKm = Number(session.planned_km || 0);
   const actualText = dayActivities.length ? oneDecimalKm(actualKm) : "-";
-  const supplementSummary = total > 0 ? `${completed}/${total}` : "-";
-  const tooltip = planDayTooltip(week, session, dayActivities, actualKm, supplementSummary);
+  const tooltip = planDayTooltip(week, session, dayActivities, actualKm);
   const tooltipId = `calendar-tip-${safeDomId(`${week.week_number}-${session.date}`)}`;
   const type = sessionType(session);
   const plannedLabel = plannedKm > 0 ? oneDecimalKm(plannedKm) : "Rest";
@@ -578,11 +501,7 @@ function renderCalendarDay(week, session, actuals) {
       <div class="calendar-day-main">
         <span>${escapeHtml(type)}</span>
         <strong>${escapeHtml(plannedLabel)}</strong>
-        <small>Actual ${escapeHtml(actualText)}</small>
-      </div>
-      <div class="calendar-nutrition" data-nutrition-row-date="${escapeHtml(session.date)}">
-        <span>${escapeHtml(supplementSummary)}</span>
-        <div class="nutrition-status-list" aria-label="${completed} of ${total} supplements taken">${items}</div>
+        <small>Act ${escapeHtml(actualText)}</small>
       </div>
       <div class="calendar-tooltip" id="${tooltipId}" role="tooltip">
         <strong>${escapeHtml(session.day)} · ${escapeHtml(prettyDate(session.date))}</strong>
@@ -608,8 +527,8 @@ function renderCalendarWeek(week, actuals) {
           <strong>${prettyDate(week.week_start_date)} to ${prettyDate(weekEndDate(week))}</strong>
         </div>
         <div class="calendar-week-stats" aria-label="Week mileage summary">
-          <span>${km(week.target_weekly_mileage_km)} planned</span>
-          <span>${oneDecimalKm(actual.distance_km)} actual</span>
+          <span>${km(week.target_weekly_mileage_km)} plan</span>
+          <span>${oneDecimalKm(actual.distance_km)} act</span>
           <span>${runDays} runs</span>
         </div>
       </div>
@@ -730,7 +649,7 @@ function renderCurrentWeek(plan, actuals) {
   document.getElementById("currentWeekPlan").innerHTML = `
     <div class="week-progress">
       <div>
-        <span>This week progress</span>
+        <span>This week</span>
         <strong>${oneDecimalKm(actual.distance_km)} / ${km(week.target_weekly_mileage_km)}</strong>
       </div>
       <div class="progress-track" aria-label="This week mileage progress">
@@ -1354,9 +1273,8 @@ function setupActivityFeedControls() {
   });
 }
 
-function render({ plan, actuals, supplements }) {
-  supplementHistory = supplements || {};
-  latestRenderState = { actuals, plan, supplements: supplementHistory };
+function render({ plan, actuals }) {
+  latestRenderState = { actuals, plan };
   renderTrainingDayProgress(plan);
   renderCurrentWeek(plan, actuals);
   renderPlanTable(plan, actuals);
@@ -1366,7 +1284,7 @@ function render({ plan, actuals, supplements }) {
   renderMileageLegend();
   renderActivityFeed(actuals);
   document.getElementById("syncStatus").textContent =
-    `${plan.loaded_from === "google-sheet" ? "Google Sheet plan" : "Mock plan"} loaded · ${plan.weeks.length} training weeks`;
+    `${plan.loaded_from === "google-sheet" ? "Sheet" : "Mock"} · ${plan.weeks.length} weeks`;
 }
 
 function setupResponsiveCharts() {
@@ -1389,8 +1307,8 @@ setupActivityFeedControls();
 setupCalendarTooltips();
 setupResponsiveCharts();
 
-Promise.all([loadPlan().then(normalizePlan), loadActuals(), loadSupplements()])
-  .then(([plan, actuals, supplements]) => render({ plan, actuals, supplements }))
+Promise.all([loadPlan().then(normalizePlan), loadActuals()])
+  .then(([plan, actuals]) => render({ plan, actuals }))
   .catch((error) => {
     console.error(error);
     document.getElementById("syncStatus").textContent = "Unable to load mock training plan.";

@@ -57,7 +57,7 @@
           <div class="flow-step"><strong>3</strong><span>GitHub Actions runs the sync workflow on schedule, on code changes, or when you press the Sync data button and manually run the workflow.</span></div>
           <div class="flow-step"><strong>4</strong><span>If raw nutrition rows are waiting, GitHub Actions calls OpenAI privately, writes macro estimates back into Google Sheets, then runs the normal Sheet sync.</span></div>
           <div class="flow-step"><strong>5</strong><span>The workflow reads private credentials from GitHub secrets, fetches Google Sheets, Supplements, Nutrition, and Strava data, then writes generated JSON files into the Pages artifact.</span></div>
-          <div class="flow-step"><strong>6</strong><span>GitHub Pages hosts the static site. The dashboard loads <code>data/training-plan.json</code>, <code>data/strava-activities.json</code>, and <code>data/supplements.json</code>; the standalone nutrition page loads <code>data/nutrition.json</code>.</span></div>
+          <div class="flow-step"><strong>6</strong><span>GitHub Pages hosts the static site. The dashboard loads <code>data/training-plan.json</code> and <code>data/strava-activities.json</code>; the standalone nutrition page loads <code>data/nutrition.json</code> and <code>data/supplements.json</code>.</span></div>
         </div>
       </section>
 
@@ -123,7 +123,7 @@
           </article>
           <article>
             <h3>Supplements</h3>
-            <p><code>scripts/fetch_google_sheet.py</code> reads the <code>Supplements</code> tab into <code>data/supplements.json</code>. The main dashboard displays that checkbox history without editing it from GitHub Pages.</p>
+            <p><code>scripts/fetch_google_sheet.py</code> reads the <code>Supplements</code> tab into <code>data/supplements.json</code>. The nutrition page displays that checkbox history without editing it from GitHub Pages.</p>
           </article>
           <article>
             <h3>Nutrition</h3>
