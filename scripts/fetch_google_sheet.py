@@ -14,7 +14,7 @@ from typing import Any
 
 
 DEFAULT_SHEET_ID = "1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo"
-DEFAULT_RANGE = "A:AG"
+DEFAULT_RANGE = "A:AF"
 DEFAULT_OUTPUT = "data/training-plan.json"
 DEFAULT_SUPPLEMENTS_RANGE = "Supplements!A:F"
 DEFAULT_SUPPLEMENTS_OUTPUT = "data/supplements.json"
@@ -29,7 +29,6 @@ EXPECTED_COLUMNS = {
     "key_workout": "Key Workout",
     "long_run_distance_km": "Long Run Distance KM",
     "long_run_notes": "Long Run Notes",
-    "strength_training": "Strength Training",
     "fuel_practice": "Fuel Practice",
     "sleep_recovery_focus": "Sleep / Recovery Focus",
     "notes": "Notes",
@@ -199,7 +198,6 @@ def normalize_training_week(row: dict[str, str], row_number: int) -> dict[str, A
         "key_workout": key_workout,
         "long_run_distance_km": long_run_distance,
         "long_run_notes": row_value(row, "long_run_notes"),
-        "strength_training": row_value(row, "strength_training"),
         "fuel_practice": row_value(row, "fuel_practice"),
         "sleep_recovery_focus": row_value(row, "sleep_recovery_focus"),
         "notes": row_value(row, "notes"),
@@ -367,7 +365,6 @@ def values_from_plan_json(path: Path) -> list[list[Any]]:
         "Key Workout",
         "Long Run Distance KM",
         "Long Run Notes",
-        "Strength Training",
         "Fuel Practice",
         "Sleep / Recovery Focus",
         "Notes",
@@ -403,7 +400,6 @@ def values_from_plan_json(path: Path) -> list[list[Any]]:
             week.get("key_workout", ""),
             week.get("long_run_distance_km", ""),
             week.get("long_run_notes", ""),
-            week.get("strength_training", ""),
             week.get("fuel_practice", ""),
             week.get("sleep_recovery_focus", ""),
             week.get("notes", ""),

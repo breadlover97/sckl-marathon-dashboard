@@ -9,7 +9,7 @@ The site is intentionally simple: Google Sheets is the editable plan, Strava is 
 - This week’s planned sessions, actual Strava mileage, and read-only supplement history synced from Google Sheets.
 - Week-by-week marathon plan from Google Sheets.
 - Planned vs actual weekly mileage and long-run trends.
-- Recent Strava activity feed with pace, time, elevation, heart rate, cadence, links, and optional run notes.
+- Recent Strava activity feed with pace, time, elevation, heart rate, cadence, and Strava links.
 - Race execution draft page with pace calculator and split table.
 
 ## Local Preview
@@ -29,15 +29,13 @@ index.html                         Main dashboard
 race.html                          Race execution page
 backend.html                       How-it-works page
 styles.css                         Shared visual system and themes
-app.js                             Dashboard rendering, charts, notes, and local checks
+app.js                             Dashboard rendering, charts, and local checks
 race.js                            Pace calculator and race page interactions
 theme.js                           Theme persistence
-config.js                          Public frontend config
 data/mock-*.json                   Local fallback data
 scripts/fetch_google_sheet.py      Google Sheets -> dashboard JSON
 scripts/fetch_strava.py            Strava API -> dashboard JSON
 scripts/exchange_strava_code.py    One-time Strava OAuth helper
-cloudflare-worker/                 Optional run-note writeback API
 .github/workflows/deploy-pages.yml Scheduled/manual sync and GitHub Pages deploy
 ```
 
@@ -76,7 +74,6 @@ Sunday Estimated KM
 Key Workout
 Long Run Distance KM
 Long Run Notes
-Strength Training
 Fuel Practice
 Sleep / Recovery Focus
 Notes
@@ -98,7 +95,7 @@ pip install -r requirements.txt
 
 ```bash
 export GOOGLE_SHEET_ID=1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo
-export GOOGLE_SHEET_RANGE=A:AG
+export GOOGLE_SHEET_RANGE=A:AF
 export GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/google-service-account.json
 python scripts/fetch_google_sheet.py
 ```
@@ -173,7 +170,7 @@ If the optional variables are not set, the workflow uses:
 
 ```text
 GOOGLE_SHEET_ID=1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo
-GOOGLE_SHEET_RANGE=A:AG
+GOOGLE_SHEET_RANGE=A:AF
 ```
 
 To enable Pages:
@@ -188,44 +185,6 @@ To enable Pages:
 The workflow also runs daily at 12:15am Singapore time and whenever `main` is pushed.
 
 Important Strava note: if a workflow run says Strava returned a rotated refresh token, generate or copy the new refresh token and update the `STRAVA_REFRESH_TOKEN` repository secret before the next sync.
-
-## Run Notes Writeback
-
-Run notes are written through a Cloudflare Worker so Google credentials are not exposed on GitHub Pages.
-
-Flow:
-
-```text
-Website note form -> Cloudflare Worker /notes -> Google Sheets API -> Run Notes tab
-```
-
-The `Run Notes` tab is created automatically by the Worker the first time notes are loaded or saved. It may not exist yet if no note has been saved.
-
-Setup:
-
-1. Copy `cloudflare-worker/wrangler.toml.example` to `cloudflare-worker/wrangler.toml`.
-2. Share the Google Sheet with the service account email as **Editor**. Viewer access is enough for the scheduled plan and supplement sync, but the Worker needs Editor access to save run notes.
-3. In `cloudflare-worker`, run:
-
-```bash
-base64 -i service-account.json | wrangler secret put GOOGLE_SERVICE_ACCOUNT_JSON_B64
-wrangler secret put RUN_NOTES_TOKEN
-wrangler deploy
-```
-
-`GOOGLE_SERVICE_ACCOUNT_JSON_B64` is preferred because it avoids broken multi-line JSON when pasting private keys into the terminal. The Worker still supports `GOOGLE_SERVICE_ACCOUNT_JSON` for older deployments.
-
-4. Copy the deployed Worker URL into `config.js`:
-
-```js
-window.SCKL_CONFIG = {
-  runNotesApiUrl: "https://sckl-run-notes.<your-subdomain>.workers.dev"
-};
-```
-
-5. Commit and push `config.js`.
-
-The first time you save a note from the website, it asks for `RUN_NOTES_TOKEN` and stores it in browser localStorage. Reading existing notes also requires that stored passcode, so notes are not exposed as a public unauthenticated API.
 
 ## Supplement History
 
@@ -257,17 +216,14 @@ The generated JSON structure is:
 }
 ```
 
-Google Sheets is the cross-device source of truth once the Worker is deployed. Clearing browser site data removes only the local cache and passcode, not rows already written to the `Supplements` tab.
+Google Sheets is the cross-device source of truth. The website displays supplement history only after the scheduled or manual GitHub Actions sync regenerates `data/supplements.json`.
 
 ## Security Notes
 
 - Never commit `.env`, Google service account JSON, generated Strava token JSON, or local credential files.
 - GitHub Actions secrets should hold `GOOGLE_SERVICE_ACCOUNT_JSON`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, and `STRAVA_REFRESH_TOKEN`.
-- The frontend must not contain Strava client secrets, Google credentials, or Worker secrets.
-- `config.js` is public. Only put public settings there, such as the Worker URL.
-- The Cloudflare Worker is scoped to the `Run Notes` and `Supplements` tabs and requires a bearer passcode for reading or writing notes and supplement checks.
-- Set the Worker `ALLOWED_ORIGIN` variable to the GitHub Pages URL in production so browser calls are limited to the dashboard origin. This is a CORS guard, not a replacement for the passcode.
-- Rotate `RUN_NOTES_TOKEN`, Strava tokens, and Google service account keys if they are ever pasted into chat, committed, or shared.
+- The frontend must not contain Strava client secrets or Google credentials.
+- Rotate Strava tokens and Google service account keys if they are ever pasted into chat, committed, or shared.
 - The site is public on GitHub Pages, so generated JSON should be treated as public data.
 
 ## Checks
@@ -280,7 +236,6 @@ python3 -m py_compile scripts/exchange_strava_code.py
 node --check app.js
 node --check race.js
 node --check theme.js
-node --check cloudflare-worker/src/index.js
 ```
 
 For a visual QC pass, run the local preview server and check:

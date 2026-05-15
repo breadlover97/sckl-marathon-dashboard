@@ -4,9 +4,7 @@ const ACTUAL_DATA_URL = "data/strava-activities.json";
 const MOCK_ACTUAL_DATA_URL = "data/mock-strava-activities.json";
 const SUPPLEMENTS_DATA_URL = "data/supplements.json";
 const MOCK_SUPPLEMENTS_DATA_URL = "data/mock-supplements.json";
-const RUN_NOTES_API_URL = String(window.SCKL_CONFIG?.runNotesApiUrl || "").replace(/\/$/, "");
 const RACE_DATE = "2026-10-04";
-const RUN_NOTES_TOKEN_KEY = "sckl-run-notes-token";
 const ACTIVITY_PAGE_SIZE = 10;
 let latestRenderState = null;
 let resizeTimer = null;
@@ -142,23 +140,6 @@ function safeDomId(value, fallback = "item") {
   return cleaned || fallback;
 }
 
-function storedRunNotesToken() {
-  try {
-    return window.localStorage.getItem(RUN_NOTES_TOKEN_KEY) || "";
-  } catch (error) {
-    return "";
-  }
-}
-
-function setStoredRunNotesToken(token) {
-  try {
-    if (token) window.localStorage.setItem(RUN_NOTES_TOKEN_KEY, token);
-    else window.localStorage.removeItem(RUN_NOTES_TOKEN_KEY);
-  } catch (error) {
-    // Run notes still save for this session even if localStorage is blocked.
-  }
-}
-
 function km(value) {
   return `${Number(value || 0).toFixed(0)} km`;
 }
@@ -272,31 +253,6 @@ async function loadActuals() {
       console.info("No mock actuals available.", mockError);
       return { loaded_from: "none", metadata: { included_activities: 0 }, activities: [] };
     }
-  }
-}
-
-async function loadRunNotes() {
-  if (!RUN_NOTES_API_URL) return {};
-  const token = storedRunNotesToken();
-  if (!token) return {};
-  try {
-    const response = await fetch(`${RUN_NOTES_API_URL}/notes?v=${Date.now()}`, {
-      cache: "no-store",
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-    if (response.status === 401 || response.status === 403) {
-      setStoredRunNotesToken("");
-      return {};
-    }
-    if (!response.ok) throw new Error(`Could not load run notes (${response.status})`);
-    const payload = await response.json();
-    return (payload.notes || []).reduce((result, note) => {
-      if (note.activity_id) result[String(note.activity_id)] = note;
-      return result;
-    }, {});
-  } catch (error) {
-    console.info("Run notes unavailable.", error);
-    return {};
   }
 }
 
@@ -940,37 +896,12 @@ function setupCalendarTooltips() {
   });
 }
 
-function renderRunNotePanel(activity, runNotes) {
-  const note = runNotes[String(activity.id)]?.note || "";
-  if (!RUN_NOTES_API_URL || !activity.id) {
-    return `<div class="empty-state compact-empty">Run notes are unavailable until the Cloudflare Worker is configured.</div>`;
-  }
-  const stravaUrl = safeExternalUrl(activity.strava_url, ["strava.com"]);
-  return `
-    <div class="activity-detail-grid">
-      <div>
-        <span>Run note</span>
-        <p>Saved to the Google Sheet <code>Run Notes</code> tab for this Strava activity.</p>
-      </div>
-      <div class="activity-detail-metrics">
-        <span>${oneDecimalKm(activity.distance_km)}</span>
-        <span>${activityPace(activity)}</span>
-        <span>${heartRate(activity.average_heartrate)}</span>
-      </div>
-    </div>
-    <form class="run-note-form" data-run-note-form data-activity-id="${escapeHtml(activity.id)}" data-activity-date="${escapeHtml(activity.date)}" data-activity-name="${escapeHtml(activity.name)}" data-activity-url="${escapeHtml(stravaUrl)}">
-      <textarea name="note" maxlength="500" aria-label="Run note for ${escapeHtml(activity.name)}">${escapeHtml(note, "")}</textarea>
-      <button type="submit">Save</button>
-    </form>
-  `;
-}
-
 function activitySortValue(activity) {
   const timestamp = Date.parse(activity.start_date_local || activity.date || "");
   return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
-function renderActivityFeed(actuals, runNotes = {}) {
+function renderActivityFeed(actuals) {
   const allActivities = [...(actuals.activities || [])].sort((a, b) => activitySortValue(b) - activitySortValue(a));
   const feed = document.getElementById("activityFeed");
   if (!allActivities.length) {
@@ -984,14 +915,11 @@ function renderActivityFeed(actuals, runNotes = {}) {
   const athlete = actuals.metadata?.athlete || {};
   const athleteName = [athlete.firstname, athlete.lastname].filter(Boolean).join(" ") || "Tai Zhi";
   const profileImage = safeExternalUrl(athlete.profile_medium || athlete.profile || "");
-  const activityRows = activities.map((activity, index) => {
+  const activityRows = activities.map((activity) => {
     const stravaUrl = safeExternalUrl(activity.strava_url, ["strava.com"]);
     const activityName = stravaUrl
       ? `<a class="activity-name-link" href="${escapeHtml(stravaUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(activity.name)}</a>`
       : escapeHtml(activity.name);
-    const note = runNotes[String(activity.id)]?.note || "";
-    const detailId = `activity-detail-${safeDomId(activity.id, `row-${index}`)}`;
-    const noteLabel = note ? "Edit note" : "Note";
     return `
       <tr class="activity-main-row">
         <td>${escapeHtml(prettyDate(activity.date))}</td>
@@ -1002,18 +930,6 @@ function renderActivityFeed(actuals, runNotes = {}) {
         <td>${heartRate(activity.average_heartrate)}</td>
         <td>${cadence(activity.average_cadence)}</td>
         <td>${Math.round(Number(activity.elevation_gain_m || 0))} m</td>
-        <td>
-          <button class="table-action-button ${note ? "has-note" : ""}" type="button" data-activity-toggle aria-expanded="false" aria-controls="${detailId}">
-            ${escapeHtml(noteLabel)}
-          </button>
-        </td>
-      </tr>
-      <tr id="${detailId}" class="activity-detail-row" hidden>
-        <td colspan="9">
-          <div class="activity-detail-panel">
-            ${renderRunNotePanel(activity, runNotes)}
-          </div>
-        </td>
       </tr>
     `;
   }).join("");
@@ -1032,7 +948,6 @@ function renderActivityFeed(actuals, runNotes = {}) {
             <th>Avg HR</th>
             <th>Avg cadence</th>
             <th>Elev</th>
-            <th>Details</th>
           </tr>
         </thead>
         <tbody>${activityRows}</tbody>
@@ -1433,75 +1348,6 @@ function setupActiveNav() {
   update();
 }
 
-function setupRunNotesForms() {
-  document.addEventListener("submit", async (event) => {
-    const form = event.target.closest("[data-run-note-form]");
-    if (!form) return;
-    event.preventDefault();
-    if (!RUN_NOTES_API_URL) return;
-
-    const button = form.querySelector("button");
-    const note = form.querySelector("textarea")?.value || "";
-    let token = storedRunNotesToken();
-    if (!token) {
-      token = window.prompt("Enter run notes passcode") || "";
-      if (!token) return;
-      setStoredRunNotesToken(token);
-    }
-
-    button.disabled = true;
-    const originalText = button.textContent;
-    button.textContent = "Saving";
-    try {
-      const response = await fetch(`${RUN_NOTES_API_URL}/notes`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          activity_id: form.dataset.activityId,
-          date: form.dataset.activityDate,
-          name: form.dataset.activityName,
-          note,
-          strava_url: form.dataset.activityUrl
-        })
-      });
-      if (response.status === 401 || response.status === 403) {
-        setStoredRunNotesToken("");
-        throw new Error("Passcode rejected");
-      }
-      if (!response.ok) throw new Error(`Save failed (${response.status})`);
-      button.textContent = "Saved";
-      const toggle = form.closest(".activity-detail-row")?.previousElementSibling?.querySelector("[data-activity-toggle]");
-      if (toggle) {
-        toggle.textContent = note.trim() ? "Edit note" : "Note";
-        toggle.classList.toggle("has-note", Boolean(note.trim()));
-      }
-      setTimeout(() => {
-        button.textContent = originalText;
-      }, 1200);
-    } catch (error) {
-      console.error(error);
-      button.textContent = "Retry";
-    } finally {
-      button.disabled = false;
-    }
-  });
-}
-
-function setupActivityDetails() {
-  document.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-activity-toggle]");
-    if (!button) return;
-    const detail = document.getElementById(button.getAttribute("aria-controls"));
-    if (!detail) return;
-    const willOpen = detail.hidden;
-    detail.hidden = !willOpen;
-    button.setAttribute("aria-expanded", String(willOpen));
-  });
-}
-
 function setupActivityFeedControls() {
   document.addEventListener("click", (event) => {
     const showMore = event.target.closest("[data-activity-show-more]");
@@ -1513,13 +1359,13 @@ function setupActivityFeedControls() {
     } else {
       activityFeedVisibleCount = ACTIVITY_PAGE_SIZE;
     }
-    renderActivityFeed(latestRenderState.actuals, latestRenderState.runNotes);
+    renderActivityFeed(latestRenderState.actuals);
   });
 }
 
-function render({ plan, actuals, runNotes, supplements }) {
+function render({ plan, actuals, supplements }) {
   supplementHistory = supplements || {};
-  latestRenderState = { actuals, plan, runNotes, supplements: supplementHistory };
+  latestRenderState = { actuals, plan, supplements: supplementHistory };
   renderTrainingDayProgress(plan);
   renderCurrentWeek(plan, actuals);
   renderPlanTable(plan, actuals);
@@ -1527,7 +1373,7 @@ function render({ plan, actuals, runNotes, supplements }) {
   renderLineChart("longRunChart", plan.weeks, "long_run_distance_km", { actuals, actualMetric: "longest_run_km", label: "Planned and actual long run distance", valueLabel: "Long run" });
   renderPaceGuide();
   renderMileageLegend();
-  renderActivityFeed(actuals, runNotes);
+  renderActivityFeed(actuals);
   document.getElementById("syncStatus").textContent =
     `${plan.loaded_from === "google-sheet" ? "Google Sheet plan" : "Mock plan"} loaded · ${plan.weeks.length} training weeks`;
 }
@@ -1548,14 +1394,12 @@ setupReturnTop();
 setupActiveNav();
 setupWeekToggle();
 setupPlanGroupToggle();
-setupRunNotesForms();
-setupActivityDetails();
 setupActivityFeedControls();
 setupCalendarTooltips();
 setupResponsiveCharts();
 
-Promise.all([loadPlan().then(normalizePlan), loadActuals(), loadRunNotes(), loadSupplements()])
-  .then(([plan, actuals, runNotes, supplements]) => render({ plan, actuals, runNotes, supplements }))
+Promise.all([loadPlan().then(normalizePlan), loadActuals(), loadSupplements()])
+  .then(([plan, actuals, supplements]) => render({ plan, actuals, supplements }))
   .catch((error) => {
     console.error(error);
     document.getElementById("syncStatus").textContent = "Unable to load mock training plan.";

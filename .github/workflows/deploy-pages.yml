@@ -57,7 +57,7 @@ jobs:
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ vars.GOOGLE_SHEET_ID || '1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo' }}
-          GOOGLE_SHEET_RANGE: ${{ vars.GOOGLE_SHEET_RANGE || 'A:AG' }}
+          GOOGLE_SHEET_RANGE: ${{ vars.GOOGLE_SHEET_RANGE || 'A:AF' }}
         run: python scripts/fetch_google_sheet.py
 
       - name: Fetch Strava run activities
@@ -76,7 +76,7 @@ jobs:
       - name: Prepare Pages artifact
         run: |
           mkdir -p _site/data
-          cp index.html backend.html race.html styles.css app.js race.js theme.js config.js _site/
+          cp index.html backend.html race.html styles.css app.js race.js theme.js _site/
           cp data/training-plan.json _site/data/
           cp data/strava-activities.json _site/data/
           cp data/supplements.json _site/data/
