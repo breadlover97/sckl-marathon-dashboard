@@ -16,7 +16,7 @@ from typing import Any
 DEFAULT_SHEET_ID = "1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo"
 DEFAULT_RANGE = "A:AG"
 DEFAULT_OUTPUT = "data/training-plan.json"
-DEFAULT_SUPPLEMENTS_RANGE = "Supplements!A:G"
+DEFAULT_SUPPLEMENTS_RANGE = "Supplements!A:F"
 DEFAULT_SUPPLEMENTS_OUTPUT = "data/supplements.json"
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
@@ -314,7 +314,13 @@ def credentials_from_env(credentials_file: str | None, credentials_json: str | N
     )
 
 
-def fetch_sheet_values(spreadsheet_id: str, range_name: str, credentials_file: str | None, credentials_json: str | None) -> list[list[Any]]:
+def fetch_sheet_values(
+    spreadsheet_id: str,
+    range_name: str,
+    credentials_file: str | None,
+    credentials_json: str | None,
+    value_render_option: str = "FORMATTED_VALUE",
+) -> list[list[Any]]:
     try:
         from googleapiclient.discovery import build
     except ImportError as exc:
@@ -328,7 +334,7 @@ def fetch_sheet_values(spreadsheet_id: str, range_name: str, credentials_file: s
         .get(
             spreadsheetId=spreadsheet_id,
             range=range_name,
-            valueRenderOption="FORMATTED_VALUE",
+            valueRenderOption=value_render_option,
             dateTimeRenderOption="FORMATTED_STRING",
         )
         .execute()
@@ -430,7 +436,13 @@ def main() -> int:
         if args.dry_run:
             print(f"Parsed {len(payload['weeks'])} training week(s).")
             if not args.input_json and not args.skip_supplements:
-                supplement_values = fetch_sheet_values(args.spreadsheet_id, args.supplements_range, args.credentials_file, args.credentials_json)
+                supplement_values = fetch_sheet_values(
+                    args.spreadsheet_id,
+                    args.supplements_range,
+                    args.credentials_file,
+                    args.credentials_json,
+                    value_render_option="UNFORMATTED_VALUE",
+                )
                 supplement_payload = build_supplements(supplement_values, f"google-sheet:{args.spreadsheet_id}:{args.supplements_range}")
                 print(f"Parsed {len(supplement_payload['supplements'])} supplement day(s).")
             return 0
@@ -438,7 +450,13 @@ def main() -> int:
         write_json(Path(args.output), payload)
         print(f"Wrote {len(payload['weeks'])} training week(s) to {args.output}.")
         if not args.input_json and not args.skip_supplements:
-            supplement_values = fetch_sheet_values(args.spreadsheet_id, args.supplements_range, args.credentials_file, args.credentials_json)
+            supplement_values = fetch_sheet_values(
+                args.spreadsheet_id,
+                args.supplements_range,
+                args.credentials_file,
+                args.credentials_json,
+                value_render_option="UNFORMATTED_VALUE",
+            )
             supplement_payload = build_supplements(supplement_values, f"google-sheet:{args.spreadsheet_id}:{args.supplements_range}")
             write_json(Path(args.supplements_output), supplement_payload)
             print(f"Wrote {len(supplement_payload['supplements'])} supplement day(s) to {args.supplements_output}.")

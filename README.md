@@ -229,7 +229,7 @@ The first time you save a note from the website, it asks for `RUN_NOTES_TOKEN` a
 
 ## Supplement History
 
-Supplement checks are edited manually in the Google Sheet, not from the website. The `Supplements` tab has one row for every challenge date and checkbox columns for:
+Supplement checks are edited manually in the Google Sheet, not from the website. The `Supplements` tab has one row for every challenge date, with `Date`, `Week`, and `Training Phase` labels before the checkbox columns:
 
 - `Protein Shake`
 - `Omega 3`
