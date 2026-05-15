@@ -25,6 +25,10 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 NUTRITION_HEADERS = [
     "Date",
     "Meal",
+    "Raw Food Log",
+    "Estimation Guidelines",
+    "Calorie Target",
+    "Protein Target g",
     "Food Item",
     "Calories",
     "Protein g",
@@ -32,22 +36,19 @@ NUTRITION_HEADERS = [
     "Fat g",
     "Fibre g",
     "Sodium mg",
-    "Calorie Target",
-    "Protein Target g",
     "Confidence",
     "Assumptions",
     "Source",
     "Notes",
-    "Raw Food Log",
-    "Estimation Guidelines",
     "AI Status",
     "AI Processed At",
     "AI Error",
 ]
 
-OUTPUT_START_COLUMN = 2
+OUTPUT_START_COLUMN = 6
 OUTPUT_END_COLUMN = 20
-MACRO_COLUMN_INDEXES = [3, 4, 5, 6, 7, 8]
+OUTPUT_HEADERS = NUTRITION_HEADERS[OUTPUT_START_COLUMN:OUTPUT_END_COLUMN]
+MACRO_HEADERS = ["Calories", "Protein g", "Carbs g", "Fat g", "Fibre g", "Sodium mg"]
 
 
 class NutritionAIError(Exception):
@@ -106,7 +107,7 @@ def needs_processing(row: list[Any], indexes: dict[str, int], force: bool) -> bo
         return False
     if status == "done" and not force:
         return False
-    return force or any(is_blank(row[index]) if index < len(row) else True for index in MACRO_COLUMN_INDEXES)
+    return force or any(is_blank(row_value(row, indexes, header)) for header in MACRO_HEADERS)
 
 
 def text_from_response(payload: dict[str, Any]) -> str:
@@ -186,8 +187,6 @@ def estimate_nutrition(row_context: dict[str, Any], api_key: str, model: str) ->
 
 def output_values(estimate: dict[str, Any], row: list[Any], indexes: dict[str, int], model: str) -> list[Any]:
     processed_at = datetime.now().astimezone().replace(microsecond=0).isoformat()
-    calorie_target = row_value(row, indexes, "Calorie Target")
-    protein_target = row_value(row, indexes, "Protein Target g")
     return [
         estimate.get("food_item") or row_value(row, indexes, "Food Item"),
         estimate.get("calories", ""),
@@ -196,14 +195,10 @@ def output_values(estimate: dict[str, Any], row: list[Any], indexes: dict[str, i
         estimate.get("fat_g", ""),
         estimate.get("fibre_g", ""),
         estimate.get("sodium_mg", ""),
-        calorie_target,
-        protein_target,
         estimate.get("confidence", ""),
         estimate.get("assumptions", ""),
         f"openai:{model}",
         estimate.get("notes", ""),
-        row_value(row, indexes, "Raw Food Log"),
-        row_value(row, indexes, "Estimation Guidelines"),
         "done",
         processed_at,
         "",
@@ -212,22 +207,17 @@ def output_values(estimate: dict[str, Any], row: list[Any], indexes: dict[str, i
 
 def error_values(message: str, row: list[Any], indexes: dict[str, int]) -> list[Any]:
     processed_at = datetime.now().astimezone().replace(microsecond=0).isoformat()
-    values = [""] * (OUTPUT_END_COLUMN - OUTPUT_START_COLUMN)
-    values[0] = row_value(row, indexes, "Food Item")
-    values[7] = row_value(row, indexes, "Calorie Target")
-    values[8] = row_value(row, indexes, "Protein Target g")
-    values[13] = row_value(row, indexes, "Raw Food Log")
-    values[14] = row_value(row, indexes, "Estimation Guidelines")
-    values[15] = "error"
-    values[16] = processed_at
-    values[17] = message[:500]
+    values = [row_value(row, indexes, header) for header in OUTPUT_HEADERS]
+    values[OUTPUT_HEADERS.index("AI Status")] = "error"
+    values[OUTPUT_HEADERS.index("AI Processed At")] = processed_at
+    values[OUTPUT_HEADERS.index("AI Error")] = message[:500]
     return values
 
 
 def update_row(service, spreadsheet_id: str, sheet_name: str, row_number: int, values: list[Any]) -> None:
     service.spreadsheets().values().update(
         spreadsheetId=spreadsheet_id,
-        range=f"{sheet_name}!C{row_number}:T{row_number}",
+        range=f"{sheet_name}!G{row_number}:T{row_number}",
         valueInputOption="USER_ENTERED",
         body={"values": [values]},
     ).execute()

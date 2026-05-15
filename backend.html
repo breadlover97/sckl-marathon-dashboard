@@ -197,7 +197,7 @@
         <h2>Data Contract</h2>
         <p><code>data/training-plan.json</code> contains the plan from Google Sheets: week number, week start date, phase, weekly mileage, daily sessions, long run target, weekly summary, and notes.</p>
         <p><code>data/strava-activities.json</code> contains the generated actual training data used by the dashboard: athlete profile, sync timestamp, run distance, moving time, elapsed time, elevation, heart rate, cadence, activity names, dates, and Strava links.</p>
-        <p><code>data/nutrition.json</code> contains read-only meal-level nutrition rows from the <code>Nutrition</code> tab, plus daily totals and rolling seven-day calorie and protein averages. Only columns A:O are published; raw food logs, guidelines, AI status, timestamps, and errors remain Sheet workflow columns.</p>
+        <p><code>data/nutrition.json</code> contains read-only meal-level nutrition rows from the <code>Nutrition</code> tab, plus daily totals and rolling seven-day calorie and protein averages. The sync reads columns A:T by header name, but only public nutrition fields are written into the generated JSON; raw food logs, guidelines, AI status, timestamps, and errors remain Sheet workflow columns.</p>
         <pre class="code-block"><code>{
   "metadata": { "generated_at": "2026-05-11T12:00:00+08:00" },
   "weeks": [

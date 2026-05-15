@@ -205,6 +205,10 @@ Nutrition rows live in the Google Sheet, not on the website. The `Nutrition` tab
 ```text
 Date
 Meal
+Raw Food Log
+Estimation Guidelines
+Calorie Target
+Protein Target g
 Food Item
 Calories
 Protein g
@@ -212,19 +216,10 @@ Carbs g
 Fat g
 Fibre g
 Sodium mg
-Calorie Target
-Protein Target g
 Confidence
 Assumptions
 Source
 Notes
-```
-
-The optional AI helper uses additional private workflow columns after `Notes`:
-
-```text
-Raw Food Log
-Estimation Guidelines
 AI Status
 AI Processed At
 AI Error
@@ -237,7 +232,7 @@ Typical workflow:
 3. Leave the macro columns blank.
 4. GitHub Actions runs `scripts/process_nutrition_ai.py`.
 5. The script calls OpenAI from the private Actions runner, writes calories, macros, confidence, assumptions, source, notes, and AI status back to Google Sheets.
-6. `scripts/fetch_google_sheet.py` then exports `Nutrition!A:O` to `data/nutrition.json`.
+6. `scripts/fetch_google_sheet.py` then exports `Nutrition!A:T` to `data/nutrition.json`, but the generated JSON only includes the public nutrition fields used by the site.
 
 If `OPENAI_API_KEY` is not set, the AI step safely skips and the normal dashboard sync still runs.
 

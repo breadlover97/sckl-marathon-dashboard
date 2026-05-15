@@ -16,7 +16,7 @@ from typing import Any
 DEFAULT_SHEET_ID = "1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo"
 DEFAULT_RANGE = "A:AF"
 DEFAULT_OUTPUT = "data/training-plan.json"
-DEFAULT_NUTRITION_RANGE = "Nutrition!A:O"
+DEFAULT_NUTRITION_RANGE = "Nutrition!A:T"
 DEFAULT_NUTRITION_OUTPUT = "data/nutrition.json"
 CHALLENGE_YEAR = 2026
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
