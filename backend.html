@@ -56,8 +56,9 @@
           <div class="flow-step"><strong>1</strong><span>You edit the marathon plan in Google Sheets. The sheet stays the source of truth for planned weeks, dates, daily mileage, notes, and weekly summaries.</span></div>
           <div class="flow-step"><strong>2</strong><span>You record runs normally through Strava. The dashboard only needs Strava API access; it does not need Strava data typed into the sheet.</span></div>
           <div class="flow-step"><strong>3</strong><span>GitHub Actions runs the sync workflow on schedule, on code changes, or when you press the Sync data button and manually run the workflow.</span></div>
-          <div class="flow-step"><strong>4</strong><span>The workflow reads private credentials from GitHub secrets, fetches Google Sheets and Strava data, then writes generated JSON files into the Pages artifact.</span></div>
-          <div class="flow-step"><strong>5</strong><span>GitHub Pages hosts the static site. The browser loads <code>data/training-plan.json</code>, <code>data/strava-activities.json</code>, and <code>data/nutrition.json</code> to render the dashboard and standalone nutrition page.</span></div>
+          <div class="flow-step"><strong>4</strong><span>If raw nutrition rows are waiting, GitHub Actions calls OpenAI privately, writes macro estimates back into Google Sheets, then runs the normal Sheet sync.</span></div>
+          <div class="flow-step"><strong>5</strong><span>The workflow reads private credentials from GitHub secrets, fetches Google Sheets and Strava data, then writes generated JSON files into the Pages artifact.</span></div>
+          <div class="flow-step"><strong>6</strong><span>GitHub Pages hosts the static site. The browser loads <code>data/training-plan.json</code>, <code>data/strava-activities.json</code>, and <code>data/nutrition.json</code> to render the dashboard and standalone nutrition page.</span></div>
         </div>
       </section>
 
@@ -65,7 +66,8 @@
         <h2>What Each Service Does</h2>
         <p><strong>Google Sheets</strong> stores the planned marathon build and nutrition history. You can adjust daily estimated mileage, session notes, weekly summaries, phase details, and meal-level nutrition rows there.</p>
         <p><strong>Strava API</strong> provides actual runs: distance, time, pace, elevation, heart rate and cadence when Strava includes them, activity names, dates, and Strava links.</p>
-        <p><strong>GitHub Actions</strong> is the private sync worker. It refreshes Strava tokens, reads the Google service account secret, fetches both data sources, and prepares the Pages deployment.</p>
+        <p><strong>GitHub Actions</strong> is the private sync worker. It refreshes Strava tokens, reads the Google service account secret, optionally calls OpenAI for nutrition estimates, fetches both data sources, and prepares the Pages deployment.</p>
+        <p><strong>OpenAI API</strong> is used only by the private workflow script when an <code>OPENAI_API_KEY</code> secret is configured. The public site never calls OpenAI directly.</p>
         <p><strong>GitHub Pages</strong> is the public static host. It has no server-side code and no API secrets in frontend JavaScript.</p>
       </section>
 
@@ -89,6 +91,7 @@
 |   `-- mock-nutrition.json
 |-- scripts/
 |   |-- fetch_google_sheet.py     # Reads and normalises Google Sheet rows
+|   |-- process_nutrition_ai.py   # Private raw food log -> nutrition estimate writer
 |   |-- fetch_strava.py           # Refreshes Strava token and fetches runs
 |   `-- exchange_strava_code.py   # One-time OAuth helper
 |-- .github/workflows/
@@ -120,6 +123,10 @@
           <article>
             <h3>Nutrition</h3>
             <p><code>scripts/fetch_google_sheet.py</code> also reads the <code>Nutrition</code> tab into <code>data/nutrition.json</code>. The site displays that history without editing it from GitHub Pages.</p>
+          </article>
+          <article>
+            <h3>Nutrition AI</h3>
+            <p><code>scripts/process_nutrition_ai.py</code> reads raw food logs from private helper columns, calls OpenAI from GitHub Actions, and writes estimates back into the Sheet before the JSON sync.</p>
           </article>
         </div>
       </section>
@@ -170,7 +177,7 @@
         <div class="tech-grid">
           <article>
             <h3>GitHub repository secrets</h3>
-            <p><code>GOOGLE_SERVICE_ACCOUNT_JSON</code>, <code>STRAVA_CLIENT_ID</code>, <code>STRAVA_CLIENT_SECRET</code>, and <code>STRAVA_REFRESH_TOKEN</code>. These stay private in GitHub Actions.</p>
+            <p><code>GOOGLE_SERVICE_ACCOUNT_JSON</code>, <code>STRAVA_CLIENT_ID</code>, <code>STRAVA_CLIENT_SECRET</code>, and <code>STRAVA_REFRESH_TOKEN</code>. Add <code>OPENAI_API_KEY</code> to enable AI nutrition processing. These stay private in GitHub Actions.</p>
           </article>
           <article>
             <h3>GitHub repository variables</h3>
@@ -191,7 +198,7 @@
         <h2>Data Contract</h2>
         <p><code>data/training-plan.json</code> contains the plan from Google Sheets: week number, week start date, phase, weekly mileage, daily sessions, long run target, weekly summary, and notes.</p>
         <p><code>data/strava-activities.json</code> contains the generated actual training data used by the dashboard: athlete profile, sync timestamp, run distance, moving time, elapsed time, elevation, heart rate, cadence, activity names, dates, and Strava links.</p>
-        <p><code>data/nutrition.json</code> contains read-only meal-level nutrition rows from the <code>Nutrition</code> tab, plus daily totals and rolling seven-day calorie and protein averages.</p>
+        <p><code>data/nutrition.json</code> contains read-only meal-level nutrition rows from the <code>Nutrition</code> tab, plus daily totals and rolling seven-day calorie and protein averages. Only columns A:O are published; raw food logs, guidelines, AI status, timestamps, and errors remain Sheet workflow columns.</p>
         <pre class="code-block"><code>{
   "metadata": { "generated_at": "2026-05-11T12:00:00+08:00" },
   "weeks": [
@@ -210,7 +217,7 @@
         <h2>Privacy And Limits</h2>
         <p>The website is public, so anything written into generated JSON can be viewed by anyone with the site link. API secrets are private, but published activity metrics are public.</p>
         <p>Nutrition rows are public once synced into <code>data/nutrition.json</code>, so only track food items, assumptions, and notes you are comfortable showing on the public dashboard.</p>
-        <p>The frontend does not call OpenAI or any other estimation API directly. Any AI-assisted nutrition estimate should be entered into the Google Sheet first, then synced as static JSON.</p>
+        <p>The frontend does not call OpenAI or any other estimation API directly. AI-assisted nutrition estimates are generated in GitHub Actions or locally, written into Google Sheets, then synced as static JSON.</p>
         <p>If a Strava token or Google service account key is ever shared outside the secret stores, rotate it and update GitHub Actions secrets.</p>
         <p>The dashboard is a training visibility tool, not a coaching or medical system. Risk flags and progress views should guide decisions, not replace judgement around injury, sleep, heat, or recovery.</p>
       </section>

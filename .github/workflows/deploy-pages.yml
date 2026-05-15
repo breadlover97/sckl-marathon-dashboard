@@ -53,12 +53,16 @@ jobs:
           done
           exit "$missing"
 
-      - name: Fetch Google Sheet plan
+      - name: Process nutrition AI and fetch Google Sheet plan
+        run: |
+          python scripts/process_nutrition_ai.py
+          python scripts/fetch_google_sheet.py
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ vars.GOOGLE_SHEET_ID || '1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo' }}
           GOOGLE_SHEET_RANGE: ${{ vars.GOOGLE_SHEET_RANGE || 'A:AF' }}
-        run: python scripts/fetch_google_sheet.py
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_NUTRITION_MODEL: ${{ vars.OPENAI_NUTRITION_MODEL || 'gpt-4.1-mini' }}
 
       - name: Fetch Strava run activities
         env:

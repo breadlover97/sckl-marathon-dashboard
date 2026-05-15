@@ -37,6 +37,7 @@ race.js                            Pace calculator and race page interactions
 theme.js                           Theme persistence
 data/mock-*.json                   Local fallback data
 scripts/fetch_google_sheet.py      Google Sheets -> dashboard JSON
+scripts/process_nutrition_ai.py    Private AI nutrition estimator -> Google Sheets
 scripts/fetch_strava.py            Strava API -> dashboard JSON
 scripts/exchange_strava_code.py    One-time Strava OAuth helper
 .github/workflows/deploy-pages.yml Scheduled/manual sync and GitHub Pages deploy
@@ -151,7 +152,8 @@ The workflow:
 1. Installs the Python dependencies.
 2. Fetches the latest planned training from Google Sheets.
 3. Fetches Strava run activities from 1 May 2026 onward.
-4. Publishes the static site files and generated dashboard JSON files to GitHub Pages.
+4. Optionally estimates raw nutrition logs with OpenAI and writes the results back to Google Sheets.
+5. Publishes the static site files and generated dashboard JSON files to GitHub Pages.
 
 Required repository secrets:
 
@@ -162,11 +164,18 @@ STRAVA_CLIENT_SECRET
 STRAVA_REFRESH_TOKEN
 ```
 
+Optional repository secret for AI nutrition processing:
+
+```text
+OPENAI_API_KEY
+```
+
 Optional repository variables:
 
 ```text
 GOOGLE_SHEET_ID
 GOOGLE_SHEET_RANGE
+OPENAI_NUTRITION_MODEL
 ```
 
 If the optional variables are not set, the workflow uses:
@@ -191,7 +200,7 @@ Important Strava note: if a workflow run says Strava returned a rotated refresh 
 
 ## Nutrition History
 
-Nutrition rows are edited manually in the Google Sheet, not from the website. The `Nutrition` tab is meal-level and uses this header row:
+Nutrition rows live in the Google Sheet, not on the website. The `Nutrition` tab is meal-level and uses these synced columns:
 
 ```text
 Date
@@ -211,7 +220,28 @@ Source
 Notes
 ```
 
-The scheduled GitHub Actions sync reads that tab into `data/nutrition.json`. The main dashboard shows a compact daily nutrition status, while `nutrition.html` shows the full daily and meal-level history.
+The optional AI helper uses additional private workflow columns after `Notes`:
+
+```text
+Raw Food Log
+Estimation Guidelines
+AI Status
+AI Processed At
+AI Error
+```
+
+Typical workflow:
+
+1. Fill `Date`, `Meal`, and `Raw Food Log`.
+2. Add optional `Estimation Guidelines`, for example "hawker portion, include soup sodium" or "higher confidence if packaged label is provided".
+3. Leave the macro columns blank.
+4. GitHub Actions runs `scripts/process_nutrition_ai.py`.
+5. The script calls OpenAI from the private Actions runner, writes calories, macros, confidence, assumptions, source, notes, and AI status back to Google Sheets.
+6. `scripts/fetch_google_sheet.py` then exports `Nutrition!A:O` to `data/nutrition.json`.
+
+If `OPENAI_API_KEY` is not set, the AI step safely skips and the normal dashboard sync still runs.
+
+The main dashboard shows a compact daily nutrition status, while `nutrition.html` shows the full daily and meal-level history.
 
 The generated JSON structure is:
 
@@ -271,9 +301,10 @@ Google Sheets is the cross-device source of truth. The website displays nutritio
 ## Security Notes
 
 - Never commit `.env`, Google service account JSON, generated Strava token JSON, or local credential files.
-- GitHub Actions secrets should hold `GOOGLE_SERVICE_ACCOUNT_JSON`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, and `STRAVA_REFRESH_TOKEN`.
+- GitHub Actions secrets should hold `GOOGLE_SERVICE_ACCOUNT_JSON`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, and `STRAVA_REFRESH_TOKEN`. Add `OPENAI_API_KEY` to enable AI nutrition processing.
 - The frontend must not contain Strava client secrets or Google credentials.
-- The frontend must not call OpenAI directly. Put any AI-assisted nutrition estimate in the Google Sheet first, then sync it as static JSON.
+- The frontend must not call OpenAI directly. AI nutrition processing runs only from GitHub Actions or a local private script, then syncs static JSON.
+- The Google service account needs Editor access to the sheet if AI processing should write estimates back into the `Nutrition` tab. Viewer access is still enough for read-only plan/nutrition sync.
 - Rotate Strava tokens and Google service account keys if they are ever pasted into chat, committed, or shared.
 - The site is public on GitHub Pages, so generated JSON should be treated as public data.
 
@@ -282,6 +313,7 @@ Google Sheets is the cross-device source of truth. The website displays nutritio
 ```bash
 python3 scripts/fetch_google_sheet.py --input-json data/training-plan.json --dry-run
 python3 -m py_compile scripts/fetch_google_sheet.py
+python3 -m py_compile scripts/process_nutrition_ai.py
 python3 -m py_compile scripts/fetch_strava.py
 python3 -m py_compile scripts/exchange_strava_code.py
 node --check app.js
