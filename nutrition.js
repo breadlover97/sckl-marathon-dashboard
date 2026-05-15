@@ -51,6 +51,46 @@ function percent(value) {
   return value === null || value === undefined || value === "" ? "-" : `${round(value, 0)}%`;
 }
 
+function syncTime(value) {
+  if (!value) return "Not synced yet";
+  return new Date(value).toLocaleString("en-SG", {
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    month: "short",
+    timeZone: "Asia/Singapore"
+  });
+}
+
+function timeAgo(value) {
+  if (!value) return "";
+  const elapsedMs = Math.max(Date.now() - new Date(value).getTime(), 0);
+  const totalMinutes = Math.floor(elapsedMs / 60000);
+  if (totalMinutes < 1) return "just now";
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}h ${minutes}m ago`;
+}
+
+function lastSyncedText(label, value, fallback) {
+  if (!value) return fallback;
+  return `${label} last synced ${syncTime(value)} (${timeAgo(value)})`;
+}
+
+function modelLabel(source) {
+  const sources = Array.isArray(source) ? source : String(source || "").split(",");
+  const openAiSource = sources
+    .map((item) => String(item || "").trim())
+    .find((item) => item.toLowerCase().startsWith("openai:"));
+  return openAiSource ? openAiSource.replace(/^openai:/i, "") : "-";
+}
+
+function nutritionModel(payload) {
+  const mealSource = payload.meals.map((meal) => meal.source).find(Boolean);
+  const daySource = payload.days.map((day) => day.source).find(Boolean);
+  return modelLabel(mealSource || daySource || "");
+}
+
 async function fetchJson(url) {
   const response = await fetch(`${url}?v=${Date.now()}`, { cache: "no-store" });
   if (!response.ok) throw new Error(`Could not load ${url} (${response.status})`);
@@ -128,14 +168,18 @@ function renderSummary(payload) {
   const latestProtein = day ? grams(day.protein_g) : "-";
   const avgCalories = day?.seven_day_average_calories ? kcal(day.seven_day_average_calories) : "-";
   const avgProtein = day?.seven_day_average_protein_g ? grams(day.seven_day_average_protein_g) : "-";
-  status.textContent = payload.loaded_from === "google-sheet" ? "Google Sheet nutrition" : "Mock nutrition";
-  syncStatus.textContent = `${payload.loaded_from === "google-sheet" ? "Google Sheet" : "Mock"} nutrition loaded · ${payload.days.length} day${payload.days.length === 1 ? "" : "s"}`;
+  const syncLabel = payload.loaded_from === "google-sheet" ? "Nutrition" : "Mock nutrition";
+  const syncedText = lastSyncedText(syncLabel, payload.metadata?.generated_at, `${syncLabel} not synced`);
+  const model = nutritionModel(payload);
+  status.textContent = syncedText;
+  syncStatus.textContent = `${syncedText} · ${payload.days.length} day${payload.days.length === 1 ? "" : "s"}`;
   container.innerHTML = `
     <article class="week-metric"><span>Latest date</span><strong>${escapeHtml(day ? prettyDate(day.date) : "-")}</strong></article>
     <article class="week-metric"><span>Latest calories</span><strong>${escapeHtml(latestCalories)}</strong></article>
     <article class="week-metric"><span>Latest protein</span><strong>${escapeHtml(latestProtein)}</strong></article>
     <article class="week-metric"><span>7-day calories</span><strong>${escapeHtml(avgCalories)}</strong></article>
     <article class="week-metric"><span>7-day protein</span><strong>${escapeHtml(avgProtein)}</strong></article>
+    <article class="week-metric"><span>AI model</span><strong>${escapeHtml(model)}</strong></article>
     <article class="week-metric"><span>Meal rows</span><strong>${escapeHtml(payload.meals.length)}</strong></article>
   `;
 }

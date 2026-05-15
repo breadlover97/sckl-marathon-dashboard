@@ -227,7 +227,7 @@ AI Error
 
 Typical workflow:
 
-1. Fill `Date`, `Meal`, and `Raw Food Log`.
+1. Fill `Date`, choose a `Meal` from the dropdown, and add `Raw Food Log`.
 2. Add optional `Estimation Guidelines`, for example "hawker portion, include soup sodium" or "higher confidence if packaged label is provided".
 3. Leave the macro columns blank.
 4. GitHub Actions runs `scripts/process_nutrition_ai.py`.

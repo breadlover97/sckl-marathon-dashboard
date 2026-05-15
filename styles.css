@@ -345,7 +345,7 @@ button {
   top: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(0, auto) max-content;
+  grid-template-columns: minmax(180px, 1fr) minmax(0, max-content) minmax(180px, 1fr);
   min-height: 72px;
   gap: 12px;
   align-items: center;
@@ -2307,14 +2307,14 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
 
   .nav-tabs {
     position: fixed;
-    right: 10px;
+    right: auto;
     bottom: calc(10px + env(safe-area-inset-bottom));
-    left: 10px;
+    left: 50%;
     z-index: 35;
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: minmax(max-content, 1fr);
-    width: calc(100% - 20px);
+    width: min(calc(100% - 20px), 720px);
     max-width: none;
     justify-self: stretch;
     justify-content: start;
@@ -2322,6 +2322,7 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     overflow-x: auto;
     border-radius: 18px;
     box-shadow: 0 16px 34px rgba(5, 5, 5, 0.16);
+    transform: translateX(-50%);
   }
 
   .nav-actions {
@@ -2481,20 +2482,21 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     grid-row: 2;
     grid-column: 1 / -1;
     position: fixed;
-    right: 10px;
+    right: auto;
     bottom: calc(10px + env(safe-area-inset-bottom));
-    left: 10px;
+    left: 50%;
     z-index: 35;
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: 1fr;
-    width: calc(100% - 20px);
+    width: min(calc(100% - 20px), 720px);
     max-width: none;
     justify-self: stretch;
     padding: 5px;
     border-radius: 18px;
     box-shadow: 0 16px 34px rgba(5, 5, 5, 0.16);
     scrollbar-width: none;
+    transform: translateX(-50%);
   }
 
   .nav-tabs::-webkit-scrollbar {
