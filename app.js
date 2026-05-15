@@ -11,6 +11,7 @@ let latestRenderState = null;
 let resizeTimer = null;
 let supplementSyncState = { message: "", tone: "" };
 let hasScrolledThisWeekToToday = false;
+let hasScrolledPlanToToday = false;
 let activityFeedVisibleCount = ACTIVITY_PAGE_SIZE;
 
 const wellnessChecks = [
@@ -860,6 +861,7 @@ function renderPlanTable(plan, actuals) {
   `;
   updateWeekToggleLabel();
   updatePlanGroupToggleLabel();
+  scrollPlanToToday();
 }
 
 function openPlanGroupKeys() {
@@ -897,8 +899,21 @@ function setupWeekToggle() {
     if (phase) phase.open = true;
     window.requestAnimationFrame(() => {
       currentWeek?.scrollIntoView({ block: "start", behavior: "smooth" });
+      scrollPlanToToday({ force: true, behavior: "smooth" });
     });
     updatePlanGroupToggleLabel();
+  });
+}
+
+function scrollPlanToToday(options = {}) {
+  if (hasScrolledPlanToToday && !options.force) return;
+  window.requestAnimationFrame(() => {
+    const activeDay = document.querySelector(".calendar-week.current .calendar-day.active-day");
+    const grid = activeDay?.closest(".calendar-days");
+    if (!grid || !activeDay || grid.scrollWidth <= grid.clientWidth) return;
+    const target = activeDay.offsetLeft - ((grid.clientWidth - activeDay.clientWidth) / 2);
+    grid.scrollTo({ left: Math.max(0, target), behavior: options.behavior || "auto" });
+    hasScrolledPlanToToday = true;
   });
 }
 
@@ -1038,7 +1053,7 @@ function renderActivityFeed(actuals, runNotes = {}) {
   }).join("");
   const remaining = Math.max(allActivities.length - activityFeedVisibleCount, 0);
   const nextCount = Math.min(ACTIVITY_PAGE_SIZE, remaining || ACTIVITY_PAGE_SIZE);
-  const tableMarkup = activities.length ? `
+  const tableMarkup = `
     <div class="activity-table-scroll">
       <table class="activity-table">
         <thead>
@@ -1057,12 +1072,11 @@ function renderActivityFeed(actuals, runNotes = {}) {
         <tbody>${activityRows}</tbody>
       </table>
     </div>
-  ` : `<div class="activity-collapsed-state">Activity rows hidden.</div>`;
+  `;
 
-  const showMoreLabel = activityFeedVisibleCount > 0 ? `Show ${nextCount} more` : `Show ${nextCount} activities`;
   const feedActions = [
-    remaining > 0 ? `<button class="action-button secondary compact-action" type="button" data-activity-show-more>${showMoreLabel}</button>` : "",
-    activityFeedVisibleCount > 0 ? `<button class="action-button secondary compact-action" type="button" data-activity-hide-all>Hide all</button>` : ""
+    remaining > 0 ? `<button class="action-button secondary compact-action" type="button" data-activity-show-more>Show ${nextCount} more</button>` : "",
+    activityFeedVisibleCount > ACTIVITY_PAGE_SIZE ? `<button class="action-button secondary compact-action" type="button" data-activity-hide-all>Show first ${ACTIVITY_PAGE_SIZE}</button>` : ""
   ].filter(Boolean).join("");
 
   feed.innerHTML = `
@@ -1531,7 +1545,7 @@ function setupActivityFeedControls() {
     if (showMore) {
       activityFeedVisibleCount += ACTIVITY_PAGE_SIZE;
     } else {
-      activityFeedVisibleCount = 0;
+      activityFeedVisibleCount = ACTIVITY_PAGE_SIZE;
     }
     renderActivityFeed(latestRenderState.actuals, latestRenderState.runNotes);
   });
