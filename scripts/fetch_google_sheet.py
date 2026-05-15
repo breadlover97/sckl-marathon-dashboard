@@ -18,6 +18,7 @@ DEFAULT_RANGE = "A:AG"
 DEFAULT_OUTPUT = "data/training-plan.json"
 DEFAULT_SUPPLEMENTS_RANGE = "Supplements!A:F"
 DEFAULT_SUPPLEMENTS_OUTPUT = "data/supplements.json"
+CHALLENGE_YEAR = 2026
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
 EXPECTED_COLUMNS = {
@@ -109,6 +110,14 @@ def parse_date(value: str, field_name: str, row_number: int) -> str:
     for pattern in ("%d/%m/%Y", "%d-%m-%Y", "%m/%d/%Y", "%d %b %Y", "%d %B %Y"):
         try:
             return datetime.strptime(text, pattern).date().isoformat()
+        except ValueError:
+            pass
+
+    compact_date = re.sub(r"\s*\([^)]*\)\s*$", "", text)
+    for pattern in ("%d-%b", "%d-%B"):
+        try:
+            parsed = datetime.strptime(compact_date, pattern).date()
+            return parsed.replace(year=CHALLENGE_YEAR).isoformat()
         except ValueError:
             pass
 
@@ -335,7 +344,7 @@ def fetch_sheet_values(
             spreadsheetId=spreadsheet_id,
             range=range_name,
             valueRenderOption=value_render_option,
-            dateTimeRenderOption="FORMATTED_STRING",
+            dateTimeRenderOption="SERIAL_NUMBER" if value_render_option == "UNFORMATTED_VALUE" else "FORMATTED_STRING",
         )
         .execute()
     )
