@@ -715,6 +715,24 @@ main {
   overflow-x: auto;
 }
 
+.activity-collapsed-state {
+  padding: 22px 18px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.activity-feed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 14px 18px 16px;
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--soft) 44%, transparent);
+}
+
 .activity-table {
   width: 100%;
   min-width: 950px;
@@ -2986,6 +3004,15 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   .activity-table-summary {
     display: grid;
     gap: 4px;
+  }
+
+  .activity-feed-actions {
+    justify-content: stretch;
+  }
+
+  .activity-feed-actions .action-button {
+    justify-content: center;
+    width: 100%;
   }
 
   .tech-grid,

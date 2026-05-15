@@ -6,10 +6,12 @@ const RUN_NOTES_API_URL = String(window.SCKL_CONFIG?.runNotesApiUrl || "").repla
 const RACE_DATE = "2026-10-04";
 const RUN_NOTES_TOKEN_KEY = "sckl-run-notes-token";
 const WELLNESS_STORAGE_KEY = "sckl-wellness-checks";
+const ACTIVITY_PAGE_SIZE = 10;
 let latestRenderState = null;
 let resizeTimer = null;
 let supplementSyncState = { message: "", tone: "" };
 let hasScrolledThisWeekToToday = false;
+let activityFeedVisibleCount = ACTIVITY_PAGE_SIZE;
 
 const wellnessChecks = [
   { key: "protein", label: "Protein shake", shortLabel: "Protein" },
@@ -90,6 +92,11 @@ const formatDate = new Intl.DateTimeFormat("en-SG", {
 const formatShortDate = new Intl.DateTimeFormat("en-SG", {
   day: "numeric",
   month: "short"
+});
+
+const formatMonth = new Intl.DateTimeFormat("en-SG", {
+  month: "long",
+  year: "numeric"
 });
 
 const singaporePartsFormatter = new Intl.DateTimeFormat("en-CA", {
@@ -696,23 +703,35 @@ function renderCalendarWeek(week, actuals) {
   `;
 }
 
-function phaseGroups(weeks) {
+function monthKey(value) {
+  const date = parseLocalDate(value);
+  if (!date) return "unscheduled";
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function monthLabel(value) {
+  const date = parseLocalDate(value);
+  return date ? formatMonth.format(date) : "Unscheduled";
+}
+
+function monthGroups(weeks) {
   return weeks.reduce((groups, week) => {
+    const key = monthKey(week.week_start_date);
     const last = groups[groups.length - 1];
-    if (last && last.phase === week.phase) {
+    if (last && last.key === key) {
       last.weeks.push(week);
       return groups;
     }
     groups.push({
-      key: `${safeDomId(week.phase)}-${week.week_number}`,
-      phase: week.phase,
+      key,
+      label: monthLabel(week.week_start_date),
       weeks: [week]
     });
     return groups;
   }, []);
 }
 
-function summarizePhaseGroup(group, actuals) {
+function summarizeMonthGroup(group, actuals) {
   return group.weeks.reduce((summary, week) => {
     const actual = summarizeWeekActual(week, actuals);
     summary.plannedKm += Number(week.target_weekly_mileage_km || 0);
@@ -732,17 +751,17 @@ function summarizePhaseGroup(group, actuals) {
   });
 }
 
-function renderCalendarPhaseGroup(group, actuals, openPhases) {
-  const summary = summarizePhaseGroup(group, actuals);
-  const isOpen = openPhases ? openPhases.has(group.key) : summary.hasCurrent;
+function renderCalendarMonthGroup(group, actuals, openGroups) {
+  const summary = summarizeMonthGroup(group, actuals);
+  const isOpen = openGroups ? openGroups.has(group.key) : summary.hasCurrent;
   const weeks = group.weeks.map((week) => renderCalendarWeek(week, actuals)).join("");
   const weekLabel = group.weeks.length === 1 ? "1 week" : `${group.weeks.length} weeks`;
 
   return `
-    <details class="calendar-phase-group ${summary.hasCurrent ? "current" : ""}" data-phase-key="${escapeHtml(group.key)}" ${isOpen ? "open" : ""}>
+    <details class="calendar-phase-group ${summary.hasCurrent ? "current" : ""}" data-plan-group-key="${escapeHtml(group.key)}" ${isOpen ? "open" : ""}>
       <summary>
         <span class="phase-title">
-          <small>${escapeHtml(group.phase)}</small>
+          <small>${escapeHtml(group.label)}</small>
           <strong>${prettyDate(summary.startDate)} to ${prettyDate(summary.endDate)}</strong>
         </span>
         <span class="phase-stat">${escapeHtml(weekLabel)}</span>
@@ -828,11 +847,11 @@ function renderPlanTable(plan, actuals) {
     planStatus.textContent = lastSyncedText("Sheet", plan.metadata?.generated_at, "Sheet not synced");
     planStatus.className = "status-pill";
   }
-  const currentPhaseGroups = document.querySelectorAll(".calendar-phase-group");
-  const openPhases = openPhaseKeys();
-  const shouldPreserveOpenState = currentPhaseGroups.length > 0;
-  const rows = phaseGroups(plan.weeks)
-    .map((group) => renderCalendarPhaseGroup(group, actuals, shouldPreserveOpenState ? openPhases : null))
+  const currentPlanGroups = document.querySelectorAll(".calendar-phase-group");
+  const openGroups = openPlanGroupKeys();
+  const shouldPreserveOpenState = currentPlanGroups.length > 0;
+  const rows = monthGroups(plan.weeks)
+    .map((group) => renderCalendarMonthGroup(group, actuals, shouldPreserveOpenState ? openGroups : null))
     .join("");
   table.innerHTML = `
     <div class="calendar-plan" aria-label="Week-by-week calendar training plan">
@@ -840,22 +859,24 @@ function renderPlanTable(plan, actuals) {
     </div>
   `;
   updateWeekToggleLabel();
+  updatePlanGroupToggleLabel();
 }
 
-function openPhaseKeys() {
+function openPlanGroupKeys() {
   return new Set(
     Array.from(document.querySelectorAll(".calendar-phase-group[open]"))
-      .map((group) => group.dataset.phaseKey)
+      .map((group) => group.dataset.planGroupKey)
       .filter(Boolean)
   );
 }
 
-function restoreOpenPhases(openPhases) {
-  if (!openPhases?.size) return;
+function restoreOpenPlanGroups(openGroups) {
+  if (!openGroups?.size) return;
   document.querySelectorAll(".calendar-phase-group").forEach((group) => {
-    group.open = openPhases.has(group.dataset.phaseKey);
+    group.open = openGroups.has(group.dataset.planGroupKey);
   });
   updateWeekToggleLabel();
+  updatePlanGroupToggleLabel();
 }
 
 function updateWeekToggleLabel() {
@@ -877,7 +898,38 @@ function setupWeekToggle() {
     window.requestAnimationFrame(() => {
       currentWeek?.scrollIntoView({ block: "start", behavior: "smooth" });
     });
+    updatePlanGroupToggleLabel();
   });
+}
+
+function updatePlanGroupToggleLabel() {
+  const button = document.getElementById("togglePlanGroups");
+  if (!button) return;
+  const groups = Array.from(document.querySelectorAll(".calendar-phase-group"));
+  const allOpen = groups.length > 0 && groups.every((group) => group.open);
+  button.textContent = allOpen ? "Close all" : "Expand all";
+  button.setAttribute("aria-label", allOpen ? "Close all months in the training plan" : "Expand all months in the training plan");
+  button.disabled = groups.length === 0;
+}
+
+function setupPlanGroupToggle() {
+  const button = document.getElementById("togglePlanGroups");
+  if (!button) return;
+
+  button.addEventListener("click", () => {
+    const groups = Array.from(document.querySelectorAll(".calendar-phase-group"));
+    if (!groups.length) return;
+    const shouldOpen = groups.some((group) => !group.open);
+    groups.forEach((group) => {
+      group.open = shouldOpen;
+    });
+    updatePlanGroupToggleLabel();
+  });
+
+  document.addEventListener("toggle", (event) => {
+    if (!event.target.closest?.(".calendar-phase-group")) return;
+    updatePlanGroupToggleLabel();
+  }, true);
 }
 
 function closeCalendarTooltips(except = null) {
@@ -932,15 +984,22 @@ function renderRunNotePanel(activity, runNotes) {
   `;
 }
 
+function activitySortValue(activity) {
+  const timestamp = Date.parse(activity.start_date_local || activity.date || "");
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
 function renderActivityFeed(actuals, runNotes = {}) {
-  const activities = [...(actuals.activities || [])].sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 16);
+  const allActivities = [...(actuals.activities || [])].sort((a, b) => activitySortValue(b) - activitySortValue(a));
   const feed = document.getElementById("activityFeed");
-  if (!activities.length) {
+  if (!allActivities.length) {
     feed.innerHTML = `<div class="empty-state">No Strava runs loaded yet. The mock fallback can be replaced by running scripts/fetch_strava.py.</div>`;
     return;
   }
-  const totalDistance = activities.reduce((sum, activity) => sum + Number(activity.distance_km || 0), 0);
-  const totalMoving = activities.reduce((sum, activity) => sum + Number(activity.moving_time_seconds || 0), 0);
+  activityFeedVisibleCount = Math.min(Math.max(activityFeedVisibleCount, 0), allActivities.length);
+  const activities = allActivities.slice(0, activityFeedVisibleCount);
+  const totalDistance = allActivities.reduce((sum, activity) => sum + Number(activity.distance_km || 0), 0);
+  const totalMoving = allActivities.reduce((sum, activity) => sum + Number(activity.moving_time_seconds || 0), 0);
   const athlete = actuals.metadata?.athlete || {};
   const athleteName = [athlete.firstname, athlete.lastname].filter(Boolean).join(" ") || "Tai Zhi";
   const profileImage = safeExternalUrl(athlete.profile_medium || athlete.profile || "");
@@ -977,6 +1036,35 @@ function renderActivityFeed(actuals, runNotes = {}) {
       </tr>
     `;
   }).join("");
+  const remaining = Math.max(allActivities.length - activityFeedVisibleCount, 0);
+  const nextCount = Math.min(ACTIVITY_PAGE_SIZE, remaining || ACTIVITY_PAGE_SIZE);
+  const tableMarkup = activities.length ? `
+    <div class="activity-table-scroll">
+      <table class="activity-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Activity</th>
+            <th>Distance</th>
+            <th>Moving</th>
+            <th>Avg pace</th>
+            <th>Avg HR</th>
+            <th>Avg cadence</th>
+            <th>Elev</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>${activityRows}</tbody>
+      </table>
+    </div>
+  ` : `<div class="activity-collapsed-state">Activity rows hidden.</div>`;
+
+  const showMoreLabel = activityFeedVisibleCount > 0 ? `Show ${nextCount} more` : `Show ${nextCount} activities`;
+  const feedActions = [
+    remaining > 0 ? `<button class="action-button secondary compact-action" type="button" data-activity-show-more>${showMoreLabel}</button>` : "",
+    activityFeedVisibleCount > 0 ? `<button class="action-button secondary compact-action" type="button" data-activity-hide-all>Hide all</button>` : ""
+  ].filter(Boolean).join("");
+
   feed.innerHTML = `
     <div class="activity-table-shell">
       <div class="activity-table-summary">
@@ -984,25 +1072,11 @@ function renderActivityFeed(actuals, runNotes = {}) {
           ${profileImage ? `<img src="${escapeHtml(profileImage)}" alt="">` : `<span class="athlete-avatar-fallback">TZ</span>`}
           <strong>${escapeHtml(athleteName)}</strong>
         </div>
-        <span>${activities.length} runs · ${oneDecimalKm(totalDistance)} · ${duration(totalMoving)}</span>
+        <span>${activityFeedVisibleCount} of ${allActivities.length} runs shown · ${oneDecimalKm(totalDistance)} · ${duration(totalMoving)}</span>
       </div>
-      <div class="activity-table-scroll">
-        <table class="activity-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Activity</th>
-              <th>Distance</th>
-              <th>Moving</th>
-              <th>Avg pace</th>
-              <th>Avg HR</th>
-              <th>Avg cadence</th>
-              <th>Elev</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody>${activityRows}</tbody>
-        </table>
+      ${tableMarkup}
+      <div class="activity-feed-actions">
+        ${feedActions}
       </div>
     </div>
   `;
@@ -1448,12 +1522,27 @@ function setupActivityDetails() {
   });
 }
 
+function setupActivityFeedControls() {
+  document.addEventListener("click", (event) => {
+    const showMore = event.target.closest("[data-activity-show-more]");
+    const hideAll = event.target.closest("[data-activity-hide-all]");
+    if (!showMore && !hideAll) return;
+    if (!latestRenderState) return;
+    if (showMore) {
+      activityFeedVisibleCount += ACTIVITY_PAGE_SIZE;
+    } else {
+      activityFeedVisibleCount = 0;
+    }
+    renderActivityFeed(latestRenderState.actuals, latestRenderState.runNotes);
+  });
+}
+
 function rerenderSupplementViews() {
   if (!latestRenderState) return;
-  const opened = openPhaseKeys();
+  const opened = openPlanGroupKeys();
   renderCurrentWeek(latestRenderState.plan, latestRenderState.actuals);
   renderPlanTable(latestRenderState.plan, latestRenderState.actuals);
-  restoreOpenPhases(opened);
+  restoreOpenPlanGroups(opened);
 }
 
 function setupWellnessTracker() {
@@ -1560,8 +1649,10 @@ function setupResponsiveCharts() {
 setupReturnTop();
 setupActiveNav();
 setupWeekToggle();
+setupPlanGroupToggle();
 setupRunNotesForms();
 setupActivityDetails();
+setupActivityFeedControls();
 setupWellnessTracker();
 setupCalendarTooltips();
 setupResponsiveCharts();
