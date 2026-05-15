@@ -2805,7 +2805,10 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   }
 
   .phase-stat {
+    grid-column: 1 / -1;
+    justify-self: start;
     min-height: 24px;
+    max-width: 100%;
     padding: 4px 7px;
     font-size: 0.58rem;
   }
