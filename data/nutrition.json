@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "source": "google-sheet:1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo:Nutrition!A:O",
+    "generated_at": "2026-05-15T00:00:00+08:00",
+    "included_days": 0,
+    "included_meals": 0,
+    "warnings": [
+      "Nutrition tab is ready for meal-level rows."
+    ]
+  },
+  "days": [],
+  "nutrition": []
+}

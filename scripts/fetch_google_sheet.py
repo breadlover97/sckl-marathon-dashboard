@@ -16,8 +16,8 @@ from typing import Any
 DEFAULT_SHEET_ID = "1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo"
 DEFAULT_RANGE = "A:AF"
 DEFAULT_OUTPUT = "data/training-plan.json"
-DEFAULT_SUPPLEMENTS_RANGE = "Supplements!A:F"
-DEFAULT_SUPPLEMENTS_OUTPUT = "data/supplements.json"
+DEFAULT_NUTRITION_RANGE = "Nutrition!A:O"
+DEFAULT_NUTRITION_OUTPUT = "data/nutrition.json"
 CHALLENGE_YEAR = 2026
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
@@ -45,11 +45,22 @@ DAY_COLUMNS = [
     ("sunday", "Sunday"),
 ]
 
-SUPPLEMENT_COLUMNS = {
+NUTRITION_COLUMNS = {
     "date": "Date",
-    "protein": "Protein Shake",
-    "omega3": "Omega 3",
-    "vitaminD": "Vitamin D",
+    "meal": "Meal",
+    "food_item": "Food Item",
+    "calories": "Calories",
+    "protein_g": "Protein g",
+    "carbs_g": "Carbs g",
+    "fat_g": "Fat g",
+    "fibre_g": "Fibre g",
+    "sodium_mg": "Sodium mg",
+    "calorie_target": "Calorie Target",
+    "protein_target_g": "Protein Target g",
+    "confidence": "Confidence",
+    "assumptions": "Assumptions",
+    "source": "Source",
+    "notes": "Notes",
 }
 
 
@@ -89,6 +100,21 @@ def parse_number(value: str, field_name: str, row_number: int) -> float:
     if not match:
         raise SheetParseError(f"Row {row_number}: {field_name} must contain a number")
     return float(match.group(0))
+
+
+def parse_optional_number(value: Any) -> float | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    match = re.search(r"-?\d+(?:\.\d+)?", text.replace(",", ""))
+    return float(match.group(0)) if match else None
+
+
+def parse_confidence(value: Any) -> float | None:
+    number = parse_optional_number(value)
+    if number is None:
+        return None
+    return round(number * 100 if 0 <= number <= 1 else number, 1)
 
 
 def parse_int(value: str, field_name: str, row_number: int) -> int:
@@ -249,27 +275,51 @@ def build_plan(values: list[list[Any]], source: str) -> dict[str, Any]:
     }
 
 
-def build_supplements(values: list[list[Any]], source: str) -> dict[str, Any]:
+def compact_unique(values: list[Any]) -> str:
+    seen = []
+    for value in values:
+        text = str(value or "").strip()
+        if text and text not in seen:
+            seen.append(text)
+    return "; ".join(seen)
+
+
+def nutrition_empty_payload(source: str, warnings: list[str] | None = None) -> dict[str, Any]:
+    return {
+        "metadata": {
+            "source": source,
+            "generated_at": datetime.now().astimezone().replace(microsecond=0).isoformat(),
+            "included_days": 0,
+            "included_meals": 0,
+            "warnings": warnings or [],
+        },
+        "days": [],
+        "nutrition": [],
+    }
+
+
+def row_lookup(row: dict[str, Any], column_key: str) -> Any:
+    return row.get(normalize_header(NUTRITION_COLUMNS[column_key]), "")
+
+
+def build_nutrition(values: list[list[Any]], source: str) -> dict[str, Any]:
     if not values:
-        return {
-            "metadata": {
-                "source": source,
-                "generated_at": datetime.now().astimezone().replace(microsecond=0).isoformat(),
-                "included_days": 0,
-            },
-            "supplements": [],
-        }
+        return nutrition_empty_payload(source)
 
     headers = [normalize_header(value) for value in values[0]]
     missing = [
         column
-        for column in SUPPLEMENT_COLUMNS.values()
+        for column in NUTRITION_COLUMNS.values()
         if normalize_header(column) not in headers
     ]
     if missing:
-        raise SheetParseError(f"Supplements tab missing required column(s): {', '.join(missing)}")
+        return nutrition_empty_payload(
+            source,
+            [f"Nutrition tab missing column(s): {', '.join(missing)}"],
+        )
 
-    supplements = []
+    meals = []
+    warnings = []
     for index, raw_row in enumerate(values[1:], start=2):
         padded = list(raw_row) + [""] * max(len(headers) - len(raw_row), 0)
         row = {
@@ -277,24 +327,94 @@ def build_supplements(values: list[list[Any]], source: str) -> dict[str, Any]:
             for header, value in zip(headers, padded)
             if header
         }
-        date_value = row.get(normalize_header(SUPPLEMENT_COLUMNS["date"]), "")
-        if not str(date_value or "").strip():
+        if not any(str(value or "").strip() for value in row.values()):
             continue
-        supplements.append({
-            "date": parse_date(str(date_value), "Supplement Date", index),
-            "protein": truthy_sheet_value(row.get(normalize_header(SUPPLEMENT_COLUMNS["protein"]))),
-            "omega3": truthy_sheet_value(row.get(normalize_header(SUPPLEMENT_COLUMNS["omega3"]))),
-            "vitaminD": truthy_sheet_value(row.get(normalize_header(SUPPLEMENT_COLUMNS["vitaminD"]))),
+        date_value = row_lookup(row, "date")
+        if not str(date_value or "").strip():
+            warnings.append(f"Row {index}: skipped nutrition row without a date")
+            continue
+        try:
+            meal_date = parse_date(str(date_value), "Nutrition Date", index)
+        except SheetParseError as exc:
+            warnings.append(str(exc))
+            continue
+        meals.append({
+            "date": meal_date,
+            "meal": str(row_lookup(row, "meal") or "Unspecified").strip() or "Unspecified",
+            "food_item": str(row_lookup(row, "food_item") or "").strip(),
+            "calories": parse_optional_number(row_lookup(row, "calories")),
+            "protein_g": parse_optional_number(row_lookup(row, "protein_g")),
+            "carbs_g": parse_optional_number(row_lookup(row, "carbs_g")),
+            "fat_g": parse_optional_number(row_lookup(row, "fat_g")),
+            "fibre_g": parse_optional_number(row_lookup(row, "fibre_g")),
+            "sodium_mg": parse_optional_number(row_lookup(row, "sodium_mg")),
+            "calorie_target": parse_optional_number(row_lookup(row, "calorie_target")),
+            "protein_target_g": parse_optional_number(row_lookup(row, "protein_target_g")),
+            "confidence": parse_confidence(row_lookup(row, "confidence")),
+            "assumptions": str(row_lookup(row, "assumptions") or "").strip(),
+            "source": str(row_lookup(row, "source") or "").strip(),
+            "notes": str(row_lookup(row, "notes") or "").strip(),
         })
 
-    supplements.sort(key=lambda item: item["date"])
+    meals.sort(key=lambda item: (item["date"], item["meal"], item["food_item"]))
+    days_by_date: dict[str, dict[str, Any]] = {}
+    for meal in meals:
+        day = days_by_date.setdefault(meal["date"], {
+            "date": meal["date"],
+            "calories": 0.0,
+            "protein_g": 0.0,
+            "carbs_g": 0.0,
+            "fat_g": 0.0,
+            "fibre_g": 0.0,
+            "sodium_mg": 0.0,
+            "calorie_target": None,
+            "protein_target_g": None,
+            "confidence_values": [],
+            "assumptions_values": [],
+            "source_values": [],
+            "notes_values": [],
+            "meals": [],
+        })
+        for key in ("calories", "protein_g", "carbs_g", "fat_g", "fibre_g", "sodium_mg"):
+            day[key] += meal[key] or 0.0
+        for key in ("calorie_target", "protein_target_g"):
+            if day[key] is None and meal[key] is not None:
+                day[key] = meal[key]
+        if meal["confidence"] is not None:
+            day["confidence_values"].append(meal["confidence"])
+        day["assumptions_values"].append(meal["assumptions"])
+        day["source_values"].append(meal["source"])
+        day["notes_values"].append(meal["notes"])
+        day["meals"].append(meal)
+
+    days = []
+    for day in sorted(days_by_date.values(), key=lambda item: item["date"]):
+        confidence_values = day.pop("confidence_values")
+        assumptions_values = day.pop("assumptions_values")
+        source_values = day.pop("source_values")
+        notes_values = day.pop("notes_values")
+        day["confidence"] = round(sum(confidence_values) / len(confidence_values), 1) if confidence_values else None
+        day["assumptions"] = compact_unique(assumptions_values)
+        day["source"] = compact_unique(source_values)
+        day["notes"] = compact_unique(notes_values)
+        day["meal_count"] = len(day["meals"])
+        days.append(day)
+
+    for index, day in enumerate(days):
+        window = days[max(0, index - 6):index + 1]
+        day["seven_day_average_calories"] = round(sum(item["calories"] for item in window) / len(window), 1) if window else None
+        day["seven_day_average_protein_g"] = round(sum(item["protein_g"] for item in window) / len(window), 1) if window else None
+
     return {
         "metadata": {
             "source": source,
             "generated_at": datetime.now().astimezone().replace(microsecond=0).isoformat(),
-            "included_days": len(supplements),
+            "included_days": len(days),
+            "included_meals": len(meals),
+            "warnings": warnings,
         },
-        "supplements": supplements,
+        "days": days,
+        "nutrition": meals,
     }
 
 
@@ -420,9 +540,11 @@ def main() -> int:
     parser.add_argument("--spreadsheet-id", default=os.environ.get("GOOGLE_SHEET_ID", DEFAULT_SHEET_ID))
     parser.add_argument("--range", default=os.environ.get("GOOGLE_SHEET_RANGE", DEFAULT_RANGE))
     parser.add_argument("--output", default=os.environ.get("GOOGLE_SHEET_OUTPUT", DEFAULT_OUTPUT))
-    parser.add_argument("--supplements-range", default=os.environ.get("GOOGLE_SUPPLEMENTS_RANGE", DEFAULT_SUPPLEMENTS_RANGE))
-    parser.add_argument("--supplements-output", default=os.environ.get("GOOGLE_SUPPLEMENTS_OUTPUT", DEFAULT_SUPPLEMENTS_OUTPUT))
-    parser.add_argument("--skip-supplements", action="store_true", help="Fetch only the training plan JSON")
+    nutrition_range_default = os.environ.get("GOOGLE_NUTRITION_RANGE", DEFAULT_NUTRITION_RANGE)
+    nutrition_output_default = os.environ.get("GOOGLE_NUTRITION_OUTPUT", DEFAULT_NUTRITION_OUTPUT)
+    parser.add_argument("--nutrition-range", dest="nutrition_range", default=nutrition_range_default)
+    parser.add_argument("--nutrition-output", dest="nutrition_output", default=nutrition_output_default)
+    parser.add_argument("--skip-nutrition", dest="skip_nutrition", action="store_true", help="Fetch only the training plan JSON")
     parser.add_argument("--credentials-file", help="Path to a Google service account JSON key")
     parser.add_argument("--credentials-json", help="Raw Google service account JSON")
     parser.add_argument("--input-json", help="Developer helper: parse an existing plan JSON instead of calling Google")
@@ -440,31 +562,31 @@ def main() -> int:
         payload = build_plan(values, source)
         if args.dry_run:
             print(f"Parsed {len(payload['weeks'])} training week(s).")
-            if not args.input_json and not args.skip_supplements:
-                supplement_values = fetch_sheet_values(
+            if not args.input_json and not args.skip_nutrition:
+                nutrition_values = fetch_sheet_values(
                     args.spreadsheet_id,
-                    args.supplements_range,
+                    args.nutrition_range,
                     args.credentials_file,
                     args.credentials_json,
                     value_render_option="UNFORMATTED_VALUE",
                 )
-                supplement_payload = build_supplements(supplement_values, f"google-sheet:{args.spreadsheet_id}:{args.supplements_range}")
-                print(f"Parsed {len(supplement_payload['supplements'])} supplement day(s).")
+                nutrition_payload = build_nutrition(nutrition_values, f"google-sheet:{args.spreadsheet_id}:{args.nutrition_range}")
+                print(f"Parsed {len(nutrition_payload['nutrition'])} nutrition meal row(s) across {len(nutrition_payload['days'])} day(s).")
             return 0
 
         write_json(Path(args.output), payload)
         print(f"Wrote {len(payload['weeks'])} training week(s) to {args.output}.")
-        if not args.input_json and not args.skip_supplements:
-            supplement_values = fetch_sheet_values(
+        if not args.input_json and not args.skip_nutrition:
+            nutrition_values = fetch_sheet_values(
                 args.spreadsheet_id,
-                args.supplements_range,
+                args.nutrition_range,
                 args.credentials_file,
                 args.credentials_json,
                 value_render_option="UNFORMATTED_VALUE",
             )
-            supplement_payload = build_supplements(supplement_values, f"google-sheet:{args.spreadsheet_id}:{args.supplements_range}")
-            write_json(Path(args.supplements_output), supplement_payload)
-            print(f"Wrote {len(supplement_payload['supplements'])} supplement day(s) to {args.supplements_output}.")
+            nutrition_payload = build_nutrition(nutrition_values, f"google-sheet:{args.spreadsheet_id}:{args.nutrition_range}")
+            write_json(Path(args.nutrition_output), nutrition_payload)
+            print(f"Wrote {len(nutrition_payload['nutrition'])} nutrition meal row(s) to {args.nutrition_output}.")
         return 0
     except (SheetConfigError, SheetParseError, OSError, json.JSONDecodeError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)

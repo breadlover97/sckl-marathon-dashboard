@@ -924,7 +924,55 @@ main > .panel:first-child {
   background: var(--orange);
 }
 
-.week-supplement-input {
+.mini-track {
+  height: 7px;
+  margin-top: 7px;
+}
+
+.mini-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--teal);
+}
+
+.nutrition-section-body {
+  display: grid;
+  gap: 12px;
+}
+
+.nutrition-table {
+  min-width: 1180px;
+}
+
+.nutrition-table td {
+  vertical-align: top;
+}
+
+.nutrition-table td:last-child {
+  max-width: 340px;
+  white-space: normal;
+}
+
+.nutrition-target-cell {
+  display: grid;
+  min-width: 138px;
+  gap: 2px;
+}
+
+.nutrition-target-cell strong {
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.nutrition-target-cell span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.week-nutrition-input {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -934,23 +982,23 @@ main > .panel:first-child {
   border-top: 1px solid color-mix(in srgb, var(--orange) 22%, var(--line));
 }
 
-.week-supplement-input > div:first-child {
+.week-nutrition-input > div:first-child {
   display: flex;
   gap: 8px;
   align-items: baseline;
 }
 
-.week-supplement-input span,
-.week-supplement-input strong {
+.week-nutrition-input span,
+.week-nutrition-input strong {
   display: inline;
 }
 
-.week-supplement-input strong {
+.week-nutrition-input strong {
   color: var(--ink);
   font-size: 0.78rem;
 }
 
-.day-supplement-line {
+.day-nutrition-line {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 7px;
@@ -960,15 +1008,15 @@ main > .panel:first-child {
   border-top: 1px solid var(--subtle-line);
 }
 
-.day-supplement-line > span,
-.day-supplement-line small {
+.day-nutrition-line > span,
+.day-nutrition-line small {
   color: var(--muted);
   font-size: 0.62rem;
   font-weight: 900;
   text-transform: uppercase;
 }
 
-.supplement-sync-message {
+.nutrition-sync-message {
   display: block;
   grid-column: 1 / -1;
   min-height: 1em;
@@ -977,14 +1025,14 @@ main > .panel:first-child {
   font-weight: 900;
 }
 
-.supplement-status-list {
+.nutrition-status-list {
   display: flex;
   grid-column: 1 / -1;
   flex-wrap: wrap;
   gap: 5px;
 }
 
-.supplement-status-pill {
+.nutrition-status-pill {
   display: inline-flex;
   min-height: 18px;
   align-items: center;
@@ -998,7 +1046,7 @@ main > .panel:first-child {
   line-height: 1;
 }
 
-.supplement-status-pill.done {
+.nutrition-status-pill.done {
   border-color: color-mix(in srgb, var(--teal) 36%, var(--line));
   background: var(--teal-soft);
   color: var(--teal);
@@ -1275,7 +1323,7 @@ main > .panel:first-child {
 
 .calendar-day-head span,
 .calendar-day-main span,
-.calendar-supplements > span {
+.calendar-nutrition > span {
   color: var(--muted);
   font-size: 0.58rem;
   font-weight: 900;
@@ -1316,16 +1364,16 @@ main > .panel:first-child {
   text-decoration-color: var(--teal);
 }
 
-.calendar-supplements {
+.calendar-nutrition {
   display: grid;
   gap: 4px;
 }
 
-.calendar-supplements .supplement-status-list {
+.calendar-nutrition .nutrition-status-list {
   justify-content: flex-start;
 }
 
-.calendar-supplements .supplement-status-pill {
+.calendar-nutrition .nutrition-status-pill {
   padding: 1px 5px;
   font-size: 0.54rem;
 }
@@ -1514,6 +1562,24 @@ main > .panel:first-child {
 
 .calendar-phase-group[open] .calendar-phase-body {
   animation: details-body-reveal 190ms ease both;
+}
+
+.nutrition-day-group summary {
+  grid-template-columns: minmax(160px, 1fr) minmax(220px, auto) 30px;
+}
+
+.nutrition-day-group summary > span {
+  color: var(--orange-dark);
+  font-size: 0.74rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.nutrition-day-group summary > strong {
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-align: right;
 }
 
 .week-row {
@@ -2537,17 +2603,17 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     font-size: 1.55rem;
   }
 
-  .week-supplement-input {
+  .week-nutrition-input {
     display: grid;
     grid-template-columns: 1fr;
     justify-content: stretch;
   }
 
-  .week-supplement-input > div:first-child {
+  .week-nutrition-input > div:first-child {
     justify-content: space-between;
   }
 
-  .week-supplement-input .supplement-status-list {
+  .week-nutrition-input .nutrition-status-list {
     justify-content: flex-start;
   }
 
@@ -2637,6 +2703,11 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     width: 26px;
     height: 26px;
     font-size: 0.98rem;
+  }
+
+  .nutrition-day-group summary > strong {
+    grid-column: 1 / -1;
+    text-align: left;
   }
 
   .phase-title {

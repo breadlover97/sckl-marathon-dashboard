@@ -6,10 +6,11 @@ The site is intentionally simple: Google Sheets is the editable plan, Strava is 
 
 ## What The Dashboard Shows
 
-- This week’s planned sessions, actual Strava mileage, and read-only supplement history synced from Google Sheets.
+- This week’s planned sessions, actual Strava mileage, and read-only nutrition status synced from Google Sheets.
 - Week-by-week marathon plan from Google Sheets.
 - Planned vs actual weekly mileage and long-run trends.
 - Recent Strava activity feed with pace, time, elevation, heart rate, cadence, and Strava links.
+- Standalone nutrition tracker with daily totals, targets, rolling averages, meal rows, confidence, and notes.
 - Race execution draft page with pace calculator and split table.
 
 ## Local Preview
@@ -20,16 +21,18 @@ python3 -m http.server 8010
 
 Open `http://localhost:8010`.
 
-The dashboard loads `data/training-plan.json`, `data/strava-activities.json`, and `data/supplements.json` when available. If live files are missing, it falls back to the mock JSON files in `data/`.
+The dashboard loads `data/training-plan.json`, `data/strava-activities.json`, and `data/nutrition.json` when available. If live files are missing, it falls back to the mock JSON files in `data/`.
 
 ## Repository Map
 
 ```text
 index.html                         Main dashboard
+nutrition.html                     Standalone nutrition tracker
 race.html                          Race execution page
 backend.html                       How-it-works page
 styles.css                         Shared visual system and themes
 app.js                             Dashboard rendering, charts, and local checks
+nutrition.js                       Nutrition rendering, daily totals, and meal groups
 race.js                            Pace calculator and race page interactions
 theme.js                           Theme persistence
 data/mock-*.json                   Local fallback data
@@ -100,7 +103,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/google-service-account.j
 python scripts/fetch_google_sheet.py
 ```
 
-The script writes `data/training-plan.json`.
+The script writes `data/training-plan.json` and `data/nutrition.json`.
 
 Recommended sheet formatting:
 
@@ -186,15 +189,29 @@ The workflow also runs daily at 12:15am Singapore time and whenever `main` is pu
 
 Important Strava note: if a workflow run says Strava returned a rotated refresh token, generate or copy the new refresh token and update the `STRAVA_REFRESH_TOKEN` repository secret before the next sync.
 
-## Supplement History
+## Nutrition History
 
-Supplement checks are edited manually in the Google Sheet, not from the website. The `Supplements` tab has one row for every challenge date, with `Date`, `Week`, and `Training Phase` labels before the checkbox columns:
+Nutrition rows are edited manually in the Google Sheet, not from the website. The `Nutrition` tab is meal-level and uses this header row:
 
-- `Protein Shake`
-- `Omega 3`
-- `Vitamin D`
+```text
+Date
+Meal
+Food Item
+Calories
+Protein g
+Carbs g
+Fat g
+Fibre g
+Sodium mg
+Calorie Target
+Protein Target g
+Confidence
+Assumptions
+Source
+Notes
+```
 
-The scheduled GitHub Actions sync reads that tab into `data/supplements.json`, and the dashboard displays the resulting read-only history.
+The scheduled GitHub Actions sync reads that tab into `data/nutrition.json`. The main dashboard shows a compact daily nutrition status, while `nutrition.html` shows the full daily and meal-level history.
 
 The generated JSON structure is:
 
@@ -203,26 +220,60 @@ The generated JSON structure is:
   "metadata": {
     "source": "google-sheet:...",
     "generated_at": "2026-05-12T14:16:59+08:00",
-    "included_days": 147
+    "included_days": 1,
+    "included_meals": 3
   },
-  "supplements": [
+  "days": [
     {
       "date": "2026-05-12",
-      "protein": true,
-      "omega3": true,
-      "vitaminD": false
+      "calories": 2750,
+      "protein_g": 158,
+      "carbs_g": 330,
+      "fat_g": 82,
+      "fibre_g": 30,
+      "sodium_mg": 2400,
+      "calorie_target": 2800,
+      "protein_target_g": 160,
+      "seven_day_average_calories": 2680,
+      "seven_day_average_protein_g": 151,
+      "confidence": 82,
+      "assumptions": "Portions estimated",
+      "source": "manual",
+      "notes": "",
+      "meal_count": 3,
+      "meals": []
+    }
+  ],
+  "nutrition": [
+    {
+      "date": "2026-05-12",
+      "meal": "Breakfast",
+      "food_item": "Oats, banana, whey",
+      "calories": 720,
+      "protein_g": 42,
+      "carbs_g": 104,
+      "fat_g": 15,
+      "fibre_g": 12,
+      "sodium_mg": 430,
+      "calorie_target": 2800,
+      "protein_target_g": 160,
+      "confidence": 85,
+      "assumptions": "Standard scoop of whey",
+      "source": "manual",
+      "notes": ""
     }
   ]
 }
 ```
 
-Google Sheets is the cross-device source of truth. The website displays supplement history only after the scheduled or manual GitHub Actions sync regenerates `data/supplements.json`.
+Google Sheets is the cross-device source of truth. The website displays nutrition history only after the scheduled or manual GitHub Actions sync regenerates `data/nutrition.json`.
 
 ## Security Notes
 
 - Never commit `.env`, Google service account JSON, generated Strava token JSON, or local credential files.
 - GitHub Actions secrets should hold `GOOGLE_SERVICE_ACCOUNT_JSON`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, and `STRAVA_REFRESH_TOKEN`.
 - The frontend must not contain Strava client secrets or Google credentials.
+- The frontend must not call OpenAI directly. Put any AI-assisted nutrition estimate in the Google Sheet first, then sync it as static JSON.
 - Rotate Strava tokens and Google service account keys if they are ever pasted into chat, committed, or shared.
 - The site is public on GitHub Pages, so generated JSON should be treated as public data.
 
@@ -234,6 +285,7 @@ python3 -m py_compile scripts/fetch_google_sheet.py
 python3 -m py_compile scripts/fetch_strava.py
 python3 -m py_compile scripts/exchange_strava_code.py
 node --check app.js
+node --check nutrition.js
 node --check race.js
 node --check theme.js
 ```

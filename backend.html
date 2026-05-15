@@ -23,6 +23,7 @@
         <a href="index.html#trends">Trends</a>
         <a href="index.html#pace">Pace</a>
         <a href="index.html#activity">Activities</a>
+        <a href="nutrition.html">Nutrition</a>
       </div>
       <div class="nav-actions">
         <a class="action-button secondary nav-sync" href="index.html">Dashboard</a>
@@ -35,6 +36,7 @@
             <option value="cyberpunk">Cyberpunk</option>
           </select>
         </label>
+        <a class="action-button secondary nav-sync" href="nutrition.html">Nutrition</a>
         <a class="action-button secondary nav-sync race-action" href="race.html" title="Race execution">Race</a>
         <a class="action-button primary nav-sync" href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer">Sync data</a>
       </div>
@@ -43,7 +45,7 @@
     <header class="site-header setup-header">
       <div class="header-copy">
         <h1>How the backend works</h1>
-        <p class="date-range wide-copy">Google Sheets is the editable training plan and supplement log, Strava is the actual running log, GitHub Actions performs the private sync, and GitHub Pages serves the public dashboard.</p>
+        <p class="date-range wide-copy">Google Sheets is the editable training plan and nutrition log, Strava is the actual running log, GitHub Actions performs the private sync, and GitHub Pages serves the public dashboard.</p>
       </div>
     </header>
 
@@ -55,13 +57,13 @@
           <div class="flow-step"><strong>2</strong><span>You record runs normally through Strava. The dashboard only needs Strava API access; it does not need Strava data typed into the sheet.</span></div>
           <div class="flow-step"><strong>3</strong><span>GitHub Actions runs the sync workflow on schedule, on code changes, or when you press the Sync data button and manually run the workflow.</span></div>
           <div class="flow-step"><strong>4</strong><span>The workflow reads private credentials from GitHub secrets, fetches Google Sheets and Strava data, then writes generated JSON files into the Pages artifact.</span></div>
-          <div class="flow-step"><strong>5</strong><span>GitHub Pages hosts the static site. The browser loads <code>data/training-plan.json</code>, <code>data/strava-activities.json</code>, and <code>data/supplements.json</code> to render the dashboard.</span></div>
+          <div class="flow-step"><strong>5</strong><span>GitHub Pages hosts the static site. The browser loads <code>data/training-plan.json</code>, <code>data/strava-activities.json</code>, and <code>data/nutrition.json</code> to render the dashboard and standalone nutrition page.</span></div>
         </div>
       </section>
 
       <section class="info-section">
         <h2>What Each Service Does</h2>
-        <p><strong>Google Sheets</strong> stores the planned marathon build and supplement history. You can adjust daily estimated mileage, session notes, weekly summaries, phase details, and supplement checkboxes there.</p>
+        <p><strong>Google Sheets</strong> stores the planned marathon build and nutrition history. You can adjust daily estimated mileage, session notes, weekly summaries, phase details, and meal-level nutrition rows there.</p>
         <p><strong>Strava API</strong> provides actual runs: distance, time, pace, elevation, heart rate and cadence when Strava includes them, activity names, dates, and Strava links.</p>
         <p><strong>GitHub Actions</strong> is the private sync worker. It refreshes Strava tokens, reads the Google service account secret, fetches both data sources, and prepares the Pages deployment.</p>
         <p><strong>GitHub Pages</strong> is the public static host. It has no server-side code and no API secrets in frontend JavaScript.</p>
@@ -71,16 +73,20 @@
         <h2>Repository Map</h2>
         <pre class="code-block"><code>sckl-marathon-dashboard/
 |-- index.html                    # Main static dashboard
+|-- nutrition.html                # Standalone nutrition tracker
 |-- backend.html                  # Technical architecture page
+|-- race.html                     # Race execution page
 |-- styles.css                    # Shared visual system
 |-- app.js                        # Browser rendering, charts, status, and comparisons
+|-- nutrition.js                  # Nutrition page rendering and empty states
+|-- race.js                       # Pace calculator and race page interactions
 |-- data/
 |   |-- training-plan.json        # Generated Google Sheets plan
 |   |-- strava-activities.json    # Generated Strava run data
-|   |-- supplements.json          # Generated Google Sheets supplement history
+|   |-- nutrition.json            # Generated Google Sheets nutrition history
 |   |-- mock-training-plan.json   # Local fallback plan
 |   |-- mock-strava-activities.json
-|   `-- mock-supplements.json
+|   `-- mock-nutrition.json
 |-- scripts/
 |   |-- fetch_google_sheet.py     # Reads and normalises Google Sheet rows
 |   |-- fetch_strava.py           # Refreshes Strava token and fetches runs
@@ -112,8 +118,8 @@
             <p>The Sync data button opens the GitHub Actions workflow page. From there, run the workflow manually to fetch the latest sheet and Strava data.</p>
           </article>
           <article>
-            <h3>Supplements</h3>
-            <p><code>scripts/fetch_google_sheet.py</code> also reads the <code>Supplements</code> tab into <code>data/supplements.json</code>. The dashboard displays that history without editing it from the site.</p>
+            <h3>Nutrition</h3>
+            <p><code>scripts/fetch_google_sheet.py</code> also reads the <code>Nutrition</code> tab into <code>data/nutrition.json</code>. The site displays that history without editing it from GitHub Pages.</p>
           </article>
         </div>
       </section>
@@ -185,7 +191,7 @@
         <h2>Data Contract</h2>
         <p><code>data/training-plan.json</code> contains the plan from Google Sheets: week number, week start date, phase, weekly mileage, daily sessions, long run target, weekly summary, and notes.</p>
         <p><code>data/strava-activities.json</code> contains the generated actual training data used by the dashboard: athlete profile, sync timestamp, run distance, moving time, elapsed time, elevation, heart rate, cadence, activity names, dates, and Strava links.</p>
-        <p><code>data/supplements.json</code> contains read-only supplement checks from the <code>Supplements</code> tab: date, protein shake, omega 3, and vitamin D.</p>
+        <p><code>data/nutrition.json</code> contains read-only meal-level nutrition rows from the <code>Nutrition</code> tab, plus daily totals and rolling seven-day calorie and protein averages.</p>
         <pre class="code-block"><code>{
   "metadata": { "generated_at": "2026-05-11T12:00:00+08:00" },
   "weeks": [
@@ -203,7 +209,8 @@
       <section class="info-section">
         <h2>Privacy And Limits</h2>
         <p>The website is public, so anything written into generated JSON can be viewed by anyone with the site link. API secrets are private, but published activity metrics are public.</p>
-        <p>Supplement checks are public once synced into <code>data/supplements.json</code>, so only track supplement history you are comfortable showing on the public dashboard.</p>
+        <p>Nutrition rows are public once synced into <code>data/nutrition.json</code>, so only track food items, assumptions, and notes you are comfortable showing on the public dashboard.</p>
+        <p>The frontend does not call OpenAI or any other estimation API directly. Any AI-assisted nutrition estimate should be entered into the Google Sheet first, then synced as static JSON.</p>
         <p>If a Strava token or Google service account key is ever shared outside the secret stores, rotate it and update GitHub Actions secrets.</p>
         <p>The dashboard is a training visibility tool, not a coaching or medical system. Risk flags and progress views should guide decisions, not replace judgement around injury, sleep, heat, or recovery.</p>
       </section>

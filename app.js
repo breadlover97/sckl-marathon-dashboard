@@ -2,8 +2,8 @@ const LIVE_DATA_URL = "data/training-plan.json";
 const MOCK_DATA_URL = "data/mock-training-plan.json";
 const ACTUAL_DATA_URL = "data/strava-activities.json";
 const MOCK_ACTUAL_DATA_URL = "data/mock-strava-activities.json";
-const SUPPLEMENTS_DATA_URL = "data/supplements.json";
-const MOCK_SUPPLEMENTS_DATA_URL = "data/mock-supplements.json";
+const NUTRITION_DATA_URL = "data/nutrition.json";
+const MOCK_NUTRITION_DATA_URL = "data/mock-nutrition.json";
 const RACE_DATE = "2026-10-04";
 const ACTIVITY_PAGE_SIZE = 10;
 let latestRenderState = null;
@@ -11,12 +11,12 @@ let resizeTimer = null;
 let hasScrolledThisWeekToToday = false;
 let hasScrolledPlanToToday = false;
 let activityFeedVisibleCount = ACTIVITY_PAGE_SIZE;
-let supplementHistory = {};
+let nutritionHistory = {};
 
-const wellnessChecks = [
-  { key: "protein", label: "Protein shake", shortLabel: "Protein" },
-  { key: "omega3", label: "Omega 3", shortLabel: "O3" },
-  { key: "vitaminD", label: "Vitamin D", shortLabel: "D" }
+const nutritionChecks = [
+  { key: "calories", label: "Calories logged", shortLabel: "Cal" },
+  { key: "protein_g", label: "Protein logged", shortLabel: "Protein" },
+  { key: "meal_count", label: "Meals logged", shortLabel: "Meals" }
 ];
 
 const paceZones = [
@@ -256,32 +256,60 @@ async function loadActuals() {
   }
 }
 
-async function loadSupplements() {
+async function loadNutrition() {
   try {
-    const payload = await fetchJson(SUPPLEMENTS_DATA_URL);
-    return normalizeSupplementHistory(payload);
+    const payload = await fetchJson(NUTRITION_DATA_URL);
+    return normalizeNutritionHistory(payload);
   } catch (error) {
-    console.info("Live supplement history unavailable; using mock supplements.", error);
+    console.info("Live nutrition history unavailable; using mock nutrition.", error);
     try {
-      const payload = await fetchJson(MOCK_SUPPLEMENTS_DATA_URL);
-      return normalizeSupplementHistory(payload);
+      const payload = await fetchJson(MOCK_NUTRITION_DATA_URL);
+      return normalizeNutritionHistory(payload);
     } catch (mockError) {
-      console.info("No mock supplement history available.", mockError);
+      console.info("No mock nutrition history available.", mockError);
       return {};
     }
   }
 }
 
-function normalizeSupplementHistory(payload) {
-  return (payload.supplements || []).reduce((result, row) => {
-    if (!row.date) return result;
-    result[row.date] = {
-      protein: Boolean(row.protein),
-      omega3: Boolean(row.omega3),
-      vitaminD: Boolean(row.vitaminD)
-    };
-    return result;
-  }, {});
+function normalizeNutritionHistory(payload) {
+  const days = payload.days || [];
+  if (days.length) {
+    return days.reduce((result, row) => {
+      if (!row.date) return result;
+      result[row.date] = row;
+      return result;
+    }, {});
+  }
+  if (payload.nutrition?.length) {
+    return payload.nutrition.reduce((result, row) => {
+      if (!row.date) return result;
+      const day = result[row.date] || {
+        date: row.date,
+        calories: 0,
+        protein_g: 0,
+        carbs_g: 0,
+        fat_g: 0,
+        fibre_g: 0,
+        sodium_mg: 0,
+        meal_count: 0,
+        meals: []
+      };
+      day.calories += Number(row.calories || 0);
+      day.protein_g += Number(row.protein_g || 0);
+      day.carbs_g += Number(row.carbs_g || 0);
+      day.fat_g += Number(row.fat_g || 0);
+      day.fibre_g += Number(row.fibre_g || 0);
+      day.sodium_mg += Number(row.sodium_mg || 0);
+      day.calorie_target = day.calorie_target || row.calorie_target || null;
+      day.protein_target_g = day.protein_target_g || row.protein_target_g || null;
+      day.meal_count += 1;
+      day.meals.push(row);
+      result[row.date] = day;
+      return result;
+    }, {});
+  }
+  return {};
 }
 
 function normalizePlan(plan) {
@@ -396,7 +424,7 @@ function renderDayCard(session, actuals, options = {}) {
       <strong>${oneDecimalKm(session.planned_km)}<br>planned</strong>
       <p>${escapeHtml(session.plan)}</p>
       ${actualLine}
-      ${renderDaySupplements(session)}
+      ${renderDayNutrition(session)}
     </article>
   `;
 }
@@ -482,48 +510,53 @@ function activityPace(activity) {
   return distance > 0 && moving > 0 ? pace(moving / distance) : "-";
 }
 
-function wellnessCompletedCount(dayState = {}) {
-  return wellnessChecks.filter((item) => dayState[item.key]).length;
+function nutritionCompletedCount(dayState = {}) {
+  return nutritionChecks.filter((item) => Number(dayState[item.key] || 0) > 0).length;
 }
 
-function supplementStatus(date) {
-  const dayState = supplementHistory[date] || {};
-  const completed = wellnessCompletedCount(dayState);
-  const items = wellnessChecks.map((item) => {
-    const done = Boolean(dayState[item.key]);
-    return `<span class="supplement-status-pill ${done ? "done" : ""}" title="${escapeHtml(item.label)} ${done ? "recorded" : "not recorded"}">${escapeHtml(item.shortLabel)}</span>`;
+function nutritionStatus(date) {
+  const dayState = nutritionHistory[date] || {};
+  const completed = nutritionCompletedCount(dayState);
+  const items = nutritionChecks.map((item) => {
+    const done = Number(dayState[item.key] || 0) > 0;
+    return `<span class="nutrition-status-pill ${done ? "done" : ""}" title="${escapeHtml(item.label)} ${done ? "recorded" : "not recorded"}">${escapeHtml(item.shortLabel)}</span>`;
   }).join("");
   return { completed, items };
 }
 
-function renderSupplementInput(date) {
-  const dayState = supplementHistory[date] || {};
-  const completed = wellnessCompletedCount(dayState);
-  const items = wellnessChecks.map((item) => {
-    const done = Boolean(dayState[item.key]);
-    return `<span class="supplement-status-pill ${done ? "done" : ""}" title="${escapeHtml(item.label)} ${done ? "recorded" : "not recorded"}">${escapeHtml(item.shortLabel)}</span>`;
+function renderNutritionInput(date) {
+  const dayState = nutritionHistory[date] || {};
+  const completed = nutritionCompletedCount(dayState);
+  const items = nutritionChecks.map((item) => {
+    const done = Number(dayState[item.key] || 0) > 0;
+    return `<span class="nutrition-status-pill ${done ? "done" : ""}" title="${escapeHtml(item.label)} ${done ? "recorded" : "not recorded"}">${escapeHtml(item.shortLabel)}</span>`;
   }).join("");
+  const calories = Number(dayState.calories || 0);
+  const protein = Number(dayState.protein_g || 0);
+  const summary = calories > 0 || protein > 0
+    ? `${Math.round(calories)} kcal · ${Math.round(protein)}g protein`
+    : "No nutrition logged";
 
   return `
-    <div class="week-supplement-input" data-wellness-history-date="${escapeHtml(date)}">
+    <div class="week-nutrition-input" data-nutrition-history-date="${escapeHtml(date)}">
       <div>
-        <span>Today's supplements</span>
-        <strong>${completed}/${wellnessChecks.length}</strong>
+        <span>Today's nutrition</span>
+        <strong>${escapeHtml(summary)}</strong>
       </div>
-      <div class="supplement-status-list" aria-label="${completed} of ${wellnessChecks.length} supplements recorded">${items}</div>
-      <small class="supplement-sync-message">Synced from Google Sheets</small>
+      <div class="nutrition-status-list" aria-label="${completed} of ${nutritionChecks.length} nutrition markers recorded">${items}</div>
+      <small class="nutrition-sync-message">Synced from Google Sheets · <a href="nutrition.html">Nutrition page</a></small>
     </div>
   `;
 }
 
-function renderDaySupplements(session) {
-  const { completed, items } = supplementStatus(session.date);
+function renderDayNutrition(session) {
+  const { completed, items } = nutritionStatus(session.date);
 
   return `
-    <div class="day-supplement-line" data-wellness-row-date="${escapeHtml(session.date)}">
-      <span>Supplements</span>
-      <small>${completed}/${wellnessChecks.length}</small>
-      <div class="supplement-status-list" aria-label="${completed} of ${wellnessChecks.length} supplements recorded">${items}</div>
+    <div class="day-nutrition-line" data-nutrition-row-date="${escapeHtml(session.date)}">
+      <span>Nutrition</span>
+      <small>${completed}/${nutritionChecks.length}</small>
+      <div class="nutrition-status-list" aria-label="${completed} of ${nutritionChecks.length} nutrition markers recorded">${items}</div>
     </div>
   `;
 }
@@ -536,7 +569,7 @@ function planDayTooltip(week, session, dayActivities, actualKm, completed) {
     `${session.day}, ${prettyDate(session.date)}`,
     `Planned: ${plannedKm > 0 ? oneDecimalKm(plannedKm) : "Rest"}`,
     `Actual: ${dayActivities.length ? `${oneDecimalKm(actualKm)} from ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}` : "No run logged"}`,
-    `Supplements: ${completed}/${wellnessChecks.length}`,
+    `Nutrition: ${completed}/${nutritionChecks.length}`,
     `Session: ${session.plan || "No planned session"}`
   ];
   if (activityNames) details.splice(4, 0, `Activities: ${activityNames}`);
@@ -563,7 +596,7 @@ function renderCalendarDay(week, session, actuals) {
   const isActive = session.date === todayKey;
   const isPast = String(session.date) < todayKey;
   const isCompleted = dayActivities.length > 0 || actualKm > 0;
-  const { completed, items } = supplementStatus(session.date);
+  const { completed, items } = nutritionStatus(session.date);
   const plannedKm = Number(session.planned_km || 0);
   const actualText = dayActivities.length ? oneDecimalKm(actualKm) : "-";
   const tooltip = planDayTooltip(week, session, dayActivities, actualKm, completed);
@@ -589,9 +622,9 @@ function renderCalendarDay(week, session, actuals) {
         <strong>${escapeHtml(plannedLabel)}</strong>
         <small>Actual ${escapeHtml(actualText)}</small>
       </div>
-      <div class="calendar-supplements" data-wellness-row-date="${escapeHtml(session.date)}">
-        <span>${completed}/${wellnessChecks.length}</span>
-        <div class="supplement-status-list" aria-label="${completed} of ${wellnessChecks.length} supplements recorded">${items}</div>
+      <div class="calendar-nutrition" data-nutrition-row-date="${escapeHtml(session.date)}">
+        <span>${completed}/${nutritionChecks.length}</span>
+        <div class="nutrition-status-list" aria-label="${completed} of ${nutritionChecks.length} nutrition markers recorded">${items}</div>
       </div>
       <div class="calendar-tooltip" id="${tooltipId}" role="tooltip">
         <strong>${escapeHtml(session.day)} · ${escapeHtml(prettyDate(session.date))}</strong>
@@ -1363,9 +1396,9 @@ function setupActivityFeedControls() {
   });
 }
 
-function render({ plan, actuals, supplements }) {
-  supplementHistory = supplements || {};
-  latestRenderState = { actuals, plan, supplements: supplementHistory };
+function render({ plan, actuals, nutrition }) {
+  nutritionHistory = nutrition || {};
+  latestRenderState = { actuals, plan, nutrition: nutritionHistory };
   renderTrainingDayProgress(plan);
   renderCurrentWeek(plan, actuals);
   renderPlanTable(plan, actuals);
@@ -1398,8 +1431,8 @@ setupActivityFeedControls();
 setupCalendarTooltips();
 setupResponsiveCharts();
 
-Promise.all([loadPlan().then(normalizePlan), loadActuals(), loadSupplements()])
-  .then(([plan, actuals, supplements]) => render({ plan, actuals, supplements }))
+Promise.all([loadPlan().then(normalizePlan), loadActuals(), loadNutrition()])
+  .then(([plan, actuals, nutrition]) => render({ plan, actuals, nutrition }))
   .catch((error) => {
     console.error(error);
     document.getElementById("syncStatus").textContent = "Unable to load mock training plan.";

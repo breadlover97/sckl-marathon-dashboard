@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Nutrition - SCKL 2026 Sub-2:50 Build</title>
+    <script src="theme.js"></script>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <nav class="top-nav" aria-label="Nutrition navigation">
+      <a class="site-brand" href="index.html">
+        <span class="site-mark">SCKL 2026 Sub-2:50 Build</span>
+        <span class="nav-date">
+          <span>4 Oct 2026, 3:30am</span>
+          <span class="countdown-pill">Nutrition</span>
+        </span>
+      </a>
+      <div class="nav-tabs" aria-label="Nutrition sections">
+        <a href="index.html#week">This Week</a>
+        <a href="index.html#plan">Weekly Plan</a>
+        <a href="#daily">Daily</a>
+        <a href="#meals">Meals</a>
+      </div>
+      <div class="nav-actions">
+        <a class="action-button secondary nav-sync" href="index.html">Dashboard</a>
+        <label class="theme-picker" for="themeSelect">
+          <span>Theme</span>
+          <select id="themeSelect" data-theme-select aria-label="Select site theme">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="editor">IDE editor</option>
+            <option value="cyberpunk">Cyberpunk</option>
+          </select>
+        </label>
+        <a class="action-button secondary nav-sync race-action" href="race.html" title="Race execution">Race</a>
+        <a class="action-button primary nav-sync" href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer">Sync data</a>
+      </div>
+    </nav>
+
+    <main>
+      <section class="panel anchor-section nutrition-overview">
+        <div class="section-heading">
+          <div>
+            <h2>Nutrition tracker</h2>
+            <p>Read-only nutrition history synced from the Google Sheet. Meal estimates, confidence, and assumptions stay in the sheet.</p>
+          </div>
+          <span id="nutritionStatus" class="status-pill">Nutrition sync loading</span>
+        </div>
+        <div id="nutritionSummary" class="race-card-grid"></div>
+      </section>
+
+      <section id="daily" class="panel anchor-section">
+        <div class="section-heading compact-heading">
+          <div>
+            <h2>Daily nutrition</h2>
+            <p>Daily totals, targets, and rolling seven-day averages.</p>
+          </div>
+        </div>
+        <div id="nutritionDaily" class="nutrition-section-body"></div>
+      </section>
+
+      <section id="meals" class="panel anchor-section">
+        <div class="section-heading compact-heading">
+          <div>
+            <h2>Meal breakdown</h2>
+            <p>Meal-level rows grouped by date, including source, confidence, assumptions, and notes where available.</p>
+          </div>
+        </div>
+        <div id="nutritionMeals" class="nutrition-section-body"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>SCKL 2026 nutrition</span>
+      <span><span id="nutritionSyncStatus">Loading nutrition...</span> · <a href="backend.html">How the backend works</a></span>
+    </footer>
+
+    <button id="returnTop" class="return-top" type="button" aria-label="Return to top">↑</button>
+    <script src="nutrition.js"></script>
+  </body>
+</html>
