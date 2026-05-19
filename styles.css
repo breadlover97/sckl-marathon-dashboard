@@ -2174,10 +2174,18 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
 
 .site-footer {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   justify-content: space-between;
   padding: 26px min(7vw, 86px);
   border-top: 1px solid var(--line);
+}
+
+.site-version {
+  flex: 0 0 100%;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .return-top {
