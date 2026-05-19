@@ -832,14 +832,14 @@ function renderActivityFeed(actuals) {
       : escapeHtml(activity.name);
     return `
       <tr class="activity-main-row">
-        <td>${escapeHtml(prettyDate(activity.date))}</td>
-        <td><strong>${activityName}</strong></td>
-        <td><strong>${oneDecimalKm(activity.distance_km)}</strong></td>
-        <td>${duration(activity.moving_time_seconds)}</td>
-        <td>${activityPace(activity)}</td>
-        <td>${heartRate(activity.average_heartrate)}</td>
-        <td>${cadence(activity.average_cadence)}</td>
-        <td>${Math.round(Number(activity.elevation_gain_m || 0))} m</td>
+        <td data-label="Date">${escapeHtml(prettyDate(activity.date))}</td>
+        <td data-label="Activity"><strong>${activityName}</strong></td>
+        <td data-label="Distance"><strong>${oneDecimalKm(activity.distance_km)}</strong></td>
+        <td data-label="Moving">${duration(activity.moving_time_seconds)}</td>
+        <td data-label="Avg pace">${activityPace(activity)}</td>
+        <td data-label="Avg HR">${heartRate(activity.average_heartrate)}</td>
+        <td data-label="Cadence">${cadence(activity.average_cadence)}</td>
+        <td data-label="Elev">${Math.round(Number(activity.elevation_gain_m || 0))} m</td>
       </tr>
     `;
   }).join("");
@@ -1273,6 +1273,15 @@ function setupActivityFeedControls() {
   });
 }
 
+function scrollToHashTarget() {
+  const id = window.location.hash ? decodeURIComponent(window.location.hash.slice(1)) : "";
+  const target = id ? document.getElementById(id) : null;
+  if (!target) return;
+  window.requestAnimationFrame(() => {
+    target.scrollIntoView({ block: "start" });
+  });
+}
+
 function render({ plan, actuals }) {
   latestRenderState = { actuals, plan };
   renderTrainingDayProgress(plan);
@@ -1285,6 +1294,7 @@ function render({ plan, actuals }) {
   renderActivityFeed(actuals);
   document.getElementById("syncStatus").textContent =
     `${plan.loaded_from === "google-sheet" ? "Sheet" : "Mock"} · ${plan.weeks.length} weeks`;
+  scrollToHashTarget();
 }
 
 function setupResponsiveCharts() {

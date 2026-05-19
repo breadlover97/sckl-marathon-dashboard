@@ -37,9 +37,9 @@ function renderSplitTable(secondsPerKm, distance) {
     .map((split) => {
       return `
         <tr>
-          <td>${split === MARATHON_KM ? "Finish" : `${split.toFixed(split % 1 ? 1 : 0)} km`}</td>
-          <td><strong>${formatDuration(split * secondsPerKm)}</strong></td>
-          <td>${formatPace(secondsPerKm)}</td>
+          <td data-label="Checkpoint">${split === MARATHON_KM ? "Finish" : `${split.toFixed(split % 1 ? 1 : 0)} km`}</td>
+          <td data-label="Cumulative"><strong>${formatDuration(split * secondsPerKm)}</strong></td>
+          <td data-label="Pace">${formatPace(secondsPerKm)}</td>
         </tr>
       `;
     }).join("");

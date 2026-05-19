@@ -342,17 +342,17 @@ function mealRows(meals) {
   }
   return meals.map((meal) => `
     <tr>
-      <td>${escapeHtml(meal.meal || "Unspecified")}</td>
-      <td><strong>${escapeHtml(meal.food_item || "-")}</strong></td>
-      <td>${meal.calories ? escapeHtml(kcal(meal.calories)) : "-"}</td>
-      <td>${meal.protein_g ? escapeHtml(grams(meal.protein_g)) : "-"}</td>
-      <td>${meal.carbs_g ? escapeHtml(grams(meal.carbs_g)) : "-"}</td>
-      <td>${meal.fat_g ? escapeHtml(grams(meal.fat_g)) : "-"}</td>
-      <td>${meal.fibre_g ? escapeHtml(grams(meal.fibre_g)) : "-"}</td>
-      <td>${milligrams(meal.sodium_mg)}</td>
-      <td>${percent(meal.confidence)}</td>
-      <td>${escapeHtml(meal.source || "-")}</td>
-      <td class="nutrition-note-cell"><span title="${escapeHtml(noteText(meal))}">${escapeHtml(noteText(meal))}</span></td>
+      <td data-label="Meal">${escapeHtml(meal.meal || "Unspecified")}</td>
+      <td data-label="Food"><strong>${escapeHtml(meal.food_item || "-")}</strong></td>
+      <td data-label="Calories">${meal.calories ? escapeHtml(kcal(meal.calories)) : "-"}</td>
+      <td data-label="Protein">${meal.protein_g ? escapeHtml(grams(meal.protein_g)) : "-"}</td>
+      <td data-label="Carbs">${meal.carbs_g ? escapeHtml(grams(meal.carbs_g)) : "-"}</td>
+      <td data-label="Fat">${meal.fat_g ? escapeHtml(grams(meal.fat_g)) : "-"}</td>
+      <td data-label="Fibre">${meal.fibre_g ? escapeHtml(grams(meal.fibre_g)) : "-"}</td>
+      <td data-label="Sodium">${milligrams(meal.sodium_mg)}</td>
+      <td data-label="Confidence">${percent(meal.confidence)}</td>
+      <td data-label="Source">${escapeHtml(meal.source || "-")}</td>
+      <td class="nutrition-note-cell" data-label="Notes"><span title="${escapeHtml(noteText(meal))}">${escapeHtml(noteText(meal))}</span></td>
     </tr>
   `).join("");
 }
@@ -402,10 +402,20 @@ function setupReturnTop() {
   }, { passive: true });
 }
 
+function scrollToHashTarget() {
+  const id = window.location.hash ? decodeURIComponent(window.location.hash.slice(1)) : "";
+  const target = id ? document.getElementById(id) : null;
+  if (!target) return;
+  window.requestAnimationFrame(() => {
+    target.scrollIntoView({ block: "start" });
+  });
+}
+
 function render(payload) {
   renderSummary(payload.nutrition);
   renderCalendar(payload.nutrition.days, payload.supplements.days);
   renderMeals(payload.nutrition.days);
+  scrollToHashTarget();
 }
 
 setupReturnTop();

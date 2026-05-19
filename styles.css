@@ -684,6 +684,7 @@ main {
 }
 
 .activity-table-scroll {
+  max-width: 100%;
   overflow-x: auto;
 }
 
@@ -950,6 +951,11 @@ main > .panel:first-child {
 .nutrition-section-body {
   display: grid;
   gap: 12px;
+}
+
+.nutrition-section-body > *,
+.calendar-phase-group {
+  min-width: 0;
 }
 
 .nutrition-table {
@@ -2520,21 +2526,26 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
 
   body {
     background: var(--body-end);
-    padding-top: 0;
-    padding-bottom: calc(78px + env(safe-area-inset-bottom));
+    padding-top: 64px;
+    padding-bottom: calc(118px + env(safe-area-inset-bottom));
   }
 
   html {
-    scroll-padding-top: 86px;
+    scroll-padding-top: 78px;
   }
 
   .top-nav {
-    position: sticky;
+    position: fixed;
     right: 0;
+    bottom: auto;
     left: 0;
+    top: 0;
     width: 100%;
+    grid-template-columns: minmax(0, 1fr) auto;
     min-height: 64px;
     padding: 8px 10px;
+    background: var(--body-start);
+    box-shadow: 0 1px 0 var(--nav-line);
     backdrop-filter: none;
   }
 
@@ -2543,7 +2554,7 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   }
 
   .site-brand {
-    width: calc(100vw - 178px);
+    width: auto;
     min-width: 0;
     padding-right: 0;
     gap: 3px;
@@ -2568,8 +2579,6 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   }
 
   .nav-tabs {
-    grid-row: 2;
-    grid-column: 1 / -1;
     position: fixed;
     right: auto;
     bottom: calc(10px + env(safe-area-inset-bottom));
@@ -2601,12 +2610,12 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   }
 
   .nav-actions {
-    position: fixed;
-    top: 8px;
-    right: 10px;
+    position: static;
     z-index: 45;
+    grid-column: 2;
     min-width: max-content;
     gap: 5px;
+    justify-self: end;
   }
 
   .nav-actions .action-button.secondary[href="index.html"] {
@@ -2635,7 +2644,33 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   }
 
   .theme-picker {
-    display: none;
+    position: fixed;
+    bottom: calc(58px + env(safe-area-inset-bottom));
+    left: 10px;
+    z-index: 36;
+    display: inline-flex;
+    min-height: 31px;
+    max-width: 124px;
+    gap: 5px;
+    padding: 4px 5px;
+    box-shadow: 0 12px 28px rgba(5, 5, 5, 0.12);
+  }
+
+  .theme-picker span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    font-size: 0.6rem;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .theme-picker select {
+    max-width: 112px;
+    min-height: 24px;
+    padding-left: 8px;
+    font-size: 0.66rem;
   }
 
   main {
@@ -2761,7 +2796,7 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   }
 
   .section-heading p {
-    font-size: 0.8rem;
+    font-size: 0.84rem;
     line-height: 1.36;
   }
 
@@ -3063,6 +3098,112 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   .activity-feed-actions .action-button {
     justify-content: center;
     width: 100%;
+  }
+
+  .activity-table-scroll {
+    overflow-x: visible;
+  }
+
+  .activity-table {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+  }
+
+  .activity-table thead {
+    display: none;
+  }
+
+  .activity-table tbody {
+    display: grid;
+    gap: 8px;
+  }
+
+  .activity-table tr {
+    display: grid;
+    gap: 7px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--card);
+  }
+
+  .activity-table td {
+    display: grid;
+    grid-template-columns: minmax(72px, 0.38fr) minmax(0, 1fr);
+    gap: 8px;
+    align-items: baseline;
+    padding: 0;
+    border-bottom: 0;
+    font-size: 0.82rem;
+    line-height: 1.28;
+    white-space: normal;
+  }
+
+  .activity-table td::before {
+    color: var(--muted);
+    content: attr(data-label);
+    font-size: 0.62rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .activity-table td:not([data-label])::before {
+    display: none;
+  }
+
+  .activity-table td strong,
+  .activity-table td a {
+    overflow-wrap: anywhere;
+  }
+
+  .activity-table td[data-label="Activity"],
+  .activity-table td[data-label="Food"],
+  .activity-table td[data-label="Notes"] {
+    grid-template-columns: 1fr;
+  }
+
+  .nutrition-table,
+  .split-table,
+  .pace-table {
+    min-width: 0;
+  }
+
+  .nutrition-note-cell {
+    width: auto;
+    max-width: none;
+  }
+
+  .nutrition-note-cell span {
+    max-height: none;
+    -webkit-line-clamp: initial;
+  }
+
+  .pace-table td {
+    display: block;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .pace-table td::before {
+    display: none;
+  }
+
+  .pace-table td:nth-child(2),
+  .pace-table td:nth-child(3) {
+    white-space: normal;
+  }
+
+  .pace-table td + td {
+    margin-top: 4px;
+    color: var(--muted);
+  }
+
+  .code-block {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
 
   .tech-grid,
