@@ -264,18 +264,6 @@ function renderSummary(payload) {
   `;
 }
 
-function progressCell(value, target, formatter) {
-  if (!target) return escapeHtml(formatter(value));
-  const pct = Math.min((Number(value || 0) / Number(target || 0)) * 100, 999);
-  return `
-    <div class="nutrition-target-cell">
-      <strong>${escapeHtml(formatter(value))}</strong>
-      <span>Target ${escapeHtml(formatter(target))}</span>
-      <div class="progress-track mini-track"><i style="width:${Math.min(pct, 100).toFixed(0)}%"></i></div>
-    </div>
-  `;
-}
-
 function renderSupplementPills(day) {
   const items = Array.isArray(day?.items) ? day.items : [];
   if (!items.length) return `<span class="nutrition-calendar-empty">No supplements</span>`;

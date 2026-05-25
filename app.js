@@ -704,15 +704,6 @@ function openPlanGroupKeys() {
   );
 }
 
-function restoreOpenPlanGroups(openGroups) {
-  if (!openGroups?.size) return;
-  document.querySelectorAll(".calendar-phase-group").forEach((group) => {
-    group.open = openGroups.has(group.dataset.planGroupKey);
-  });
-  updateWeekToggleLabel();
-  updatePlanGroupToggleLabel();
-}
-
 function updateWeekToggleLabel() {
   const button = document.getElementById("toggleWeeks");
   if (!button) return;
