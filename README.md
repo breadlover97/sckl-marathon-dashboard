@@ -39,6 +39,7 @@ data/mock-*.json                   Local fallback data
 scripts/fetch_google_sheet.py      Google Sheets -> dashboard JSON
 scripts/process_nutrition_ai.py    Private AI nutrition estimator -> Google Sheets
 scripts/fetch_strava.py            Strava API -> dashboard JSON
+scripts/sync_strava_actuals_to_sheet.py  Strava JSON -> Google Sheet actual columns
 scripts/exchange_strava_code.py    One-time Strava OAuth helper
 .github/workflows/deploy-pages.yml Scheduled/manual sync and GitHub Pages deploy
 ```
@@ -57,36 +58,47 @@ Target Weekly Mileage KM
 Monday Date
 Monday Plan
 Monday Estimated KM
+Monday Actual
+Monday Actual Distance Ran
 Tuesday Date
 Tuesday Plan
 Tuesday Estimated KM
+Tuesday Actual
+Tuesday Actual Distance Ran
 Wednesday Date
 Wednesday Plan
 Wednesday Estimated KM
+Wednesday Actual
+Wednesday Actual Distance Ran
 Thursday Date
 Thursday Plan
 Thursday Estimated KM
+Thursday Actual
+Thursday Actual Distance Ran
 Friday Date
 Friday Plan
 Friday Estimated KM
+Friday Actual
+Friday Actual Distance Ran
 Saturday Date
 Saturday Plan
 Saturday Estimated KM
+Saturday Actual
+Saturday Actual Distance Ran
 Sunday Date
 Sunday Plan
 Sunday Estimated KM
+Sunday Actual
+Sunday Actual Distance Ran
 Key Workout
 Long Run Distance KM
-Long Run Notes
-Fuel Practice
-Sleep / Recovery Focus
 Notes
 Week Summary
 ```
 
 1. In Google Cloud, enable the Google Sheets API.
 2. Create a service account and download its JSON key.
-3. Share the training Google Sheet with the service account email using Viewer access.
+3. Share the training Google Sheet with the service account email using Editor access.
 4. Install dependencies:
 
 ```bash
@@ -99,7 +111,7 @@ pip install -r requirements.txt
 
 ```bash
 export GOOGLE_SHEET_ID=1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo
-export GOOGLE_SHEET_RANGE=A:AF
+export GOOGLE_SHEET_RANGE=A:AQ
 export GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/google-service-account.json
 python scripts/fetch_google_sheet.py
 ```
@@ -110,6 +122,7 @@ Recommended sheet formatting:
 
 - Keep `Week Start Date` in `YYYY-MM-DD` format.
 - Keep daily estimated mileage columns numeric where possible.
+- Leave daily actual columns alone unless you need to manually override Strava data.
 - Leave the column headers exactly as listed above; order can change, but names should not.
 
 ## Strava Actuals Sync
@@ -143,6 +156,18 @@ The browser only reads sanitized run data. Strava secrets stay in your shell, lo
 
 Published Strava JSON intentionally includes only the public training metrics used by the dashboard: activity ID, name, date, distance, time, elevation, heart rate, cadence, Strava link, and basic athlete profile image/name if Strava returns them. Do not publish fields you would not want visible on the public GitHub Pages site.
 
+To write synced Strava runs back into the training sheet:
+
+```bash
+export GOOGLE_SHEET_ID=1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo
+export GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/google-service-account.json
+python scripts/fetch_strava.py
+python scripts/sync_strava_actuals_to_sheet.py
+python scripts/fetch_google_sheet.py
+```
+
+`sync_strava_actuals_to_sheet.py` only writes the `{Day} Actual` and `{Day} Actual Distance Ran` columns. It does not change planned workouts, notes, phases, or weekly summaries.
+
 ## GitHub Pages Deployment
 
 GitHub Pages is deployed by `.github/workflows/deploy-pages.yml`.
@@ -150,10 +175,10 @@ GitHub Pages is deployed by `.github/workflows/deploy-pages.yml`.
 The workflow:
 
 1. Installs the Python dependencies.
-2. Fetches the latest planned training from Google Sheets.
+2. Optionally estimates raw nutrition logs with OpenAI and writes the results back to Google Sheets.
 3. Fetches Strava run activities from 1 May 2026 onward.
-4. Fetches supplement checkbox history from the `Supplements` tab.
-5. Optionally estimates raw nutrition logs with OpenAI and writes the results back to Google Sheets.
+4. Writes Strava actuals into the daily actual columns in the `Training Plan` tab.
+5. Fetches the latest planned training, supplement history, and nutrition history from Google Sheets.
 6. Publishes the static site files and generated dashboard JSON files to GitHub Pages.
 
 Required repository secrets:
@@ -184,7 +209,7 @@ If the optional variables are not set, the workflow uses:
 
 ```text
 GOOGLE_SHEET_ID=1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo
-GOOGLE_SHEET_RANGE=A:AF
+GOOGLE_SHEET_RANGE=A:AQ
 GOOGLE_SUPPLEMENTS_RANGE=Supplements!A:F
 ```
 
@@ -308,7 +333,7 @@ Google Sheets is the cross-device source of truth. The website displays suppleme
 - GitHub Actions secrets should hold `GOOGLE_SERVICE_ACCOUNT_JSON`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, and `STRAVA_REFRESH_TOKEN`. Add `OPENAI_API_KEY` to enable AI nutrition processing.
 - The frontend must not contain Strava client secrets or Google credentials.
 - The frontend must not call OpenAI directly. AI nutrition processing runs only from GitHub Actions or a local private script, then syncs static JSON.
-- The Google service account needs Editor access to the sheet if AI processing should write estimates back into the `Nutrition` tab. Viewer access is still enough for read-only plan/nutrition sync.
+- The Google service account needs Editor access to the sheet for Strava actual writeback and AI nutrition processing. Viewer access is only enough for read-only JSON sync.
 - Rotate Strava tokens and Google service account keys if they are ever pasted into chat, committed, or shared.
 - The site is public on GitHub Pages, so generated JSON should be treated as public data.
 
@@ -319,6 +344,7 @@ python3 scripts/fetch_google_sheet.py --input-json data/training-plan.json --dry
 python3 -m py_compile scripts/fetch_google_sheet.py
 python3 -m py_compile scripts/process_nutrition_ai.py
 python3 -m py_compile scripts/fetch_strava.py
+python3 -m py_compile scripts/sync_strava_actuals_to_sheet.py
 python3 -m py_compile scripts/exchange_strava_code.py
 node --check app.js
 node --check nutrition.js

@@ -1,12 +1,90 @@
 {
   "metadata": {
-    "source": "placeholder",
-    "generated_at": "2026-05-15T00:00:00+08:00",
-    "included_days": 0,
-    "supplement_names": [],
-    "warnings": [
-      "Run the Google Sheets sync workflow to generate supplement history."
-    ]
+    "source": "google-sheet:1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo:Supplements!A:F",
+    "generated_at": "2026-05-15T16:43:26+08:00",
+    "included_days": 5,
+    "supplement_names": [
+      "Protein Shake",
+      "Omega 3",
+      "Vitamin D"
+    ],
+    "warnings": []
   },
-  "days": []
+  "days": [
+    {
+      "date": "2026-05-11",
+      "week": 1,
+      "phase": "Base",
+      "completed_count": 1,
+      "total_count": 3,
+      "items": [
+        { "key": "proteinshake", "label": "Protein Shake", "taken": true },
+        { "key": "omega3", "label": "Omega 3", "taken": false },
+        { "key": "vitamind", "label": "Vitamin D", "taken": false }
+      ],
+      "proteinshake": true,
+      "omega3": false,
+      "vitamind": false
+    },
+    {
+      "date": "2026-05-12",
+      "week": 1,
+      "phase": "Base",
+      "completed_count": 0,
+      "total_count": 3,
+      "items": [
+        { "key": "proteinshake", "label": "Protein Shake", "taken": false },
+        { "key": "omega3", "label": "Omega 3", "taken": false },
+        { "key": "vitamind", "label": "Vitamin D", "taken": false }
+      ],
+      "proteinshake": false,
+      "omega3": false,
+      "vitamind": false
+    },
+    {
+      "date": "2026-05-13",
+      "week": 1,
+      "phase": "Base",
+      "completed_count": 1,
+      "total_count": 3,
+      "items": [
+        { "key": "proteinshake", "label": "Protein Shake", "taken": true },
+        { "key": "omega3", "label": "Omega 3", "taken": false },
+        { "key": "vitamind", "label": "Vitamin D", "taken": false }
+      ],
+      "proteinshake": true,
+      "omega3": false,
+      "vitamind": false
+    },
+    {
+      "date": "2026-05-14",
+      "week": 1,
+      "phase": "Base",
+      "completed_count": 2,
+      "total_count": 3,
+      "items": [
+        { "key": "proteinshake", "label": "Protein Shake", "taken": true },
+        { "key": "omega3", "label": "Omega 3", "taken": true },
+        { "key": "vitamind", "label": "Vitamin D", "taken": false }
+      ],
+      "proteinshake": true,
+      "omega3": true,
+      "vitamind": false
+    },
+    {
+      "date": "2026-05-15",
+      "week": 1,
+      "phase": "Base",
+      "completed_count": 0,
+      "total_count": 3,
+      "items": [
+        { "key": "proteinshake", "label": "Protein Shake", "taken": false },
+        { "key": "omega3", "label": "Omega 3", "taken": false },
+        { "key": "vitamind", "label": "Vitamin D", "taken": false }
+      ],
+      "proteinshake": false,
+      "omega3": false,
+      "vitamind": false
+    }
+  ]
 }

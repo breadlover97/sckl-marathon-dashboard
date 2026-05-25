@@ -1,13 +1,67 @@
 {
   "metadata": {
-    "source": "google-sheet:1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo:Nutrition!A:O",
-    "generated_at": "2026-05-15T00:00:00+08:00",
-    "included_days": 0,
-    "included_meals": 0,
-    "warnings": [
-      "Nutrition tab is ready for meal-level rows."
-    ]
+    "source": "google-sheet:1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo:Nutrition!A:T",
+    "generated_at": "2026-05-15T16:43:26+08:00",
+    "included_days": 1,
+    "included_meals": 1,
+    "warnings": []
   },
-  "days": [],
-  "nutrition": []
+  "days": [
+    {
+      "date": "2026-05-15",
+      "calories": 650,
+      "protein_g": 55,
+      "carbs_g": 75,
+      "fat_g": 15,
+      "fibre_g": 2,
+      "sodium_mg": 900,
+      "calorie_target": null,
+      "protein_target_g": null,
+      "confidence": 70,
+      "assumptions": "Chicken rice with added chicken breast estimated as one hawker chicken rice portion plus about 100g extra chicken breast. Kopi C ice less sweet estimated as one cup with condensed or evaporated milk and reduced sugar.",
+      "source": "openai:gpt-4.1-mini",
+      "notes": "Raw food log: chicken rice add chicken breast and kopi c ice less sweet",
+      "meal_count": 1,
+      "seven_day_average_calories": 650,
+      "seven_day_average_protein_g": 55,
+      "meals": [
+        {
+          "date": "2026-05-15",
+          "meal": "Lunch",
+          "food_item": "Chicken rice with extra chicken breast and kopi c ice less sweet",
+          "calories": 650,
+          "protein_g": 55,
+          "carbs_g": 75,
+          "fat_g": 15,
+          "fibre_g": 2,
+          "sodium_mg": 900,
+          "calorie_target": null,
+          "protein_target_g": null,
+          "confidence": 70,
+          "assumptions": "Chicken rice with added chicken breast estimated as one hawker chicken rice portion plus about 100g extra chicken breast. Kopi C ice less sweet estimated as one cup with condensed or evaporated milk and reduced sugar.",
+          "source": "openai:gpt-4.1-mini",
+          "notes": "Raw food log: chicken rice add chicken breast and kopi c ice less sweet"
+        }
+      ]
+    }
+  ],
+  "nutrition": [
+    {
+      "date": "2026-05-15",
+      "meal": "Lunch",
+      "food_item": "Chicken rice with extra chicken breast and kopi c ice less sweet",
+      "calories": 650,
+      "protein_g": 55,
+      "carbs_g": 75,
+      "fat_g": 15,
+      "fibre_g": 2,
+      "sodium_mg": 900,
+      "calorie_target": null,
+      "protein_target_g": null,
+      "confidence": 70,
+      "assumptions": "Chicken rice with added chicken breast estimated as one hawker chicken rice portion plus about 100g extra chicken breast. Kopi C ice less sweet estimated as one cup with condensed or evaporated milk and reduced sugar.",
+      "source": "openai:gpt-4.1-mini",
+      "notes": "Raw food log: chicken rice add chicken breast and kopi c ice less sweet"
+    }
+  ]
 }

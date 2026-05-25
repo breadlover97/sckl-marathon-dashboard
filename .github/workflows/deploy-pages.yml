@@ -53,14 +53,12 @@ jobs:
           done
           exit "$missing"
 
-      - name: Process nutrition AI and fetch Google Sheet plan
+      - name: Process nutrition AI
         run: |
           python scripts/process_nutrition_ai.py
-          python scripts/fetch_google_sheet.py
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ vars.GOOGLE_SHEET_ID || '1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo' }}
-          GOOGLE_SHEET_RANGE: ${{ vars.GOOGLE_SHEET_RANGE || 'A:AF' }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_NUTRITION_MODEL: ${{ vars.OPENAI_NUTRITION_MODEL || 'gpt-4.1-mini' }}
 
@@ -76,6 +74,21 @@ jobs:
           PY
           )"
           python scripts/fetch_strava.py --after "$after_timestamp"
+
+      - name: Write Strava actuals to Google Sheet
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SHEET_ID: ${{ vars.GOOGLE_SHEET_ID || '1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo' }}
+          GOOGLE_SHEET_RANGE: ${{ vars.GOOGLE_SHEET_RANGE || 'A:AQ' }}
+          STRAVA_ACTIVITIES_OUTPUT: data/strava-activities.json
+        run: python scripts/sync_strava_actuals_to_sheet.py
+
+      - name: Fetch Google Sheet plan
+        run: python scripts/fetch_google_sheet.py
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SHEET_ID: ${{ vars.GOOGLE_SHEET_ID || '1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo' }}
+          GOOGLE_SHEET_RANGE: ${{ vars.GOOGLE_SHEET_RANGE || 'A:AQ' }}
 
       - name: Prepare Pages artifact
         run: |

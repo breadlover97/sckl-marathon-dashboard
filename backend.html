@@ -56,14 +56,14 @@
           <div class="flow-step"><strong>2</strong><span>You record runs normally through Strava. The dashboard only needs Strava API access; it does not need Strava data typed into the sheet.</span></div>
           <div class="flow-step"><strong>3</strong><span>GitHub Actions runs the sync workflow on schedule, on code changes, or when you press the Sync data button and manually run the workflow.</span></div>
           <div class="flow-step"><strong>4</strong><span>If raw nutrition rows are waiting, GitHub Actions calls OpenAI privately, writes macro estimates back into Google Sheets, then runs the normal Sheet sync.</span></div>
-          <div class="flow-step"><strong>5</strong><span>The workflow reads private credentials from GitHub secrets, fetches Google Sheets, Supplements, Nutrition, and Strava data, then writes generated JSON files into the Pages artifact.</span></div>
+          <div class="flow-step"><strong>5</strong><span>The workflow reads private credentials from GitHub secrets, fetches Strava, writes daily actuals back into the Training Plan sheet, then exports Google Sheets, Supplements, Nutrition, and Strava JSON into the Pages artifact.</span></div>
           <div class="flow-step"><strong>6</strong><span>GitHub Pages hosts the static site. The dashboard loads <code>data/training-plan.json</code> and <code>data/strava-activities.json</code>; the standalone nutrition page loads <code>data/nutrition.json</code> and <code>data/supplements.json</code>.</span></div>
         </div>
       </section>
 
       <section class="info-section">
         <h2>What Each Service Does</h2>
-        <p><strong>Google Sheets</strong> stores the planned marathon build, supplement checkbox history, and nutrition history. You can adjust daily estimated mileage, session notes, weekly summaries, phase details, supplement checkboxes, and meal-level nutrition rows there.</p>
+        <p><strong>Google Sheets</strong> stores the planned marathon build, Strava actual writeback fields, supplement checkbox history, and nutrition history. You can adjust daily estimated mileage, session notes, weekly summaries, phase details, supplement checkboxes, and meal-level nutrition rows there.</p>
         <p><strong>Strava API</strong> provides actual runs: distance, time, pace, elevation, heart rate and cadence when Strava includes them, activity names, dates, and Strava links.</p>
         <p><strong>GitHub Actions</strong> is the private sync worker. It refreshes Strava tokens, reads the Google service account secret, optionally calls OpenAI for nutrition estimates, fetches both data sources, and prepares the Pages deployment.</p>
         <p><strong>OpenAI API</strong> is used only by the private workflow script when an <code>OPENAI_API_KEY</code> secret is configured. The public site never calls OpenAI directly.</p>
@@ -94,6 +94,7 @@
 |   |-- fetch_google_sheet.py     # Reads and normalises Google Sheet rows
 |   |-- process_nutrition_ai.py   # Private raw food log -> nutrition estimate writer
 |   |-- fetch_strava.py           # Refreshes Strava token and fetches runs
+|   |-- sync_strava_actuals_to_sheet.py # Writes run actuals back to the plan
 |   `-- exchange_strava_code.py   # One-time OAuth helper
 |-- .github/workflows/
 |   `-- deploy-pages.yml          # Scheduled/manual sync and Pages deploy
@@ -112,6 +113,10 @@
           <article>
             <h3>Strava sync</h3>
             <p><code>scripts/fetch_strava.py</code> refreshes the access token with your refresh token, fetches recent activities, keeps running activities, and writes public training metrics.</p>
+          </article>
+          <article>
+            <h3>Strava actual writeback</h3>
+            <p><code>scripts/sync_strava_actuals_to_sheet.py</code> reads the generated Strava JSON and writes only the daily <code>Actual</code> and <code>Actual Distance Ran</code> fields in the Training Plan tab.</p>
           </article>
           <article>
             <h3>Pages deployment</h3>
@@ -186,7 +191,7 @@
           </article>
           <article>
             <h3>GitHub repository variables</h3>
-            <p><code>GOOGLE_SHEET_ID</code> points to your training sheet. <code>GOOGLE_SHEET_RANGE</code> is currently <code>A:AF</code> so the generated weekly summary column is included.</p>
+            <p><code>GOOGLE_SHEET_ID</code> points to your training sheet. <code>GOOGLE_SHEET_RANGE</code> is currently <code>A:AQ</code> so the daily actual columns and weekly summary column are included.</p>
           </article>
           <article>
             <h3>Frontend config</h3>
@@ -201,7 +206,7 @@
 
       <section class="info-section">
         <h2>Data Contract</h2>
-        <p><code>data/training-plan.json</code> contains the plan from Google Sheets: week number, week start date, phase, weekly mileage, daily sessions, long run target, weekly summary, and notes.</p>
+        <p><code>data/training-plan.json</code> contains the plan from Google Sheets: week number, week start date, phase, weekly mileage, daily sessions, daily actual writeback fields, long run target, weekly summary, and notes.</p>
         <p><code>data/strava-activities.json</code> contains the generated actual training data used by the dashboard: athlete profile, sync timestamp, run distance, moving time, elapsed time, elevation, heart rate, cadence, activity names, dates, and Strava links.</p>
         <p><code>data/supplements.json</code> contains read-only supplement checkbox history from the <code>Supplements</code> tab: date, week, training phase, supplement names, and whether each supplement was taken.</p>
         <p><code>data/nutrition.json</code> contains read-only meal-level nutrition rows from the <code>Nutrition</code> tab, plus daily totals and rolling seven-day calorie and protein averages. The sync reads columns A:T by header name, but only public nutrition fields are written into the generated JSON; raw food logs, guidelines, AI status, timestamps, and errors remain Sheet workflow columns.</p>

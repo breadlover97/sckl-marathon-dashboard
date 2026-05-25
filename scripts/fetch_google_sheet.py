@@ -14,7 +14,7 @@ from typing import Any
 
 
 DEFAULT_SHEET_ID = "1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo"
-DEFAULT_RANGE = "A:AF"
+DEFAULT_RANGE = "A:AQ"
 DEFAULT_OUTPUT = "data/training-plan.json"
 DEFAULT_NUTRITION_RANGE = "Nutrition!A:T"
 DEFAULT_NUTRITION_OUTPUT = "data/nutrition.json"
@@ -30,9 +30,6 @@ EXPECTED_COLUMNS = {
     "target_weekly_mileage_km": "Target Weekly Mileage KM",
     "key_workout": "Key Workout",
     "long_run_distance_km": "Long Run Distance KM",
-    "long_run_notes": "Long Run Notes",
-    "fuel_practice": "Fuel Practice",
-    "sleep_recovery_focus": "Sleep / Recovery Focus",
     "notes": "Notes",
     "week_summary": "Week Summary",
 }
@@ -196,6 +193,8 @@ def normalize_training_week(row: dict[str, str], row_number: int) -> dict[str, A
         session_date = row_header_value(row, f"{day_label} Date")
         session_plan = row_header_value(row, f"{day_label} Plan")
         session_km = row_header_value(row, f"{day_label} Estimated KM")
+        session_actual = row_header_value(row, f"{day_label} Actual")
+        session_actual_distance = row_header_value(row, f"{day_label} Actual Distance Ran")
         if not session_plan:
             session_plan = row_header_value(row, f"{day_label} Plan")
         daily_sessions.append({
@@ -203,6 +202,8 @@ def normalize_training_week(row: dict[str, str], row_number: int) -> dict[str, A
             "date": parse_date(session_date, f"{day_label} Date", row_number) if session_date else fallback_date,
             "plan": session_plan,
             "planned_km": parse_number(session_km, f"{day_label} Estimated KM", row_number),
+            "actual": session_actual,
+            "actual_distance_ran_km": parse_optional_number(session_actual_distance),
         })
 
     target_mileage = parse_number(
@@ -231,9 +232,6 @@ def normalize_training_week(row: dict[str, str], row_number: int) -> dict[str, A
         },
         "key_workout": key_workout,
         "long_run_distance_km": long_run_distance,
-        "long_run_notes": row_value(row, "long_run_notes"),
-        "fuel_practice": row_value(row, "fuel_practice"),
-        "sleep_recovery_focus": row_value(row, "sleep_recovery_focus"),
         "notes": row_value(row, "notes"),
         "week_summary": row_value(row, "week_summary") or summarize_week(phase, target_mileage, planned_runs, key_workout, long_run_distance),
     }
@@ -582,13 +580,16 @@ def values_from_plan_json(path: Path) -> list[list[Any]]:
         "Target Weekly Mileage KM",
     ]
     for _day_key, day_label in DAY_COLUMNS:
-        header.extend([f"{day_label} Date", f"{day_label} Plan", f"{day_label} Estimated KM"])
+        header.extend([
+            f"{day_label} Date",
+            f"{day_label} Plan",
+            f"{day_label} Estimated KM",
+            f"{day_label} Actual",
+            f"{day_label} Actual Distance Ran",
+        ])
     header.extend([
         "Key Workout",
         "Long Run Distance KM",
-        "Long Run Notes",
-        "Fuel Practice",
-        "Sleep / Recovery Focus",
         "Notes",
         "Week Summary",
     ])
@@ -616,14 +617,13 @@ def values_from_plan_json(path: Path) -> list[list[Any]]:
                 session.get("date", fallback_date),
                 session.get("plan", daily.get(day_key, "")),
                 session.get("planned_km", ""),
+                session.get("actual", ""),
+                session.get("actual_distance_ran_km", ""),
             ])
         rows.append([
             *row,
             week.get("key_workout", ""),
             week.get("long_run_distance_km", ""),
-            week.get("long_run_notes", ""),
-            week.get("fuel_practice", ""),
-            week.get("sleep_recovery_focus", ""),
             week.get("notes", ""),
             week.get("week_summary", ""),
         ])
