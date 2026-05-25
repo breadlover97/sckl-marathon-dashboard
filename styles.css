@@ -1531,20 +1531,113 @@ main > .panel:first-child {
   gap: 14px;
 }
 
-.pace-chip {
-  min-width: 0;
-  border: 1px solid var(--line);
-  background: var(--card);
-  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+.pace-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
 }
 
-.pace-chip span {
+.pace-card {
+  position: relative;
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  outline: none;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.pace-card-topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pace-card-topline span {
   display: block;
-  margin-bottom: 5px;
   color: var(--muted);
   font-size: 0.7rem;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.pace-card-topline small {
+  color: var(--orange-dark);
+  font-size: 0.66rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.pace-card strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--ink);
+  font-size: 1.02rem;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.pace-anchor {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.pace-tooltip {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 10px);
+  z-index: 20;
+  width: min(280px, calc(100vw - 40px));
+  padding: 12px 13px;
+  border: 1px solid color-mix(in srgb, var(--orange) 34%, var(--line));
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.pace-tooltip::after {
+  position: absolute;
+  left: 22px;
+  bottom: -6px;
+  width: 10px;
+  height: 10px;
+  border-right: 1px solid color-mix(in srgb, var(--orange) 34%, var(--line));
+  border-bottom: 1px solid color-mix(in srgb, var(--orange) 34%, var(--line));
+  background: var(--panel);
+  content: "";
+  transform: rotate(45deg);
+}
+
+.pace-tooltip strong {
+  margin: 0 0 6px;
+  color: var(--orange-dark);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.pace-tooltip span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 750;
+  line-height: 1.42;
+}
+
+.pace-card.is-tooltip-visible .pace-tooltip {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .pace-table td:nth-child(2) {
@@ -1555,32 +1648,6 @@ main > .panel:first-child {
 
 .pace-table td:nth-child(3) {
   color: var(--muted);
-}
-
-.pace-track-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.pace-chip {
-  padding: 12px;
-  border-radius: 12px;
-}
-
-.pace-chip strong {
-  display: block;
-  font-size: 1rem;
-  font-weight: 900;
-}
-
-.pace-chip small {
-  display: block;
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 800;
-  line-height: 1.25;
 }
 
 .chart-shell {
@@ -1991,7 +2058,10 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
 
 @media (hover: hover) and (pointer: fine) {
   .day-card:hover,
-  .pace-chip:hover,
+  .pace-card:hover,
+  .pace-card.is-tooltip-visible,
+  .pace-card:focus,
+  .pace-card:focus-visible,
   .week-metric:hover,
   .activity-feed:hover,
   .flow-step:hover,
@@ -1999,6 +2069,14 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     border-color: color-mix(in srgb, var(--orange) 42%, var(--line));
     background: color-mix(in srgb, var(--card) 78%, var(--orange-soft));
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--orange) 16%, transparent);
+  }
+
+  .pace-card:hover .pace-tooltip,
+  .pace-card.is-tooltip-visible .pace-tooltip,
+  .pace-card:focus .pace-tooltip,
+  .pace-card:focus-visible .pace-tooltip {
+    opacity: 1;
+    transform: translateY(0);
   }
 
   .day-card.completed-day:hover {
@@ -2384,12 +2462,16 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     padding: 11px;
   }
 
-  .pace-track-grid {
+  .pace-card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .pace-chip {
+  .pace-card {
     padding: 11px;
+  }
+
+  .pace-card strong {
+    font-size: 0.98rem;
   }
 
   .pace-table-scroll {

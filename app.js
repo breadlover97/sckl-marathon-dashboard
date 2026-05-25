@@ -14,64 +14,73 @@ const paceZones = [
   {
     label: "Recovery",
     range: "5:45-6:20 /km",
+    anchor: "No target",
+    use: "Reset days",
     description: "Very easy running for post-workout days, tired legs, shin-splint caution days, and low-stress aerobic volume."
   },
   {
     label: "Easy aerobic",
     range: "5:10-5:45 /km",
+    anchor: "By effort",
+    use: "Daily mileage",
     description: "Your default mileage pace for normal easy runs, commuting aerobic volume, and relaxed run-club days."
   },
   {
     label: "Long run easy",
     range: "5:05-5:40 /km",
+    anchor: "By effort",
+    use: "Long run base",
     description: "Early and middle portions of long runs, especially before progression finishes, MP blocks, or hilly sections."
   },
   {
     label: "Steady aerobic",
     range: "4:35-5:00 /km",
+    anchor: "Controlled",
+    use: "Progressions",
     description: "Controlled aerobic pressure for medium-long runs, progression finishes, and steady segments without drifting into threshold."
   },
   {
     label: "Marathon effort",
     range: "4:10-4:20 /km",
+    anchor: "MP",
+    use: "Race-specific work",
     description: "Tropical marathon-pace work for long-run finishes, cruise blocks, and race-specific sessions; use effort over exact pace in heat."
   },
   {
     label: "Tempo",
     range: "3:58-4:08 /km",
+    anchor: "6-10 km blocks",
+    use: "Aerobic strength",
     description: "Comfortably hard running for 25-45 minute tempos, controlled progression runs, and longer sustained aerobic strength work."
   },
   {
     label: "Lactate threshold",
     range: "3:50-4:00 /km",
+    anchor: "1.6 km: 6:10-6:24",
+    use: "Cruise intervals",
     description: "Hard but repeatable pace for 20-30 minute threshold runs, cruise intervals, and sessions like 4-6 x 1 km to 2 km."
   },
   {
     label: "10K / critical velocity",
     range: "3:38-3:46 /km",
+    anchor: "1 km: 3:38-3:46",
+    use: "Fast aerobic reps",
     description: "Fast controlled aerobic reps for 800 m to 1.2 km repeats, sharpening workouts, and 10K-specific rhythm."
   },
   {
     label: "VO2 interval",
     range: "3:28-3:38 /km",
+    anchor: "800m: 2:46-2:54",
+    use: "Interval work",
     description: "High-end interval pace for 600 m to 1.2 km track reps with jog recoveries, used sparingly when form is strong."
   },
   {
     label: "Repetition / speed",
     range: "80-86s / 400m",
+    anchor: "400m: 80-86s",
+    use: "Speed economy",
     description: "Fast relaxed speed for 200 m to 400 m reps, strides, and running-economy work with fuller recovery."
   }
-];
-
-const trackTargets = [
-  ["200m", "38-42s", "Strides, relaxed speed"],
-  ["400m", "82-86s", "Main controlled speed range"],
-  ["600m", "2:06-2:14", "Aerobic speed"],
-  ["800m", "2:52-3:00", "VO2 / controlled interval"],
-  ["1 km", "3:38-3:46", "10K / CV reps"],
-  ["1.2 km", "4:20-4:28", "Long interval rhythm"],
-  ["1.6 km", "5:50-6:05", "Mile-style strength reps"],
-  ["MP", "4:10-4:20 /km", "Marathon pace work"]
 ];
 
 const formatDate = new Intl.DateTimeFormat("en-SG", {
@@ -1056,35 +1065,29 @@ function renderLineChart(containerId, weeks, valueKey, options = {}) {
 function renderPaceGuide() {
   const container = document.getElementById("paceGuide");
   if (!container) return;
-  const zoneRows = paceZones.map((zone) => `
-    <tr>
-      <td><strong>${escapeHtml(zone.label)}</strong></td>
-      <td>${escapeHtml(zone.range)}</td>
-      <td>${escapeHtml(zone.description)}</td>
-    </tr>
-  `).join("");
-  const targetRows = trackTargets.map(([distance, target, purpose]) => `
-    <article class="pace-chip">
-      <span>${escapeHtml(distance)}</span>
-      <strong>${escapeHtml(target)}</strong>
-      <small>${escapeHtml(purpose)}</small>
+  const cards = paceZones.map((zone) => `
+    <article class="pace-card" tabindex="0" aria-label="${escapeHtml(`${zone.label}: ${zone.range}. ${zone.description}`)}">
+      <div class="pace-card-topline">
+        <span>${escapeHtml(zone.label)}</span>
+        <small>${escapeHtml(zone.use)}</small>
+      </div>
+      <strong>${escapeHtml(zone.range)}</strong>
+      <div class="pace-anchor">${escapeHtml(zone.anchor)}</div>
+      <div class="pace-tooltip" role="tooltip">
+        <strong>${escapeHtml(zone.label)}</strong>
+        <span>${escapeHtml(zone.description)}</span>
+      </div>
     </article>
   `).join("");
-  container.innerHTML = `
-    <div class="activity-table-scroll pace-table-scroll">
-      <table class="activity-table pace-table">
-        <thead>
-          <tr>
-            <th>Zone</th>
-            <th>Target</th>
-            <th>Description</th>
-          </tr>
-        </thead>
-        <tbody>${zoneRows}</tbody>
-      </table>
-    </div>
-    <div class="pace-track-grid">${targetRows}</div>
-  `;
+  container.innerHTML = `<div class="pace-card-grid">${cards}</div>`;
+  container.querySelectorAll(".pace-card").forEach((card) => {
+    const show = () => card.classList.add("is-tooltip-visible");
+    const hide = () => card.classList.remove("is-tooltip-visible");
+    card.addEventListener("pointerenter", show);
+    card.addEventListener("pointerleave", hide);
+    card.addEventListener("focus", show);
+    card.addEventListener("blur", hide);
+  });
 }
 
 const chartTooltipSize = {
