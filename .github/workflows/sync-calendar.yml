@@ -1,0 +1,96 @@
+name: Sync training calendar
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Preview or apply the calendar sync
+        required: true
+        default: preview
+        type: choice
+        options:
+          - preview
+          - apply
+      delete_stale:
+        description: Delete managed calendar events that are no longer in the training plan
+        required: false
+        default: false
+        type: boolean
+      start_date:
+        description: First training date to sync
+        required: false
+        default: "2026-05-29"
+      end_date:
+        description: Last training date to sync
+        required: false
+        default: "2026-10-04"
+      calendar_id:
+        description: Google Calendar ID or email. Leave blank to use GOOGLE_CALENDAR_ID repository variable.
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  sync-calendar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install sync dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Check calendar sync configuration
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_CALENDAR_ID: ${{ inputs.calendar_id || vars.GOOGLE_CALENDAR_ID }}
+        run: |
+          missing=0
+          for name in GOOGLE_SERVICE_ACCOUNT_JSON GOOGLE_CALENDAR_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing required calendar sync value: $name"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: Preview calendar sync
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SHEET_ID: ${{ vars.GOOGLE_SHEET_ID || '1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo' }}
+          GOOGLE_SHEET_RANGE: ${{ vars.GOOGLE_SHEET_RANGE || 'A:AQ' }}
+          GOOGLE_CALENDAR_ID: ${{ inputs.calendar_id || vars.GOOGLE_CALENDAR_ID }}
+          TRAINING_CALENDAR_START_DATE: ${{ inputs.start_date }}
+          TRAINING_CALENDAR_END_DATE: ${{ inputs.end_date }}
+          TRAINING_CALENDAR_COLOR_ID: ${{ vars.TRAINING_CALENDAR_COLOR_ID || '11' }}
+          TRAINING_CALENDAR_TIMEZONE: ${{ vars.TRAINING_CALENDAR_TIMEZONE || 'Asia/Singapore' }}
+        run: python scripts/sync_training_calendar.py --preview-limit 120
+
+      - name: Apply calendar sync
+        if: ${{ inputs.mode == 'apply' }}
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SHEET_ID: ${{ vars.GOOGLE_SHEET_ID || '1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo' }}
+          GOOGLE_SHEET_RANGE: ${{ vars.GOOGLE_SHEET_RANGE || 'A:AQ' }}
+          GOOGLE_CALENDAR_ID: ${{ inputs.calendar_id || vars.GOOGLE_CALENDAR_ID }}
+          TRAINING_CALENDAR_START_DATE: ${{ inputs.start_date }}
+          TRAINING_CALENDAR_END_DATE: ${{ inputs.end_date }}
+          TRAINING_CALENDAR_COLOR_ID: ${{ vars.TRAINING_CALENDAR_COLOR_ID || '11' }}
+          TRAINING_CALENDAR_TIMEZONE: ${{ vars.TRAINING_CALENDAR_TIMEZONE || 'Asia/Singapore' }}
+        run: |
+          args=(--apply --preview-limit 120)
+          if [ "${{ inputs.delete_stale }}" = "true" ]; then
+            args+=(--delete-stale)
+          fi
+          python scripts/sync_training_calendar.py "${args[@]}"

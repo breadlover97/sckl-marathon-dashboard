@@ -40,8 +40,10 @@ scripts/fetch_google_sheet.py      Google Sheets -> dashboard JSON
 scripts/process_nutrition_ai.py    Private AI nutrition estimator -> Google Sheets
 scripts/fetch_strava.py            Strava API -> dashboard JSON
 scripts/sync_strava_actuals_to_sheet.py  Strava JSON -> Google Sheet actual columns
+scripts/sync_training_calendar.py  Training Plan -> Google Calendar events
 scripts/exchange_strava_code.py    One-time Strava OAuth helper
 .github/workflows/deploy-pages.yml Scheduled/manual sync and GitHub Pages deploy
+.github/workflows/sync-calendar.yml Manual Google Calendar training sync
 ```
 
 ## Google Sheets API Setup
@@ -168,6 +170,58 @@ python scripts/fetch_google_sheet.py
 
 `sync_strava_actuals_to_sheet.py` only writes the `{Day} Actual` and `{Day} Actual Distance Ran` columns. It does not change planned workouts, notes, phases, or weekly summaries.
 
+## Training Calendar Sync
+
+The Google Sheet remains the source of truth for planned training, while Google Calendar holds the runnable schedule. `scripts/sync_training_calendar.py` compares the Sheet plan with calendar events and then creates, updates, adopts, or optionally deletes managed events.
+
+The sync rules currently match your preferred calendar setup:
+
+- Wednesday runs are skipped by default because the recurring RD Wed run already exists in Google Calendar.
+- Monday interval workouts are scheduled 7:00pm-9:00pm.
+- Easy, recovery, relaxed, rolling, and medium runs are scheduled 9:30pm-10:30pm unless another timed calendar event ends after 9:00pm, then the run moves to 7:30am-8:30am.
+- Long runs are scheduled 6:30am-8:30am.
+- Race day is scheduled as `KL Marathon` from 3:30am-8:00am.
+- Event titles are plain, without an `SCKL` prefix.
+- Events use Google Calendar color ID `11`, which is tomato/red, and have no reminders.
+
+The script writes hidden private event metadata, not visible descriptions:
+
+```text
+scklCalendarSync=training-plan-v1
+scklPlanId=sckl-YYYY-MM-DD-day
+```
+
+That metadata is the sync layer. After the first run, later Sheet changes can update the same calendar event instead of creating duplicates. On the first apply, the script also tries to adopt existing manually-created events when the title, date, start time, and end time match.
+
+Google Calendar setup:
+
+1. Enable the Google Calendar API in the same Google Cloud project.
+2. Share the target Google Calendar with the service account email and give it permission to make changes to events.
+3. Set `GOOGLE_CALENDAR_ID` to the target calendar ID or email. Do not rely on `primary` for a service account, because that points to the service account's own calendar.
+4. Keep `GOOGLE_SERVICE_ACCOUNT_JSON` in GitHub Actions secrets or `GOOGLE_APPLICATION_CREDENTIALS` locally.
+
+Local preview without touching Google Calendar:
+
+```bash
+python scripts/sync_training_calendar.py --input-json data/training-plan.json --no-calendar-awareness --preview-limit 20
+```
+
+Calendar-aware preview from the live Sheet:
+
+```bash
+export GOOGLE_CALENDAR_ID=your_calendar_id_or_email
+export GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/google-service-account.json
+python scripts/sync_training_calendar.py --preview-limit 120
+```
+
+Apply changes:
+
+```bash
+python scripts/sync_training_calendar.py --apply --preview-limit 120
+```
+
+Use `--delete-stale` only when you want the sync to delete previously managed training events that no longer exist in the Sheet. The manual GitHub Actions workflow is `.github/workflows/sync-calendar.yml`; start with `preview`, then run `apply` once the output looks right.
+
 ## GitHub Pages Deployment
 
 GitHub Pages is deployed by `.github/workflows/deploy-pages.yml`.
@@ -202,6 +256,9 @@ Optional repository variables:
 GOOGLE_SHEET_ID
 GOOGLE_SHEET_RANGE
 GOOGLE_SUPPLEMENTS_RANGE
+GOOGLE_CALENDAR_ID
+TRAINING_CALENDAR_TIMEZONE
+TRAINING_CALENDAR_COLOR_ID
 OPENAI_NUTRITION_MODEL
 ```
 
@@ -211,6 +268,8 @@ If the optional variables are not set, the workflow uses:
 GOOGLE_SHEET_ID=1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo
 GOOGLE_SHEET_RANGE=A:AQ
 GOOGLE_SUPPLEMENTS_RANGE=Supplements!A:F
+TRAINING_CALENDAR_TIMEZONE=Asia/Singapore
+TRAINING_CALENDAR_COLOR_ID=11
 ```
 
 To enable Pages:
@@ -345,7 +404,9 @@ python3 -m py_compile scripts/fetch_google_sheet.py
 python3 -m py_compile scripts/process_nutrition_ai.py
 python3 -m py_compile scripts/fetch_strava.py
 python3 -m py_compile scripts/sync_strava_actuals_to_sheet.py
+python3 -m py_compile scripts/sync_training_calendar.py
 python3 -m py_compile scripts/exchange_strava_code.py
+python3 scripts/sync_training_calendar.py --input-json data/training-plan.json --no-calendar-awareness --preview-limit 5
 node --check app.js
 node --check nutrition.js
 node --check race.js
