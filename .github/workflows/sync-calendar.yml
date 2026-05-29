@@ -69,7 +69,7 @@ jobs:
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ vars.GOOGLE_SHEET_ID || '1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo' }}
-          GOOGLE_SHEET_RANGE: ${{ vars.GOOGLE_SHEET_RANGE || 'A:AQ' }}
+          GOOGLE_SHEET_RANGE: A:AQ
           GOOGLE_CALENDAR_ID: ${{ inputs.calendar_id || vars.GOOGLE_CALENDAR_ID }}
           TRAINING_CALENDAR_START_DATE: ${{ inputs.start_date }}
           TRAINING_CALENDAR_END_DATE: ${{ inputs.end_date }}
@@ -82,7 +82,7 @@ jobs:
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ vars.GOOGLE_SHEET_ID || '1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo' }}
-          GOOGLE_SHEET_RANGE: ${{ vars.GOOGLE_SHEET_RANGE || 'A:AQ' }}
+          GOOGLE_SHEET_RANGE: A:AQ
           GOOGLE_CALENDAR_ID: ${{ inputs.calendar_id || vars.GOOGLE_CALENDAR_ID }}
           TRAINING_CALENDAR_START_DATE: ${{ inputs.start_date }}
           TRAINING_CALENDAR_END_DATE: ${{ inputs.end_date }}

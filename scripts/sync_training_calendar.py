@@ -18,6 +18,7 @@ try:
         DEFAULT_RANGE,
         DEFAULT_SHEET_ID,
         SheetConfigError,
+        SheetParseError,
         build_plan,
         fetch_sheet_values,
     )
@@ -26,6 +27,7 @@ except ImportError:  # pragma: no cover - allows package-style execution.
         DEFAULT_RANGE,
         DEFAULT_SHEET_ID,
         SheetConfigError,
+        SheetParseError,
         build_plan,
         fetch_sheet_values,
     )
@@ -591,7 +593,7 @@ def main() -> int:
         if not args.apply:
             print("Re-run with --apply to write these changes.")
         return 0
-    except (CalendarSyncError, SheetConfigError, OSError, ValueError) as exc:
+    except (CalendarSyncError, SheetConfigError, SheetParseError, OSError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 
