@@ -510,7 +510,11 @@ function renderCalendarDay(week, session, actuals) {
       <div class="calendar-day-main">
         <span>${escapeHtml(type)}</span>
         <strong>${escapeHtml(plannedLabel)}</strong>
-        <small>Act ${escapeHtml(actualText)}</small>
+        <small>Planned</small>
+      </div>
+      <div class="calendar-day-actual">
+        <span>Actual</span>
+        <strong>${escapeHtml(actualText)}</strong>
       </div>
       <div class="calendar-tooltip" id="${tooltipId}" role="tooltip">
         <strong>${escapeHtml(session.day)} · ${escapeHtml(prettyDate(session.date))}</strong>
@@ -519,6 +523,20 @@ function renderCalendarDay(week, session, actuals) {
         <small>${escapeHtml(dayActivities.length ? `Actual: ${oneDecimalKm(actualKm)} across ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}` : "Actual: no run logged")}</small>
       </div>
     </button>
+  `;
+}
+
+function comparisonPercent(actual, planned) {
+  const plannedValue = Number(planned || 0);
+  if (!plannedValue) return 0;
+  return Math.max(0, Math.min((Number(actual || 0) / plannedValue) * 100, 100));
+}
+
+function renderPlanActualMeter(planned, actual, label) {
+  return `
+    <div class="plan-actual-meter" aria-label="${escapeHtml(label)}">
+      <span style="width: ${comparisonPercent(actual, planned).toFixed(1)}%"></span>
+    </div>
   `;
 }
 
@@ -536,9 +554,16 @@ function renderCalendarWeek(week, actuals) {
           <strong>${prettyDate(week.week_start_date)} to ${prettyDate(weekEndDate(week))}</strong>
         </div>
         <div class="calendar-week-stats" aria-label="Week mileage summary">
-          <span>${km(week.target_weekly_mileage_km)} plan</span>
-          <span>${oneDecimalKm(actual.distance_km)} act</span>
-          <span>${runDays} runs</span>
+          <div class="week-stat-row">
+            <span>Planned</span>
+            <strong>${km(week.target_weekly_mileage_km)}</strong>
+          </div>
+          <div class="week-stat-row actual">
+            <span>Actual</span>
+            <strong>${oneDecimalKm(actual.distance_km)}</strong>
+          </div>
+          ${renderPlanActualMeter(week.target_weekly_mileage_km, actual.distance_km, "Week actual mileage compared with planned mileage")}
+          <span class="week-run-count">${runDays} planned runs</span>
         </div>
       </div>
       <div class="calendar-days">${days}</div>
@@ -607,10 +632,18 @@ function renderCalendarMonthGroup(group, actuals, openGroups) {
           <small>${escapeHtml(group.label)}</small>
           <strong>${prettyDate(summary.startDate)} to ${prettyDate(summary.endDate)}</strong>
         </span>
-        <span class="phase-stat">${escapeHtml(weekLabel)}</span>
-        <span class="phase-stat">${km(summary.plannedKm)} planned</span>
-        <span class="phase-stat">${oneDecimalKm(summary.actualKm)} actual</span>
-        <span class="phase-stat">${summary.runDays} runs</span>
+        <span class="phase-count">${escapeHtml(weekLabel)} · ${summary.runDays} planned runs</span>
+        <div class="phase-mileage" aria-label="Month mileage summary">
+          <span class="phase-mileage-item planned">
+            <small>Planned</small>
+            <strong>${km(summary.plannedKm)}</strong>
+          </span>
+          <span class="phase-mileage-item actual">
+            <small>Actual</small>
+            <strong>${oneDecimalKm(summary.actualKm)}</strong>
+          </span>
+          ${renderPlanActualMeter(summary.plannedKm, summary.actualKm, "Month actual mileage compared with planned mileage")}
+        </div>
       </summary>
       <div class="calendar-phase-body">
         <div class="calendar-day-labels" aria-hidden="true">

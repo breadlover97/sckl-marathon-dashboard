@@ -1209,21 +1209,46 @@ main > .panel:first-child {
 }
 
 .calendar-week-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 8px;
 }
 
-.calendar-week-stats span {
-  margin: 0;
-  padding: 3px 6px;
-  border: 1px solid var(--subtle-line);
-  border-radius: 999px;
-  background: var(--soft);
-  color: var(--ink);
+.week-stat-row {
+  display: grid;
+  gap: 1px;
+}
+
+.week-stat-row span,
+.calendar-day-actual span {
+  color: var(--muted);
   font-size: 0.56rem;
   font-weight: 900;
-  text-transform: none;
+  text-transform: uppercase;
+}
+
+.week-stat-row strong,
+.calendar-day-actual strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  font-weight: 950;
+  line-height: 1.05;
+}
+
+.week-stat-row.actual strong,
+.calendar-day-actual strong {
+  color: color-mix(in srgb, var(--teal) 68%, var(--ink));
+}
+
+.calendar-week-stats .plan-actual-meter {
+  height: 5px;
+}
+
+.week-run-count {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 850;
 }
 
 .calendar-day {
@@ -1231,8 +1256,8 @@ main > .panel:first-child {
   position: relative;
   display: grid;
   min-height: 98px;
-  grid-template-rows: auto 1fr auto;
-  gap: 7px;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 6px;
   padding: 9px;
   color: inherit;
   cursor: pointer;
@@ -1303,16 +1328,31 @@ main > .panel:first-child {
 
 .calendar-day-main small {
   display: block;
-  margin-top: 5px;
+  margin-top: 4px;
   color: var(--muted);
-  font-size: 0.66rem;
+  font-size: 0.56rem;
   font-weight: 850;
   line-height: 1.2;
+  text-transform: uppercase;
 }
 
 .calendar-day-main a {
   color: inherit;
   text-decoration-color: var(--teal);
+}
+
+.calendar-day-actual {
+  display: flex;
+  min-height: 18px;
+  gap: 6px;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: 5px;
+  border-top: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+}
+
+.calendar-day-actual strong {
+  font-size: 0.68rem;
 }
 
 .calendar-tooltip {
@@ -1409,8 +1449,8 @@ main > .panel:first-child {
 
 .calendar-phase-group summary {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) repeat(4, auto) 30px;
-  gap: 8px;
+  grid-template-columns: minmax(220px, 1fr) auto minmax(260px, 0.54fr) 30px;
+  gap: 12px;
   align-items: center;
   min-height: 58px;
   padding: 12px 14px;
@@ -1475,19 +1515,62 @@ main > .panel:first-child {
   white-space: nowrap;
 }
 
-.phase-stat {
+.phase-count {
   display: inline-flex;
   min-height: 28px;
   align-items: center;
   justify-content: center;
-  padding: 5px 9px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--soft) 70%, var(--card));
+  padding: 4px 0;
   color: var(--muted);
   font-size: 0.66rem;
   font-weight: 900;
   white-space: nowrap;
+}
+
+.phase-mileage {
+  display: grid;
+  min-width: 260px;
+  grid-template-columns: repeat(2, minmax(84px, 1fr));
+  gap: 7px 10px;
+  align-items: end;
+}
+
+.phase-mileage-item {
+  display: grid;
+  gap: 1px;
+}
+
+.phase-mileage-item small {
+  color: var(--muted);
+  font-size: 0.56rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.phase-mileage-item strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  font-weight: 950;
+  line-height: 1.05;
+}
+
+.phase-mileage-item.actual strong {
+  color: color-mix(in srgb, var(--teal) 68%, var(--ink));
+}
+
+.plan-actual-meter {
+  grid-column: 1 / -1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--soft) 76%, var(--card));
+}
+
+.plan-actual-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--teal), color-mix(in srgb, var(--orange) 48%, var(--teal)));
 }
 
 .calendar-phase-body {
@@ -2216,11 +2299,11 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   }
 
   .calendar-phase-group summary {
-    grid-template-columns: minmax(190px, 1fr) repeat(2, auto) 30px;
+    grid-template-columns: minmax(190px, 1fr) minmax(220px, 0.8fr) 30px;
   }
 
   .calendar-phase-group summary::after {
-    grid-column: 4;
+    grid-column: 3;
     grid-row: 1;
   }
 
@@ -2228,8 +2311,12 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     grid-column: 1 / 2;
   }
 
-  .phase-stat:nth-of-type(n + 4) {
+  .phase-count {
     display: none;
+  }
+
+  .phase-mileage {
+    min-width: 220px;
   }
 
   .calendar-day-labels,
@@ -2597,22 +2684,22 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     white-space: normal;
   }
 
-  .phase-stat {
+  .phase-count,
+  .phase-mileage {
     grid-column: 1 / -1;
     justify-self: start;
+  }
+
+  .phase-count {
     min-height: 24px;
     max-width: 100%;
-    padding: 4px 7px;
     font-size: 0.58rem;
   }
 
-  .phase-stat:nth-of-type(n + 4) {
-    display: inline-flex;
-  }
-
-  .phase-stat:nth-of-type(2),
-  .phase-stat:nth-of-type(5) {
-    display: none;
+  .phase-mileage {
+    width: 100%;
+    min-width: 0;
+    margin-top: 3px;
   }
 
   .calendar-phase-body {
