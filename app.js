@@ -1183,6 +1183,35 @@ function setupChartHover(container, points, dims) {
   const phaseText = container.querySelector("[data-hover-phase]");
   const valueText = container.querySelector("[data-hover-value]");
   const actualText = container.querySelector("[data-hover-actual]");
+  const mobileMode = () => window.matchMedia("(hover: none), (pointer: coarse), (max-width: 640px)").matches;
+  let selectedPoint = null;
+
+  container.querySelector(".chart-mobile-panel")?.remove();
+  const mobilePanel = document.createElement("div");
+  mobilePanel.className = "chart-mobile-panel";
+  mobilePanel.innerHTML = `
+    <div>
+      <span>Selected week</span>
+      <strong data-chart-mobile-title></strong>
+      <small data-chart-mobile-meta></small>
+    </div>
+    <dl>
+      <div><dt>Planned</dt><dd data-chart-mobile-planned></dd></div>
+      <div><dt>Actual</dt><dd data-chart-mobile-actual></dd></div>
+    </dl>
+    <div class="chart-mobile-actions">
+      <button type="button" class="action-button secondary compact-action" data-chart-prev>Prev</button>
+      <button type="button" class="action-button secondary compact-action" data-chart-next>Next</button>
+    </div>
+  `;
+  container.append(mobilePanel);
+
+  const mobileTitle = mobilePanel.querySelector("[data-chart-mobile-title]");
+  const mobileMeta = mobilePanel.querySelector("[data-chart-mobile-meta]");
+  const mobilePlanned = mobilePanel.querySelector("[data-chart-mobile-planned]");
+  const mobileActual = mobilePanel.querySelector("[data-chart-mobile-actual]");
+  const prevButton = mobilePanel.querySelector("[data-chart-prev]");
+  const nextButton = mobilePanel.querySelector("[data-chart-next]");
 
   const nearestPoint = (x) => {
     return points.reduce((best, point) => {
@@ -1190,16 +1219,18 @@ function setupChartHover(container, points, dims) {
     }, points[0]);
   };
 
-  const moveCrosshair = (event) => {
-    const screenMatrix = svg.getScreenCTM();
-    if (!screenMatrix) return;
-    const pointInSvg = svg.createSVGPoint();
-    pointInSvg.x = event.clientX;
-    pointInSvg.y = event.clientY;
-    const svgPoint = pointInSvg.matrixTransform(screenMatrix.inverse());
-    const rawX = svgPoint.x;
-    const x = Math.min(Math.max(rawX, dims.left), dims.left + dims.plotWidth);
-    const point = nearestPoint(x);
+  const updateMobilePanel = (point) => {
+    mobileTitle.textContent = point.label;
+    mobileMeta.textContent = `${prettyDate(point.date)} · ${point.phase || "-"}`;
+    mobilePlanned.textContent = oneDecimalKm(point.value);
+    mobileActual.textContent = point.actualValue === null || point.actualValue === undefined ? "-" : oneDecimalKm(point.actualValue);
+    const index = points.indexOf(point);
+    prevButton.disabled = index <= 0;
+    nextButton.disabled = index >= points.length - 1;
+  };
+
+  const showPoint = (point, x = point.x) => {
+    selectedPoint = point;
     const preferredTooltipX = x > dims.width - chartTooltipSize.width - dims.right - chartTooltipSize.gap
       ? x - chartTooltipSize.width - chartTooltipSize.gap
       : x + chartTooltipSize.gap;
@@ -1224,14 +1255,67 @@ function setupChartHover(container, points, dims) {
     phaseText.textContent = point.phase || "-";
     valueText.textContent = oneDecimalKm(point.value);
     actualText.textContent = point.actualValue === null || point.actualValue === undefined ? "-" : oneDecimalKm(point.actualValue);
+    updateMobilePanel(point);
   };
 
-  hitArea.addEventListener("pointerenter", moveCrosshair);
-  hitArea.addEventListener("pointermove", moveCrosshair);
+  const pointFromEvent = (event) => {
+    const screenMatrix = svg.getScreenCTM();
+    if (!screenMatrix) return null;
+    const pointInSvg = svg.createSVGPoint();
+    pointInSvg.x = event.clientX;
+    pointInSvg.y = event.clientY;
+    const svgPoint = pointInSvg.matrixTransform(screenMatrix.inverse());
+    const rawX = svgPoint.x;
+    const x = Math.min(Math.max(rawX, dims.left), dims.left + dims.plotWidth);
+    return { point: nearestPoint(x), x };
+  };
+
+  const moveCrosshair = (event) => {
+    const selection = pointFromEvent(event);
+    if (!selection) return;
+    showPoint(selection.point, selection.x);
+  };
+
+  hitArea.addEventListener("pointerenter", (event) => {
+    if (!mobileMode()) moveCrosshair(event);
+  });
+  hitArea.addEventListener("pointermove", (event) => {
+    if (!mobileMode()) moveCrosshair(event);
+  });
+  hitArea.addEventListener("pointerdown", (event) => {
+    const selection = pointFromEvent(event);
+    if (!selection) return;
+    event.preventDefault();
+    showPoint(selection.point, selection.x);
+  });
+  hitArea.addEventListener("click", (event) => {
+    const selection = pointFromEvent(event);
+    if (!selection) return;
+    showPoint(selection.point, selection.x);
+  });
 
   hitArea.addEventListener("pointerleave", () => {
-    hover.style.opacity = "0";
+    if (!mobileMode()) hover.style.opacity = "0";
   });
+
+  const moveSelection = (direction) => {
+    const currentIndex = Math.max(points.indexOf(selectedPoint), 0);
+    const nextIndex = Math.min(Math.max(currentIndex + direction, 0), points.length - 1);
+    showPoint(points[nextIndex], points[nextIndex].x);
+  };
+
+  prevButton.addEventListener("click", () => {
+    moveSelection(-1);
+  });
+  nextButton.addEventListener("click", () => {
+    moveSelection(1);
+  });
+
+  const today = singaporeToday();
+  const defaultPoint = [...points].reverse().find((point) => parseLocalDate(point.date) <= today)
+    || points[0];
+  showPoint(defaultPoint, defaultPoint.x);
+  if (!mobileMode()) hover.style.opacity = "0";
 }
 
 function niceMax(value) {

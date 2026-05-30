@@ -1775,6 +1775,7 @@ main > .panel:first-child {
   fill: var(--card);
   opacity: 0;
   pointer-events: all;
+  touch-action: none;
   cursor: crosshair;
 }
 
@@ -1856,6 +1857,10 @@ main > .panel:first-child {
   fill: var(--teal);
   font-size: 0.7rem;
   font-weight: 900;
+}
+
+.chart-mobile-panel {
+  display: none;
 }
 
 .tooltip-marker.phase {
@@ -2870,13 +2875,97 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
 
   .chart-shell {
     min-height: 0;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .chart-shell svg {
     display: block;
     height: clamp(198px, 61vw, 220px);
-    overflow: hidden;
+    overflow: visible;
+  }
+
+  .chart-hit-area {
+    cursor: pointer;
+  }
+
+  .chart-tooltip {
+    display: none;
+  }
+
+  .chart-mobile-panel {
+    display: grid;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 11px 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--soft) 64%, var(--card));
+  }
+
+  .chart-mobile-panel > div:first-child {
+    display: grid;
+    gap: 2px;
+  }
+
+  .chart-mobile-panel span,
+  .chart-mobile-panel dt {
+    color: var(--muted);
+    font-size: 0.58rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .chart-mobile-panel strong {
+    color: var(--ink);
+    font-size: 0.9rem;
+    font-weight: 950;
+  }
+
+  .chart-mobile-panel small {
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+
+  .chart-mobile-panel dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+  }
+
+  .chart-mobile-panel dl div {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .chart-mobile-panel dd {
+    margin: 0;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    font-size: 1rem;
+    font-weight: 950;
+  }
+
+  .chart-mobile-panel dl div:last-child dd {
+    color: var(--teal);
+  }
+
+  .chart-mobile-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .chart-mobile-actions .action-button {
+    justify-content: center;
+    min-height: 34px;
+  }
+
+  .chart-mobile-actions .action-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
   }
 
   .chart-support {
