@@ -636,10 +636,29 @@ main {
   object-fit: cover;
 }
 
-.activity-table-summary span {
+.activity-table-summary > span,
+.activity-summary-stats {
   color: var(--muted);
   font-size: 0.86rem;
   font-weight: 900;
+}
+
+.activity-summary-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.activity-summary-stats span {
+  white-space: nowrap;
+}
+
+.activity-summary-stats span + span::before {
+  margin-right: 10px;
+  color: color-mix(in srgb, var(--muted) 52%, transparent);
+  content: "·";
 }
 
 .activity-table-scroll {
@@ -2985,6 +3004,11 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   .activity-table-summary {
     display: grid;
     gap: 4px;
+  }
+
+  .activity-summary-stats {
+    justify-content: flex-start;
+    text-align: left;
   }
 
   .activity-feed-actions {

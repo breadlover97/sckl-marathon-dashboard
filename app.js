@@ -453,6 +453,10 @@ function activityPace(activity) {
   return distance > 0 && moving > 0 ? pace(moving / distance) : "-";
 }
 
+function averageDistance(totalDistance, count) {
+  return count > 0 ? oneDecimalKm(totalDistance / count) : "-";
+}
+
 function planDayTooltip(week, session, dayActivities, actualKm) {
   const activityNames = dayActivities.map((activity) => activity.name).filter(Boolean).join(", ");
   const plannedKm = Number(session.planned_km || 0);
@@ -869,6 +873,8 @@ function renderActivityFeed(actuals) {
   const activities = allActivities.slice(0, activityFeedVisibleCount);
   const totalDistance = allActivities.reduce((sum, activity) => sum + Number(activity.distance_km || 0), 0);
   const totalMoving = allActivities.reduce((sum, activity) => sum + Number(activity.moving_time_seconds || 0), 0);
+  const averageRunDistance = averageDistance(totalDistance, allActivities.length);
+  const averageRunPace = totalDistance > 0 && totalMoving > 0 ? pace(totalMoving / totalDistance) : "-";
   const athlete = actuals.metadata?.athlete || {};
   const athleteName = [athlete.firstname, athlete.lastname].filter(Boolean).join(" ") || "Tai Zhi";
   const profileImage = safeExternalUrl(athlete.profile_medium || athlete.profile || "");
@@ -924,7 +930,13 @@ function renderActivityFeed(actuals) {
           ${profileImage ? `<img src="${escapeHtml(profileImage)}" alt="">` : `<span class="athlete-avatar-fallback">TZ</span>`}
           <strong>${escapeHtml(athleteName)}</strong>
         </div>
-        <span>${activityFeedVisibleCount} of ${allActivities.length} runs shown · ${oneDecimalKm(totalDistance)} · ${duration(totalMoving)}</span>
+        <div class="activity-summary-stats" aria-label="Recent run summary">
+          <span>${activityFeedVisibleCount} of ${allActivities.length} runs shown</span>
+          <span>${oneDecimalKm(totalDistance)}</span>
+          <span>${duration(totalMoving)}</span>
+          <span>Avg distance ${averageRunDistance}</span>
+          <span>Avg pace ${averageRunPace}</span>
+        </div>
       </div>
       ${tableMarkup}
       <div class="activity-feed-actions">
