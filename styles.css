@@ -1596,47 +1596,21 @@ main > .panel:first-child {
   color: color-mix(in srgb, var(--teal) 68%, var(--ink));
 }
 
-.plan-actual-delta {
-  grid-column: 1 / -1;
-  display: flex;
-  min-height: 20px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding-top: 6px;
-  border-top: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
-}
-
-.plan-actual-delta span,
-.plan-actual-delta strong {
+.actual-delta {
   display: inline;
-  margin: 0;
-  font-size: 0.56rem;
-  font-weight: 950;
-  line-height: 1.1;
-  text-transform: uppercase;
+  margin-left: 4px;
+  color: color-mix(in srgb, var(--muted) 84%, var(--ink));
+  font-size: 0.7em;
+  font-weight: 900;
   white-space: nowrap;
 }
 
-.plan-actual-delta span {
-  color: var(--muted);
-}
-
-.plan-actual-delta strong {
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-
-.plan-actual-delta.ahead strong {
+.actual-delta.positive {
   color: color-mix(in srgb, var(--teal) 74%, var(--ink));
 }
 
-.plan-actual-delta.behind strong {
+.actual-delta.negative {
   color: color-mix(in srgb, var(--orange-dark) 82%, var(--ink));
-}
-
-.plan-actual-delta.on-track strong {
-  color: color-mix(in srgb, var(--teal) 66%, var(--ink));
 }
 
 .calendar-phase-body {
