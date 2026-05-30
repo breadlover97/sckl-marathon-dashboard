@@ -1259,10 +1259,6 @@ main > .panel:first-child {
   color: color-mix(in srgb, var(--teal) 68%, var(--ink));
 }
 
-.calendar-week-stats .plan-actual-meter {
-  height: 5px;
-}
-
 .week-run-comparison {
   grid-column: 1 / -1;
   display: grid;
@@ -1600,19 +1596,47 @@ main > .panel:first-child {
   color: color-mix(in srgb, var(--teal) 68%, var(--ink));
 }
 
-.plan-actual-meter {
+.plan-actual-delta {
   grid-column: 1 / -1;
-  height: 6px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--soft) 76%, var(--card));
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
 }
 
-.plan-actual-meter span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--teal), color-mix(in srgb, var(--orange) 48%, var(--teal)));
+.plan-actual-delta span,
+.plan-actual-delta strong {
+  display: inline;
+  margin: 0;
+  font-size: 0.56rem;
+  font-weight: 950;
+  line-height: 1.1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.plan-actual-delta span {
+  color: var(--muted);
+}
+
+.plan-actual-delta strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.plan-actual-delta.ahead strong {
+  color: color-mix(in srgb, var(--teal) 74%, var(--ink));
+}
+
+.plan-actual-delta.behind strong {
+  color: color-mix(in srgb, var(--orange-dark) 82%, var(--ink));
+}
+
+.plan-actual-delta.on-track strong {
+  color: color-mix(in srgb, var(--teal) 66%, var(--ink));
 }
 
 .calendar-phase-body {
@@ -2781,7 +2805,7 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     gap: 5px;
   }
 
-  .calendar-week-stats span {
+  .week-stat-row span {
     padding: 4px 7px;
     font-size: 0.6rem;
   }

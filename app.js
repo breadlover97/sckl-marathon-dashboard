@@ -530,16 +530,28 @@ function renderCalendarDay(week, session, actuals) {
   `;
 }
 
-function comparisonPercent(actual, planned) {
-  const plannedValue = Number(planned || 0);
-  if (!plannedValue) return 0;
-  return Math.max(0, Math.min((Number(actual || 0) / plannedValue) * 100, 100));
+function signedValue(value, unit = "", decimals = 1) {
+  const numeric = Number(value || 0);
+  const rounded = Number(numeric.toFixed(decimals));
+  if (Math.abs(rounded) < 0.05) return `0${unit ? ` ${unit}` : ""}`;
+  const sign = rounded > 0 ? "+" : "";
+  return `${sign}${rounded.toFixed(decimals)}${unit ? ` ${unit}` : ""}`;
 }
 
-function renderPlanActualMeter(planned, actual, label) {
+function renderPlanActualDelta(planned, actual, label, unit = "km", options = {}) {
+  const plannedValue = Number(planned || 0);
+  const actualValue = Number(actual || 0);
+  const delta = actualValue - plannedValue;
+  const percent = plannedValue > 0 ? Math.round((actualValue / plannedValue) * 100) : null;
+  const isUpcoming = options.startDate && parseLocalDate(options.startDate) > singaporeToday() && actualValue <= 0;
+  const status = Math.abs(delta) < 0.05 ? "on-track" : delta > 0 ? "ahead" : "behind";
+  const summaryText = isUpcoming ? "Upcoming" : percent === null ? "No planned target" : `${percent}% of plan`;
+  const deltaText = isUpcoming ? "Awaiting runs" : Math.abs(delta) < 0.05 ? "On plan" : signedValue(delta, unit);
+
   return `
-    <div class="plan-actual-meter" aria-label="${escapeHtml(label)}">
-      <span style="width: ${comparisonPercent(actual, planned).toFixed(1)}%"></span>
+    <div class="plan-actual-delta ${status}" aria-label="${escapeHtml(label)}">
+      <span>${escapeHtml(summaryText)}</span>
+      <strong>${escapeHtml(deltaText)}</strong>
     </div>
   `;
 }
@@ -567,7 +579,7 @@ function renderCalendarWeek(week, actuals) {
             <span>Actual</span>
             <strong>${oneDecimalKm(actual.distance_km)}</strong>
           </div>
-          ${renderPlanActualMeter(week.target_weekly_mileage_km, actual.distance_km, "Week actual mileage compared with planned mileage")}
+          ${renderPlanActualDelta(week.target_weekly_mileage_km, actual.distance_km, "Week actual mileage compared with planned mileage", "km", { startDate: week.week_start_date })}
           <div class="week-run-comparison" aria-label="Week planned and actual run count">
             <span><small>Planned runs</small><strong>${runDays}</strong></span>
             <span><small>Actual runs</small><strong>${actualRuns}</strong></span>
@@ -652,7 +664,7 @@ function renderCalendarMonthGroup(group, actuals, openGroups) {
             <small>Actual km</small>
             <strong>${oneDecimalKm(summary.actualKm)}</strong>
           </span>
-          ${renderPlanActualMeter(summary.plannedKm, summary.actualKm, "Month actual mileage compared with planned mileage")}
+          ${renderPlanActualDelta(summary.plannedKm, summary.actualKm, "Month actual mileage compared with planned mileage", "km", { startDate: summary.startDate })}
           <span class="phase-mileage-item planned">
             <small>Planned runs</small>
             <strong>${summary.runDays}</strong>
