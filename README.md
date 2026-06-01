@@ -320,10 +320,13 @@ TRAINING_CALENDAR_TIMEZONE=Asia/Singapore
 TRAINING_CALENDAR_COLOR_ID=11
 ```
 
-To enable Cloudflare Pages deployment alongside GitHub Pages:
+To enable Cloudflare Pages and Worker deployment alongside GitHub Pages:
 
 1. Create a Cloudflare Pages project named `sckl-marathon-dashboard`, or set `CLOUDFLARE_PAGES_PROJECT_NAME` to the project name you choose.
-2. Create a Cloudflare API token with `Account > Cloudflare Pages > Edit` permission.
+2. Create a Cloudflare API token with these permissions:
+   - `Account > Cloudflare Pages > Edit`
+   - `Account > Workers Scripts > Edit`
+   - `Account > Workers KV Storage > Edit`
 3. Add `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as GitHub Actions secrets.
 4. Go to **Actions** in GitHub.
 5. Run **Sync data and deploy Pages** manually once.

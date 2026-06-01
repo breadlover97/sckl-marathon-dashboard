@@ -1,13 +1,6 @@
 name: Deploy Strava Worker
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "workers/strava-sync/**"
-      - "scripts/register_strava_webhook.py"
-      - ".github/workflows/deploy-strava-worker.yml"
   workflow_dispatch:
     inputs:
       register_webhook:

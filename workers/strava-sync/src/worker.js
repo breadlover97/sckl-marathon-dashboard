@@ -18,8 +18,9 @@ export default {
     }
 
     try {
-      if (url.pathname === "/api/strava/activities" && request.method === "GET") {
-        return jsonResponse(await readActivityPayload(env), request, env);
+      if (url.pathname === "/api/strava/activities" && (request.method === "GET" || request.method === "HEAD")) {
+        const payload = request.method === "HEAD" ? null : await readActivityPayload(env);
+        return jsonResponse(payload, request, env);
       }
 
       if (url.pathname === "/api/strava/status" && request.method === "GET") {
@@ -287,7 +288,7 @@ function corsHeaders(request, env) {
 }
 
 function jsonResponse(payload, request, env, status = 200) {
-  return new Response(JSON.stringify(payload, null, 2), {
+  return new Response(request.method === "HEAD" ? null : JSON.stringify(payload, null, 2), {
     status,
     headers: {
       ...corsHeaders(request, env),
