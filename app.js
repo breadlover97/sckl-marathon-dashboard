@@ -239,29 +239,46 @@ async function loadPlan() {
   }
 }
 
-async function loadActuals() {
+async function tryLoadActuals(url, loadedFrom, fallbackLog) {
   try {
-    const payload = await fetchJson(LIVE_ACTUAL_API_URL);
-    payload.loaded_from = "strava-worker";
+    const payload = await fetchJson(url);
+    payload.loaded_from = loadedFrom;
     return payload;
-  } catch (workerError) {
-    console.info("Live Strava Worker activities unavailable; using static Strava JSON.", workerError);
+  } catch (error) {
+    console.info(fallbackLog, error);
+    return null;
   }
+}
 
+function actualPayloadTime(payload) {
+  const generatedAt = payload?.metadata?.generated_at;
+  const timestamp = Date.parse(generatedAt || "");
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function chooseFreshestActuals(payloads) {
+  return payloads
+    .filter(Boolean)
+    .sort((a, b) => actualPayloadTime(b) - actualPayloadTime(a))[0] || null;
+}
+
+async function loadActuals() {
+  const [workerPayload, staticPayload] = await Promise.all([
+    tryLoadActuals(LIVE_ACTUAL_API_URL, "strava-worker", "Live Strava Worker activities unavailable."),
+    tryLoadActuals(ACTUAL_DATA_URL, "strava", "Static Strava activities unavailable."),
+  ]);
+
+  const freshestPayload = chooseFreshestActuals([workerPayload, staticPayload]);
+  if (freshestPayload) return freshestPayload;
+
+  console.info("Live Strava activities unavailable; using mock actuals.");
   try {
-    const payload = await fetchJson(ACTUAL_DATA_URL);
-    payload.loaded_from = "strava";
+    const payload = await fetchJson(MOCK_ACTUAL_DATA_URL);
+    payload.loaded_from = "mock";
     return payload;
-  } catch (actualError) {
-    console.info("Live Strava activities unavailable; using mock actuals.", actualError);
-    try {
-      const payload = await fetchJson(MOCK_ACTUAL_DATA_URL);
-      payload.loaded_from = "mock";
-      return payload;
-    } catch (mockError) {
-      console.info("No mock actuals available.", mockError);
-      return { loaded_from: "none", metadata: { included_activities: 0 }, activities: [] };
-    }
+  } catch (mockError) {
+    console.info("No mock actuals available.", mockError);
+    return { loaded_from: "none", metadata: { included_activities: 0 }, activities: [] };
   }
 }
 
