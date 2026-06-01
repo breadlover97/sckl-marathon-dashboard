@@ -1,0 +1,80 @@
+name: Register Strava Webhook
+
+on:
+  workflow_dispatch:
+    inputs:
+      replace_existing_webhook:
+        description: "Replace an existing Strava webhook subscription for this app"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+      run_full_sync:
+        description: "Ask the existing Worker to fetch all recent Strava runs after registration"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+permissions:
+  contents: read
+
+env:
+  STRAVA_WORKER_URL: ${{ vars.STRAVA_WORKER_URL || 'https://sckl-strava-sync.ngimtaizhi.workers.dev' }}
+  STRAVA_WEBHOOK_CALLBACK_URL: ${{ vars.STRAVA_WEBHOOK_CALLBACK_URL || 'https://sckl-strava-sync.ngimtaizhi.workers.dev/api/strava/webhook' }}
+
+jobs:
+  register-webhook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install webhook dependencies
+        run: python -m pip install requests==2.33.1
+
+      - name: Register Strava webhook
+        env:
+          STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
+          STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+          STRAVA_VERIFY_TOKEN: ${{ secrets.STRAVA_VERIFY_TOKEN }}
+          STRAVA_WEBHOOK_CALLBACK_URL: ${{ env.STRAVA_WEBHOOK_CALLBACK_URL }}
+        run: |
+          set -euo pipefail
+          for name in STRAVA_CLIENT_ID STRAVA_CLIENT_SECRET STRAVA_VERIFY_TOKEN STRAVA_WEBHOOK_CALLBACK_URL; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing required value: $name"
+              exit 1
+            fi
+          done
+
+          args=()
+          if [ "${{ inputs.replace_existing_webhook }}" = "true" ]; then
+            args+=(--replace)
+          fi
+          python scripts/register_strava_webhook.py "${args[@]}"
+
+      - name: Run Worker full sync
+        if: inputs.run_full_sync == 'true'
+        env:
+          STRAVA_SYNC_SECRET: ${{ secrets.STRAVA_SYNC_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${STRAVA_SYNC_SECRET}" ]; then
+            echo "::error::Missing required secret: STRAVA_SYNC_SECRET"
+            exit 1
+          fi
+
+          curl -fsS -X POST "${STRAVA_WORKER_URL}/api/strava/sync" \
+            -H "authorization: Bearer ${STRAVA_SYNC_SECRET}" \
+            -H "content-type: application/json"
