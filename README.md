@@ -2,7 +2,7 @@
 
 A lightweight static dashboard for the Standard Chartered Kuala Lumpur Marathon 2026 build.
 
-The site is intentionally simple: Google Sheets is the editable plan, Strava is the running log, GitHub Actions syncs private data into safe JSON, and GitHub Pages serves the dashboard.
+The site is intentionally simple: Google Sheets is the editable plan, Strava is the running log, GitHub Actions syncs private data into generated JSON, and Cloudflare Pages serves the dashboard.
 
 ## What The Dashboard Shows
 
@@ -42,7 +42,7 @@ scripts/fetch_strava.py            Strava API -> dashboard JSON
 scripts/sync_strava_actuals_to_sheet.py  Strava JSON -> Google Sheet actual columns
 scripts/sync_training_calendar.py  Training Plan -> Google Calendar events
 scripts/exchange_strava_code.py    One-time Strava OAuth helper
-.github/workflows/deploy-pages.yml Scheduled/manual sync and GitHub Pages deploy
+.github/workflows/deploy-pages.yml Scheduled/manual sync and Cloudflare Pages deploy
 .github/workflows/sync-calendar.yml Manual Google Calendar training sync
 ```
 
@@ -156,7 +156,7 @@ python scripts/fetch_strava.py
 
 The browser only reads sanitized run data. Strava secrets stay in your shell, local environment, or deployment secrets.
 
-Published Strava JSON intentionally includes only the public training metrics used by the dashboard: activity ID, name, date, distance, time, elevation, heart rate, cadence, Strava link, and basic athlete profile image/name if Strava returns them. Do not publish fields you would not want visible on the public GitHub Pages site.
+Published Strava JSON intentionally includes only the public training metrics used by the dashboard: activity ID, name, date, distance, time, elevation, heart rate, cadence, Strava link, and basic athlete profile image/name if Strava returns them. Do not publish fields you would not want visible on the public Cloudflare Pages site.
 
 To write synced Strava runs back into the training sheet:
 
@@ -222,9 +222,9 @@ python scripts/sync_training_calendar.py --apply --preview-limit 120
 
 Use `--delete-stale` only when you want the sync to delete previously managed training events that no longer exist in the Sheet. The manual GitHub Actions workflow is `.github/workflows/sync-calendar.yml`; start with `preview`, then run `apply` once the output looks right.
 
-## GitHub Pages Deployment
+## Cloudflare Pages Deployment
 
-GitHub Pages is deployed by `.github/workflows/deploy-pages.yml`.
+Cloudflare Pages is deployed by `.github/workflows/deploy-pages.yml` using `cloudflare/wrangler-action`.
 
 The workflow:
 
@@ -233,7 +233,7 @@ The workflow:
 3. Fetches Strava run activities from 1 May 2026 onward.
 4. Writes Strava actuals into the daily actual columns in the `Training Plan` tab.
 5. Fetches the latest planned training, supplement history, and nutrition history from Google Sheets.
-6. Publishes the static site files and generated dashboard JSON files to GitHub Pages.
+6. Publishes the static site files and generated dashboard JSON files to Cloudflare Pages.
 
 Required repository secrets:
 
@@ -242,6 +242,8 @@ GOOGLE_SERVICE_ACCOUNT_JSON
 STRAVA_CLIENT_ID
 STRAVA_CLIENT_SECRET
 STRAVA_REFRESH_TOKEN
+CLOUDFLARE_ACCOUNT_ID
+CLOUDFLARE_API_TOKEN
 ```
 
 Optional repository secret for AI nutrition processing:
@@ -253,6 +255,7 @@ OPENAI_API_KEY
 Optional repository variables:
 
 ```text
+CLOUDFLARE_PAGES_PROJECT_NAME
 GOOGLE_SHEET_ID
 GOOGLE_SHEET_RANGE
 GOOGLE_SUPPLEMENTS_RANGE
@@ -261,6 +264,8 @@ TRAINING_CALENDAR_TIMEZONE
 TRAINING_CALENDAR_COLOR_ID
 OPENAI_NUTRITION_MODEL
 ```
+
+If `CLOUDFLARE_PAGES_PROJECT_NAME` is not set, the workflow deploys to `sckl-marathon-dashboard`.
 
 If the optional variables are not set, the workflow uses:
 
@@ -272,14 +277,13 @@ TRAINING_CALENDAR_TIMEZONE=Asia/Singapore
 TRAINING_CALENDAR_COLOR_ID=11
 ```
 
-To enable Pages:
+To enable Cloudflare Pages deployment:
 
-1. Open the GitHub repository.
-2. Go to **Settings**.
-3. Go to **Pages**.
-4. Under **Build and deployment**, set **Source** to **GitHub Actions**.
-5. Go to **Actions**.
-6. Run **Sync data and deploy Pages** manually once.
+1. Create a Cloudflare Pages project named `sckl-marathon-dashboard`, or set `CLOUDFLARE_PAGES_PROJECT_NAME` to the project name you choose.
+2. Create a Cloudflare API token with `Account > Cloudflare Pages > Edit` permission.
+3. Add `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as GitHub Actions secrets.
+4. Go to **Actions** in GitHub.
+5. Run **Sync data and deploy Cloudflare Pages** manually once.
 
 The workflow also runs daily at 12:15am Singapore time and whenever `main` is pushed.
 
@@ -389,12 +393,12 @@ Google Sheets is the cross-device source of truth. The website displays suppleme
 ## Security Notes
 
 - Never commit `.env`, Google service account JSON, generated Strava token JSON, or local credential files.
-- GitHub Actions secrets should hold `GOOGLE_SERVICE_ACCOUNT_JSON`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, and `STRAVA_REFRESH_TOKEN`. Add `OPENAI_API_KEY` to enable AI nutrition processing.
+- GitHub Actions secrets should hold `GOOGLE_SERVICE_ACCOUNT_JSON`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `STRAVA_REFRESH_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and `CLOUDFLARE_API_TOKEN`. Add `OPENAI_API_KEY` to enable AI nutrition processing.
 - The frontend must not contain Strava client secrets or Google credentials.
 - The frontend must not call OpenAI directly. AI nutrition processing runs only from GitHub Actions or a local private script, then syncs static JSON.
 - The Google service account needs Editor access to the sheet for Strava actual writeback and AI nutrition processing. Viewer access is only enough for read-only JSON sync.
 - Rotate Strava tokens and Google service account keys if they are ever pasted into chat, committed, or shared.
-- The site is public on GitHub Pages, so generated JSON should be treated as public data.
+- The site is public on Cloudflare Pages unless protected separately with Cloudflare Access, so generated JSON should be treated as public data.
 
 ## Checks
 
