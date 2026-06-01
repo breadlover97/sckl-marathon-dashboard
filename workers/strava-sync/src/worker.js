@@ -41,7 +41,7 @@ export default {
       if (url.pathname === "/api/strava/webhook" && request.method === "POST") {
         const event = await request.json().catch(() => null);
         if (!event) return jsonResponse({ error: "Invalid JSON" }, request, env, 400);
-        ctx.waitUntil(handleWebhookEvent(event, env));
+        ctx.waitUntil(handleWebhookEventSafe(event, env));
         return jsonResponse({ ok: true }, request, env);
       }
 
@@ -52,6 +52,20 @@ export default {
     }
   },
 };
+
+async function handleWebhookEventSafe(event, env) {
+  try {
+    await handleWebhookEvent(event, env);
+  } catch (error) {
+    await writeStatus(env, {
+      ok: false,
+      error: String(error),
+      last_event: event,
+      updated_at: nowIso(),
+      stage: "webhook-error",
+    });
+  }
+}
 
 async function handleWebhookVerification(url, request, env) {
   const verifyToken = url.searchParams.get("hub.verify_token");
@@ -77,18 +91,36 @@ async function handleWebhookEvent(event, env) {
   }
 
   if (event.aspect_type === "create" || event.aspect_type === "update") {
-    const activity = await fetchActivity(env, event.object_id);
+    let activity = null;
+    try {
+      activity = await fetchActivity(env, event.object_id);
+    } catch (error) {
+      if (error instanceof StravaHttpError && (error.status === 403 || error.status === 404)) {
+        await writeStatus(env, {
+          ok: true,
+          warning: String(error),
+          last_event: event,
+          updated_at: nowIso(),
+          stage: "webhook-activity-unavailable",
+        });
+        return;
+      }
+      throw error;
+    }
     await upsertActivity(env, activity, event);
     await writeStatus(env, { ok: true, last_event: event, updated_at: nowIso(), stage: "upserted-activity" });
   }
 }
 
 async function refreshAllActivities(env) {
+  await writeStatus(env, { ok: true, updated_at: nowIso(), stage: "manual-full-sync-started" });
   const accessToken = await accessTokenFor(env);
+  await writeStatus(env, { ok: true, updated_at: nowIso(), stage: "manual-full-sync-token-ok" });
   const after = Number(env.STRAVA_AFTER_TIMESTAMP || DEFAULT_AFTER_TIMESTAMP);
   const rawActivities = [];
 
   for (let page = 1; ; page += 1) {
+    await writeStatus(env, { ok: true, updated_at: nowIso(), stage: "manual-full-sync-fetching-page", page });
     const url = new URL(STRAVA_ACTIVITIES_URL);
     url.searchParams.set("page", String(page));
     url.searchParams.set("per_page", String(PER_PAGE));
@@ -117,7 +149,9 @@ async function refreshAllActivities(env) {
 }
 
 async function fetchActivity(env, activityId) {
+  await writeStatus(env, { ok: true, updated_at: nowIso(), stage: "webhook-fetch-activity-started", activity_id: String(activityId) });
   const accessToken = await accessTokenFor(env);
+  await writeStatus(env, { ok: true, updated_at: nowIso(), stage: "webhook-fetch-activity-token-ok", activity_id: String(activityId) });
   const response = await stravaFetch(`${STRAVA_ACTIVITY_URL}/${activityId}`, accessToken);
   return response.json();
 }
@@ -210,9 +244,23 @@ async function stravaFetch(url, accessToken) {
     },
   });
   if (!response.ok) {
-    throw new Error(`Strava request failed with HTTP ${response.status}: ${await safeText(response)}`);
+    throw new StravaHttpError(response.status, redactUrl(url), await safeText(response));
   }
   return response;
+}
+
+class StravaHttpError extends Error {
+  constructor(status, url, body) {
+    super(`Strava request failed for ${url} with HTTP ${status}: ${body}`);
+    this.name = "StravaHttpError";
+    this.status = status;
+  }
+}
+
+function redactUrl(url) {
+  const parsed = new URL(url);
+  parsed.search = "";
+  return parsed.toString();
 }
 
 async function fetchWithRetries(url, options = {}) {

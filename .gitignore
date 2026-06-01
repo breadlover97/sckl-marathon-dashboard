@@ -4,6 +4,7 @@
 !.env.example
 .DS_Store
 .venv/
+.wrangler/
 __pycache__/
 *.pyc
 *.pem

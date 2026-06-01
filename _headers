@@ -1,0 +1,20 @@
+/*.html
+  Cache-Control: no-cache
+
+/app.js
+  Cache-Control: no-cache
+
+/styles.css
+  Cache-Control: no-cache
+
+/theme.js
+  Cache-Control: no-cache
+
+/race.js
+  Cache-Control: no-cache
+
+/nutrition.js
+  Cache-Control: no-cache
+
+/data/*
+  Cache-Control: no-store
