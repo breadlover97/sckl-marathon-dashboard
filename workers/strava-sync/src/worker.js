@@ -187,24 +187,38 @@ async function removeActivity(env, activityId) {
 
 async function readActivityPayload(env) {
   const cached = await readJsonKv(env, CACHE_KEY, null);
-  if (cached) return cached;
+  const bootstrap = await readBootstrapPayload(env);
 
-  const bootstrapUrl = env.BOOTSTRAP_ACTIVITIES_URL;
-  if (bootstrapUrl) {
-    const response = await fetch(bootstrapUrl, { headers: { accept: "application/json" } });
-    if (response.ok) {
-      const payload = await response.json();
-      payload.metadata = {
-        ...(payload.metadata || {}),
-        source: payload.metadata?.source || "bootstrap-json",
-        worker_bootstrapped_at: nowIso(),
-      };
-      await env.STRAVA_CACHE.put(CACHE_KEY, JSON.stringify(payload));
-      return payload;
-    }
+  if (bootstrap && (!cached || payloadTime(bootstrap) > payloadTime(cached))) {
+    await env.STRAVA_CACHE.put(CACHE_KEY, JSON.stringify(bootstrap));
+    return bootstrap;
   }
 
+  if (cached) return cached;
+  if (bootstrap) return bootstrap;
+
   return payloadForActivities([], { source: "strava-worker", sync_type: "empty" });
+}
+
+async function readBootstrapPayload(env) {
+  const bootstrapUrl = env.BOOTSTRAP_ACTIVITIES_URL;
+  if (!bootstrapUrl) return null;
+
+  const response = await fetch(bootstrapUrl, { headers: { accept: "application/json" } });
+  if (!response.ok) return null;
+
+  const payload = await response.json();
+  payload.metadata = {
+    ...(payload.metadata || {}),
+    source: payload.metadata?.source || "bootstrap-json",
+    worker_bootstrapped_at: nowIso(),
+  };
+  return payload;
+}
+
+function payloadTime(payload) {
+  const timestamp = Date.parse(payload?.metadata?.generated_at || "");
+  return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
 async function accessTokenFor(env) {
