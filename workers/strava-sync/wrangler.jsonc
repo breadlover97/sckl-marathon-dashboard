@@ -1,0 +1,21 @@
+{
+	"$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+	"name": "sckl-strava-sync",
+	"main": "src/worker.js",
+	"compatibility_date": "2026-06-01",
+	"account_id": "ae9ea5d537d9d670a1c0350511cfbc0f",
+	"workers_dev": true,
+	"observability": {
+		"enabled": true
+	},
+	"vars": {
+		"BOOTSTRAP_ACTIVITIES_URL": "https://sckl-marathon-dashboard.pages.dev/data/strava-activities.json",
+		"CORS_ORIGINS": "https://sckl-marathon-dashboard.pages.dev,https://breadlover97.github.io"
+	},
+	"kv_namespaces": [
+		{
+			"binding": "STRAVA_CACHE",
+			"id": "0461757609604594bb016686e93f18ee"
+		}
+	]
+}

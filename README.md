@@ -2,7 +2,7 @@
 
 A lightweight static dashboard for the Standard Chartered Kuala Lumpur Marathon 2026 build.
 
-The site is intentionally simple: Google Sheets is the editable plan, Strava is the running log, GitHub Actions syncs private data into generated JSON, and Cloudflare Pages serves the dashboard.
+The site is intentionally simple: Google Sheets is the editable plan, Strava is the running log, a Cloudflare Worker keeps live actuals fresh from Strava webhooks, GitHub Actions syncs sheet data into generated JSON, and Cloudflare/GitHub Pages serve the dashboard.
 
 ## What The Dashboard Shows
 
@@ -42,7 +42,10 @@ scripts/fetch_strava.py            Strava API -> dashboard JSON
 scripts/sync_strava_actuals_to_sheet.py  Strava JSON -> Google Sheet actual columns
 scripts/sync_training_calendar.py  Training Plan -> Google Calendar events
 scripts/exchange_strava_code.py    One-time Strava OAuth helper
+scripts/register_strava_webhook.py Register Cloudflare Worker callback with Strava
+workers/strava-sync/               Cloudflare Worker for live Strava webhooks/cache
 .github/workflows/deploy-pages.yml Scheduled/manual sync and Cloudflare Pages deploy
+.github/workflows/deploy-strava-worker.yml Worker deploy and webhook registration
 .github/workflows/sync-calendar.yml Manual Google Calendar training sync
 ```
 
@@ -129,7 +132,13 @@ Recommended sheet formatting:
 
 ## Strava Actuals Sync
 
-The dashboard reads actual training from `data/strava-activities.json` when available. Without that file, it falls back to `data/mock-strava-activities.json`.
+The dashboard first reads actual training from the live Cloudflare Worker endpoint:
+
+```text
+https://sckl-strava-sync.ngimtaizhi.workers.dev/api/strava/activities
+```
+
+If that endpoint is unavailable, it falls back to `data/strava-activities.json`, then `data/mock-strava-activities.json`.
 
 If your refresh token does not have activity permission, re-authorize the Strava app with:
 
@@ -157,6 +166,40 @@ python scripts/fetch_strava.py
 The browser only reads sanitized run data. Strava secrets stay in your shell, local environment, or deployment secrets.
 
 Published Strava JSON intentionally includes only the public training metrics used by the dashboard: activity ID, name, date, distance, time, elevation, heart rate, cadence, Strava link, and basic athlete profile image/name if Strava returns them. Do not publish fields you would not want visible on the public Cloudflare Pages site.
+
+### Live Strava Worker
+
+The Worker in `workers/strava-sync` makes Strava display independent of the scheduled GitHub Pages sync:
+
+1. Strava sends create/update/delete webhook events to `/api/strava/webhook`.
+2. The Worker acknowledges the webhook immediately.
+3. The Worker refreshes the Strava access token privately, fetches the affected activity, and updates Workers KV.
+4. The dashboard reads `/api/strava/activities` on every page load, so newly uploaded activities can appear without waiting for GitHub Actions to rebuild the site.
+
+The Worker uses these GitHub Actions secrets during deployment:
+
+```text
+STRAVA_CLIENT_ID
+STRAVA_CLIENT_SECRET
+STRAVA_REFRESH_TOKEN
+STRAVA_VERIFY_TOKEN
+STRAVA_SYNC_SECRET
+CLOUDFLARE_ACCOUNT_ID
+CLOUDFLARE_API_TOKEN
+```
+
+`STRAVA_VERIFY_TOKEN` is the token Strava sends during webhook validation. `STRAVA_SYNC_SECRET` protects the manual Worker full-sync endpoint.
+
+The Worker deployment workflow is `.github/workflows/deploy-strava-worker.yml`. Run it manually with `register_webhook=true` to create or validate the Strava webhook subscription. Use `replace_existing_webhook=true` only when Strava already has a subscription for the same API app and you want to switch it to this Worker.
+
+The Worker has a manual full-sync endpoint:
+
+```bash
+curl -X POST "https://sckl-strava-sync.ngimtaizhi.workers.dev/api/strava/sync" \
+  -H "authorization: Bearer $STRAVA_SYNC_SECRET"
+```
+
+Webhook updates are the primary path; full sync is only for seeding or repair.
 
 To write synced Strava runs back into the training sheet:
 

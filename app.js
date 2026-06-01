@@ -1,5 +1,6 @@
 const LIVE_DATA_URL = "data/training-plan.json";
 const MOCK_DATA_URL = "data/mock-training-plan.json";
+const LIVE_ACTUAL_API_URL = "https://sckl-strava-sync.ngimtaizhi.workers.dev/api/strava/activities";
 const ACTUAL_DATA_URL = "data/strava-activities.json";
 const MOCK_ACTUAL_DATA_URL = "data/mock-strava-activities.json";
 const RACE_DATE = "2026-10-04";
@@ -239,6 +240,14 @@ async function loadPlan() {
 }
 
 async function loadActuals() {
+  try {
+    const payload = await fetchJson(LIVE_ACTUAL_API_URL);
+    payload.loaded_from = "strava-worker";
+    return payload;
+  } catch (workerError) {
+    console.info("Live Strava Worker activities unavailable; using static Strava JSON.", workerError);
+  }
+
   try {
     const payload = await fetchJson(ACTUAL_DATA_URL);
     payload.loaded_from = "strava";

@@ -1,0 +1,109 @@
+name: Deploy Strava Worker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "workers/strava-sync/**"
+      - "scripts/register_strava_webhook.py"
+      - ".github/workflows/deploy-strava-worker.yml"
+  workflow_dispatch:
+    inputs:
+      register_webhook:
+        description: "Register or update the Strava webhook subscription"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+      replace_existing_webhook:
+        description: "Replace an existing Strava webhook subscription for this app"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+      run_full_sync:
+        description: "Ask the Worker to fetch all recent Strava runs after deploy"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  STRAVA_WORKER_URL: ${{ vars.STRAVA_WORKER_URL || 'https://sckl-strava-sync.ngimtaizhi.workers.dev' }}
+  STRAVA_WEBHOOK_CALLBACK_URL: ${{ vars.STRAVA_WEBHOOK_CALLBACK_URL || 'https://sckl-strava-sync.ngimtaizhi.workers.dev/api/strava/webhook' }}
+
+jobs:
+  deploy-worker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install webhook dependencies
+        run: python -m pip install requests==2.33.1
+
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config workers/strava-sync/wrangler.jsonc
+
+      - name: Install Worker secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
+          STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+          STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
+          STRAVA_VERIFY_TOKEN: ${{ secrets.STRAVA_VERIFY_TOKEN }}
+          STRAVA_SYNC_SECRET: ${{ secrets.STRAVA_SYNC_SECRET }}
+        run: |
+          set -euo pipefail
+          for name in STRAVA_CLIENT_ID STRAVA_CLIENT_SECRET STRAVA_REFRESH_TOKEN STRAVA_VERIFY_TOKEN STRAVA_SYNC_SECRET; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing required repository secret: $name"
+              exit 1
+            fi
+            printf "%s" "${!name}" | npx --yes wrangler@latest secret put "$name" --config workers/strava-sync/wrangler.jsonc
+          done
+
+      - name: Register Strava webhook
+        if: github.event_name == 'workflow_dispatch' && inputs.register_webhook == 'true'
+        env:
+          STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
+          STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+          STRAVA_VERIFY_TOKEN: ${{ secrets.STRAVA_VERIFY_TOKEN }}
+          STRAVA_WEBHOOK_CALLBACK_URL: ${{ env.STRAVA_WEBHOOK_CALLBACK_URL }}
+        run: |
+          args=()
+          if [ "${{ inputs.replace_existing_webhook }}" = "true" ]; then
+            args+=(--replace)
+          fi
+          python scripts/register_strava_webhook.py "${args[@]}"
+
+      - name: Run Worker full sync
+        if: github.event_name == 'workflow_dispatch' && inputs.run_full_sync == 'true'
+        env:
+          STRAVA_SYNC_SECRET: ${{ secrets.STRAVA_SYNC_SECRET }}
+        run: |
+          curl -fsS -X POST "${STRAVA_WORKER_URL}/api/strava/sync" \
+            -H "authorization: Bearer ${STRAVA_SYNC_SECRET}" \
+            -H "content-type: application/json"
