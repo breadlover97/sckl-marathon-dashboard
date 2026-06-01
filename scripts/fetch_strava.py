@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -19,6 +20,8 @@ STRAVA_ACTIVITIES_URL = "https://www.strava.com/api/v3/athlete/activities"
 STRAVA_ATHLETE_URL = "https://www.strava.com/api/v3/athlete"
 DEFAULT_OUTPUT = "data/strava-activities.json"
 PER_PAGE = 200
+MAX_RETRIES = 3
+RETRY_STATUSES = {429, 500, 502, 503, 504}
 
 
 class StravaConfigError(Exception):
@@ -36,8 +39,29 @@ def require_env(name: str) -> str:
     return value
 
 
+def request_with_retries(session: requests.Session, method: str, url: str, **kwargs: Any) -> requests.Response:
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            response = session.request(method, url, **kwargs)
+        except requests.RequestException:
+            if attempt == MAX_RETRIES:
+                raise
+            time.sleep(attempt * 2)
+            continue
+        if response.status_code not in RETRY_STATUSES or attempt == MAX_RETRIES:
+            return response
+        print(
+            f"Warning: Strava request returned HTTP {response.status_code}; retrying ({attempt}/{MAX_RETRIES}).",
+            file=sys.stderr,
+        )
+        time.sleep(attempt * 2)
+    raise StravaApiError("Strava request failed after retries")
+
+
 def refresh_access_token(session: requests.Session, client_id: str, client_secret: str, refresh_token: str) -> dict[str, Any]:
-    response = session.post(
+    response = request_with_retries(
+        session,
+        "POST",
         STRAVA_TOKEN_URL,
         data={
             "client_id": client_id,
@@ -64,7 +88,9 @@ def fetch_activities(session: requests.Session, access_token: str, after: int | 
             params["after"] = after
         if before:
             params["before"] = before
-        response = session.get(
+        response = request_with_retries(
+            session,
+            "GET",
             STRAVA_ACTIVITIES_URL,
             headers={"Authorization": f"Bearer {access_token}"},
             params=params,
@@ -83,7 +109,9 @@ def fetch_activities(session: requests.Session, access_token: str, after: int | 
 
 
 def fetch_athlete(session: requests.Session, access_token: str) -> dict[str, Any]:
-    response = session.get(
+    response = request_with_retries(
+        session,
+        "GET",
         STRAVA_ATHLETE_URL,
         headers={"Authorization": f"Bearer {access_token}"},
         timeout=30,

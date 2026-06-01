@@ -64,6 +64,7 @@ jobs:
           OPENAI_NUTRITION_MODEL: ${{ vars.OPENAI_NUTRITION_MODEL || 'gpt-4.1-mini' }}
 
       - name: Fetch Strava run activities
+        id: fetch_strava
         env:
           STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
           STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
@@ -74,9 +75,16 @@ jobs:
           print(int(datetime(2026, 5, 1, tzinfo=timezone.utc).timestamp()))
           PY
           )"
-          python scripts/fetch_strava.py --after "$after_timestamp"
+          if python scripts/fetch_strava.py --after "$after_timestamp"; then
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Strava sync failed; deploying with existing data/strava-activities.json."
+            echo "fresh=false" >> "$GITHUB_OUTPUT"
+            test -s data/strava-activities.json
+          fi
 
       - name: Write Strava actuals to Google Sheet
+        if: steps.fetch_strava.outputs.fresh == 'true'
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ vars.GOOGLE_SHEET_ID || '1sx46WZYNJNBBTtPoG2E3obdVrzUIhfa7-m84DWOvVDo' }}
