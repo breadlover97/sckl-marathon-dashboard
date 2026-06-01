@@ -222,9 +222,9 @@ python scripts/sync_training_calendar.py --apply --preview-limit 120
 
 Use `--delete-stale` only when you want the sync to delete previously managed training events that no longer exist in the Sheet. The manual GitHub Actions workflow is `.github/workflows/sync-calendar.yml`; start with `preview`, then run `apply` once the output looks right.
 
-## Cloudflare Pages Deployment
+## Pages Deployment
 
-Cloudflare Pages is deployed by `.github/workflows/deploy-pages.yml` using `cloudflare/wrangler-action`.
+The site is currently deployed to both GitHub Pages and Cloudflare Pages by `.github/workflows/deploy-pages.yml`. This keeps the existing GitHub Pages URL online while the project transitions to Cloudflare Pages.
 
 The workflow:
 
@@ -233,7 +233,7 @@ The workflow:
 3. Fetches Strava run activities from 1 May 2026 onward.
 4. Writes Strava actuals into the daily actual columns in the `Training Plan` tab.
 5. Fetches the latest planned training, supplement history, and nutrition history from Google Sheets.
-6. Publishes the static site files and generated dashboard JSON files to Cloudflare Pages.
+6. Publishes the same static site files and generated dashboard JSON files to Cloudflare Pages and GitHub Pages.
 
 Required repository secrets:
 
@@ -277,13 +277,13 @@ TRAINING_CALENDAR_TIMEZONE=Asia/Singapore
 TRAINING_CALENDAR_COLOR_ID=11
 ```
 
-To enable Cloudflare Pages deployment:
+To enable Cloudflare Pages deployment alongside GitHub Pages:
 
 1. Create a Cloudflare Pages project named `sckl-marathon-dashboard`, or set `CLOUDFLARE_PAGES_PROJECT_NAME` to the project name you choose.
 2. Create a Cloudflare API token with `Account > Cloudflare Pages > Edit` permission.
 3. Add `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as GitHub Actions secrets.
 4. Go to **Actions** in GitHub.
-5. Run **Sync data and deploy Cloudflare Pages** manually once.
+5. Run **Sync data and deploy Pages** manually once.
 
 The workflow also runs daily at 12:15am Singapore time and whenever `main` is pushed.
 
