@@ -34,6 +34,16 @@ export default {
         return jsonResponse(payload, request, env);
       }
 
+      if (url.pathname === "/api/strava/refresh-token" && request.method === "POST") {
+        if (!isAuthorized(request, env)) return jsonResponse({ error: "Unauthorized" }, request, env, 401);
+        const body = await request.json().catch(() => null);
+        const refreshToken = String(body?.refresh_token || "").trim();
+        if (!refreshToken) return jsonResponse({ error: "Missing refresh_token" }, request, env, 400);
+        await env.STRAVA_CACHE.put(REFRESH_TOKEN_KEY, refreshToken);
+        await writeStatus(env, { ok: true, updated_at: nowIso(), stage: "refresh-token-updated" });
+        return jsonResponse({ ok: true }, request, env);
+      }
+
       if (url.pathname === "/api/strava/webhook" && request.method === "GET") {
         return handleWebhookVerification(url, request, env);
       }

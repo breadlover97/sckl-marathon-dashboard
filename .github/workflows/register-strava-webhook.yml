@@ -64,6 +64,31 @@ jobs:
           fi
           python scripts/register_strava_webhook.py "${args[@]}"
 
+      - name: Install Worker refresh token
+        env:
+          STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
+          STRAVA_SYNC_SECRET: ${{ secrets.STRAVA_SYNC_SECRET }}
+        run: |
+          set -euo pipefail
+          for name in STRAVA_REFRESH_TOKEN STRAVA_SYNC_SECRET; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing required secret: $name"
+              exit 1
+            fi
+          done
+
+          python - <<'PY' > refresh-token-payload.json
+          import json
+          import os
+
+          print(json.dumps({"refresh_token": os.environ["STRAVA_REFRESH_TOKEN"]}))
+          PY
+
+          curl -fsS -X POST "${STRAVA_WORKER_URL}/api/strava/refresh-token" \
+            -H "authorization: Bearer ${STRAVA_SYNC_SECRET}" \
+            -H "content-type: application/json" \
+            --data-binary @refresh-token-payload.json
+
       - name: Run Worker full sync
         if: inputs.run_full_sync == 'true'
         env:
