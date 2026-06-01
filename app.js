@@ -273,6 +273,42 @@ function normalizePlan(plan) {
   return plan;
 }
 
+function mergeActualsFromPlan(plan, actuals) {
+  const activities = Array.isArray(actuals.activities) ? [...actuals.activities] : [];
+  const datesWithActivities = new Set(activities.map((activity) => activity.date).filter(Boolean));
+  const sheetActivities = [];
+
+  (plan.weeks || []).forEach((week) => {
+    (week.daily_sessions || []).forEach((session) => {
+      const actualDistance = Number(session.actual_distance_ran_km || 0);
+      if (!session.date || !actualDistance || datesWithActivities.has(session.date)) return;
+      sheetActivities.push({
+        id: `sheet-${session.date}`,
+        name: session.actual || "Google Sheet actual",
+        date: session.date,
+        distance_km: actualDistance,
+        moving_time_seconds: 0,
+        elapsed_time_seconds: 0,
+        elevation_gain_m: 0,
+        average_heartrate: null,
+        average_cadence: null,
+        strava_url: "",
+        source: "google-sheet",
+      });
+      datesWithActivities.add(session.date);
+    });
+  });
+
+  return {
+    ...actuals,
+    activities: [...activities, ...sheetActivities],
+    metadata: {
+      ...(actuals.metadata || {}),
+      sheet_actual_activities: sheetActivities.length,
+    },
+  };
+}
+
 function summarizeWeekText(week, sessions = dailySessions(week)) {
   const target = Number(week.target_weekly_mileage_km || sessions.reduce((sum, session) => sum + Number(session.planned_km || 0), 0));
   const runCount = sessions.filter((session) => Number(session.planned_km || 0) > 0).length;
@@ -291,6 +327,10 @@ function dailySessions(week) {
       date: session.date || dateKey(addDays(parseLocalDate(week.week_start_date), index)),
       plan: session.plan || "",
       planned_km: Number(session.planned_km || 0),
+      actual: session.actual || "",
+      actual_distance_ran_km: session.actual_distance_ran_km === null || session.actual_distance_ran_km === undefined || session.actual_distance_ran_km === ""
+        ? null
+        : Number(session.actual_distance_ran_km || 0),
     }));
   }
 
@@ -1423,6 +1463,7 @@ function scrollToHashTarget() {
 }
 
 function render({ plan, actuals }) {
+  actuals = mergeActualsFromPlan(plan, actuals);
   latestRenderState = { actuals, plan };
   renderTrainingDayProgress(plan);
   renderCurrentWeek(plan, actuals);
