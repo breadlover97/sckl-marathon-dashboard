@@ -124,6 +124,8 @@ async function handleWebhookEvent(event, env) {
 
 async function refreshAllActivities(env) {
   await writeStatus(env, { ok: true, updated_at: nowIso(), stage: "manual-full-sync-started" });
+  const cached = await readJsonKv(env, CACHE_KEY, null);
+  const bootstrap = await readBootstrapPayload(env);
   const accessToken = await accessTokenFor(env);
   await writeStatus(env, { ok: true, updated_at: nowIso(), stage: "manual-full-sync-token-ok" });
   const after = Number(env.STRAVA_AFTER_TIMESTAMP || DEFAULT_AFTER_TIMESTAMP);
@@ -151,6 +153,7 @@ async function refreshAllActivities(env) {
   const payload = payloadForActivities(activities, {
     source: "strava-worker",
     sync_type: "manual-full-sync",
+    ...athleteMetadata(cached, bootstrap),
   });
 
   await env.STRAVA_CACHE.put(CACHE_KEY, JSON.stringify(payload));
@@ -180,6 +183,7 @@ async function upsertActivity(env, rawActivity, event) {
     source: "strava-worker",
     sync_type: "webhook",
     last_event_at: event.event_time ? new Date(Number(event.event_time) * 1000).toISOString() : nowIso(),
+    ...athleteMetadata(payload),
   });
 
   await env.STRAVA_CACHE.put(CACHE_KEY, JSON.stringify(nextPayload));
@@ -191,7 +195,11 @@ async function removeActivity(env, activityId) {
   const nextActivities = activities.filter((activity) => String(activity.id) !== String(activityId));
   await env.STRAVA_CACHE.put(
     CACHE_KEY,
-    JSON.stringify(payloadForActivities(nextActivities, { source: "strava-worker", sync_type: "webhook-delete" })),
+    JSON.stringify(payloadForActivities(nextActivities, {
+      source: "strava-worker",
+      sync_type: "webhook-delete",
+      ...athleteMetadata(payload),
+    })),
   );
 }
 
@@ -229,6 +237,11 @@ async function readBootstrapPayload(env) {
 function payloadTime(payload) {
   const timestamp = Date.parse(payload?.metadata?.generated_at || "");
   return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function athleteMetadata(...payloads) {
+  const athlete = payloads.map((payload) => payload?.metadata?.athlete).find(Boolean);
+  return athlete ? { athlete } : {};
 }
 
 async function accessTokenFor(env) {
