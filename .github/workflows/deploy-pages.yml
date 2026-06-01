@@ -78,8 +78,16 @@ jobs:
           if python scripts/fetch_strava.py --after "$after_timestamp"; then
             echo "fresh=true" >> "$GITHUB_OUTPUT"
           else
-            echo "::warning::Strava sync failed; deploying with existing data/strava-activities.json."
+            echo "::warning::Strava sync failed; deploying with the previous live Strava JSON if available."
             echo "fresh=false" >> "$GITHUB_OUTPUT"
+            if [ -s data/strava-activities.json ]; then
+              echo "Using existing local data/strava-activities.json."
+            elif curl -fsSL "https://sckl-marathon-dashboard.pages.dev/data/strava-activities.json" -o data/strava-activities.json; then
+              echo "Downloaded previous live data/strava-activities.json."
+            else
+              echo "::warning::Previous live Strava JSON unavailable; falling back to mock Strava data."
+              cp data/mock-strava-activities.json data/strava-activities.json
+            fi
             test -s data/strava-activities.json
           fi
 
