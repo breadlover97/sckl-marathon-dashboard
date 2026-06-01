@@ -124,6 +124,14 @@ def fetch_athlete(session: requests.Session, access_token: str) -> dict[str, Any
     return payload
 
 
+def fetch_athlete_optional(session: requests.Session, access_token: str) -> dict[str, Any]:
+    try:
+        return fetch_athlete(session, access_token)
+    except (StravaApiError, requests.RequestException) as exc:
+        print(f"Warning: Athlete profile request failed; continuing without profile metadata. {exc}", file=sys.stderr)
+        return {}
+
+
 def local_date(activity: dict[str, Any]) -> str:
     value = activity.get("start_date_local") or activity.get("start_date") or ""
     if not value:
@@ -169,7 +177,7 @@ def main() -> int:
         refresh_token = require_env("STRAVA_REFRESH_TOKEN")
         session = requests.Session()
         token_payload = refresh_access_token(session, client_id, client_secret, refresh_token)
-        athlete = fetch_athlete(session, token_payload["access_token"])
+        athlete = fetch_athlete_optional(session, token_payload["access_token"])
         raw_activities = fetch_activities(session, token_payload["access_token"], args.after, args.before)
         runs = [
             sanitize_activity(activity)
