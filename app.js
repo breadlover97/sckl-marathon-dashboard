@@ -141,6 +141,14 @@ function safeDomId(value, fallback = "item") {
   return cleaned || fallback;
 }
 
+function escapeAttr(value, fallback = "-") {
+  return escapeHtml(value, fallback).replace(/"/g, "&quot;");
+}
+
+function isMobileInteractionMode() {
+  return window.matchMedia("(hover: none), (pointer: coarse), (max-width: 640px)").matches;
+}
+
 function km(value) {
   return `${Number(value || 0).toFixed(0)} km`;
 }
@@ -406,6 +414,28 @@ function renderActualLine(dayActivities, actualText) {
   return escapeHtml(actualText);
 }
 
+function renderDayActivityDetails(dayActivities, actualKm) {
+  if (!dayActivities.length) {
+    return `<p>No Strava activity logged yet.</p>`;
+  }
+  const rows = dayActivities.map((activity) => {
+    const stravaUrl = safeExternalUrl(activity.strava_url, ["strava.com"]);
+    const name = stravaUrl
+      ? `<a href="${escapeHtml(stravaUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(activity.name)}</a>`
+      : escapeHtml(activity.name);
+    return `
+      <li>
+        <strong>${name}</strong>
+        <span>${oneDecimalKm(activity.distance_km)} · ${duration(activity.moving_time_seconds)} · ${activityPace(activity)}</span>
+      </li>
+    `;
+  }).join("");
+  return `
+    <p>${oneDecimalKm(actualKm)} across ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}.</p>
+    <ul>${rows}</ul>
+  `;
+}
+
 function renderDayCard(session, actuals, options = {}) {
   const dayActivities = activitiesForDate(actuals.activities || [], session.date);
   const actualKm = dayActivities.reduce((sum, activity) => sum + Number(activity.distance_km || 0), 0);
@@ -424,9 +454,10 @@ function renderDayCard(session, actuals, options = {}) {
   const actualLine = options.showActual || isCompleted
     ? `<div class="actual-line">${renderActualLine(dayActivities, actualText)}</div>`
     : "";
+  const detailId = `day-card-detail-${safeDomId(session.date || session.day)}`;
 
   return `
-    <article class="${classes}" ${isActive ? `aria-current="date"` : ""}>
+    <article class="${classes}" ${isActive ? `aria-current="date"` : ""} data-day-card tabindex="0" aria-expanded="false" aria-controls="${detailId}">
       <div class="day-card-head">
         <span>${escapeHtml(session.day)} · ${escapeHtml(shortDate(session.date))}</span>
         ${completedMark}
@@ -434,6 +465,16 @@ function renderDayCard(session, actuals, options = {}) {
       <strong>${oneDecimalKm(session.planned_km)}<br>plan</strong>
       <p>${escapeHtml(session.plan)}</p>
       ${actualLine}
+      <div class="day-card-details" id="${detailId}">
+        <div>
+          <span>Session</span>
+          <p>${escapeHtml(session.plan || "No planned session")}</p>
+        </div>
+        <div>
+          <span>Actual</span>
+          ${renderDayActivityDetails(dayActivities, actualKm)}
+        </div>
+      </div>
     </article>
   `;
 }
@@ -563,6 +604,12 @@ function renderCalendarDay(week, session, actuals) {
   const tooltipId = `calendar-tip-${safeDomId(`${week.week_number}-${session.date}`)}`;
   const type = sessionType(session);
   const plannedLabel = plannedKm > 0 ? oneDecimalKm(plannedKm) : "Rest";
+  const tooltipTitle = `${session.day} · ${prettyDate(session.date)}`;
+  const tooltipMeta = `${type} · ${plannedLabel} planned`;
+  const tooltipPlan = session.plan || "No planned session";
+  const tooltipActual = dayActivities.length
+    ? `Actual: ${oneDecimalKm(actualKm)} across ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}`
+    : "Actual: no run logged";
   const classes = [
     "calendar-day",
     isActive ? "active-day" : "",
@@ -572,7 +619,7 @@ function renderCalendarDay(week, session, actuals) {
   ].filter(Boolean).join(" ");
 
   return `
-    <button class="${classes}" type="button" data-calendar-day aria-expanded="false" aria-describedby="${tooltipId}" aria-label="${escapeHtml(tooltip)}">
+    <button class="${classes}" type="button" data-calendar-day data-tooltip-title="${escapeAttr(tooltipTitle)}" data-tooltip-meta="${escapeAttr(tooltipMeta)}" data-tooltip-plan="${escapeAttr(tooltipPlan)}" data-tooltip-actual="${escapeAttr(tooltipActual)}" aria-expanded="false" aria-describedby="${tooltipId}" aria-label="${escapeAttr(tooltip)}">
       <div class="calendar-day-head">
         <span>${escapeHtml(session.day.slice(0, 3))}</span>
         <strong>${escapeHtml(shortDate(session.date))}</strong>
@@ -587,10 +634,10 @@ function renderCalendarDay(week, session, actuals) {
         <strong>${escapeHtml(actualText)}</strong>
       </div>
       <div class="calendar-tooltip" id="${tooltipId}" role="tooltip">
-        <strong>${escapeHtml(session.day)} · ${escapeHtml(prettyDate(session.date))}</strong>
-        <em>${escapeHtml(type)} · ${escapeHtml(plannedLabel)} planned</em>
-        <span>${escapeHtml(session.plan || "No planned session")}</span>
-        <small>${escapeHtml(dayActivities.length ? `Actual: ${oneDecimalKm(actualKm)} across ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}` : "Actual: no run logged")}</small>
+        <strong>${escapeHtml(tooltipTitle)}</strong>
+        <em>${escapeHtml(tooltipMeta)}</em>
+        <span>${escapeHtml(tooltipPlan)}</span>
+        <small>${escapeHtml(tooltipActual)}</small>
       </div>
     </button>
   `;
@@ -907,15 +954,107 @@ function closeCalendarTooltips(except = null) {
   });
 }
 
+function ensureMobileCalendarSheet() {
+  let sheet = document.getElementById("mobileCalendarSheet");
+  if (sheet) return sheet;
+  sheet = document.createElement("div");
+  sheet.id = "mobileCalendarSheet";
+  sheet.className = "mobile-calendar-sheet";
+  sheet.hidden = true;
+  sheet.setAttribute("role", "dialog");
+  sheet.setAttribute("aria-live", "polite");
+  document.body.append(sheet);
+  return sheet;
+}
+
+function closeMobileCalendarSheet() {
+  const sheet = document.getElementById("mobileCalendarSheet");
+  if (!sheet) return;
+  sheet.classList.remove("visible");
+  sheet.hidden = true;
+}
+
+function showMobileCalendarSheet(day) {
+  const sheet = ensureMobileCalendarSheet();
+  sheet.innerHTML = `
+    <button type="button" class="mobile-sheet-close" data-mobile-sheet-close aria-label="Close day details">×</button>
+    <strong>${escapeHtml(day.dataset.tooltipTitle)}</strong>
+    <em>${escapeHtml(day.dataset.tooltipMeta)}</em>
+    <span>${escapeHtml(day.dataset.tooltipPlan)}</span>
+    <small>${escapeHtml(day.dataset.tooltipActual)}</small>
+  `;
+  sheet.hidden = false;
+  window.requestAnimationFrame(() => sheet.classList.add("visible"));
+}
+
+function closeDayCards(except = null) {
+  document.querySelectorAll("[data-day-card].detail-open").forEach((card) => {
+    if (card === except) return;
+    card.classList.remove("detail-open");
+    card.setAttribute("aria-expanded", "false");
+  });
+}
+
+function toggleDayCard(card) {
+  const isOpen = card.classList.contains("detail-open");
+  closeDayCards(card);
+  card.classList.toggle("detail-open", !isOpen);
+  card.setAttribute("aria-expanded", String(!isOpen));
+}
+
+function setupDayCardExpansion() {
+  document.addEventListener("click", (event) => {
+    if (event.target.closest("[data-day-card] a")) return;
+    const card = event.target.closest("[data-day-card]");
+    if (!card) {
+      closeDayCards();
+      return;
+    }
+    toggleDayCard(card);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeDayCards();
+      return;
+    }
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const card = event.target.closest?.("[data-day-card]");
+    if (!card) return;
+    event.preventDefault();
+    toggleDayCard(card);
+  });
+}
+
 function setupCalendarTooltips() {
   document.addEventListener("click", (event) => {
+    if (event.target.closest("[data-day-card]")) return;
+    if (event.target.closest("[data-mobile-sheet-close]")) {
+      closeCalendarTooltips();
+      closeMobileCalendarSheet();
+      return;
+    }
+    if (event.target.closest(".mobile-calendar-sheet")) return;
     const day = event.target.closest("[data-calendar-day]");
     if (!day) {
       closeCalendarTooltips();
+      closeMobileCalendarSheet();
       return;
     }
     const isOpen = day.classList.contains("tooltip-open");
     closeCalendarTooltips(day);
+    if (isMobileInteractionMode()) {
+      if (isOpen) {
+        closeMobileCalendarSheet();
+        day.classList.remove("tooltip-open");
+        day.setAttribute("aria-expanded", "false");
+      } else {
+        day.classList.add("tooltip-open");
+        day.setAttribute("aria-expanded", "true");
+        showMobileCalendarSheet(day);
+      }
+      return;
+    }
     day.classList.toggle("tooltip-open", !isOpen);
     day.setAttribute("aria-expanded", String(!isOpen));
   });
@@ -923,6 +1062,7 @@ function setupCalendarTooltips() {
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
     closeCalendarTooltips();
+    closeMobileCalendarSheet();
   });
 }
 
@@ -1264,7 +1404,7 @@ function setupChartHover(container, points, dims) {
   const phaseText = container.querySelector("[data-hover-phase]");
   const valueText = container.querySelector("[data-hover-value]");
   const actualText = container.querySelector("[data-hover-actual]");
-  const mobileMode = () => window.matchMedia("(hover: none), (pointer: coarse), (max-width: 640px)").matches;
+  const mobileMode = isMobileInteractionMode;
   let selectedPoint = null;
 
   container.querySelector(".chart-mobile-panel")?.remove();
@@ -1483,8 +1623,19 @@ function scrollToHashTarget() {
   const id = window.location.hash ? decodeURIComponent(window.location.hash.slice(1)) : "";
   const target = id ? document.getElementById(id) : null;
   if (!target) return;
+  closeCalendarTooltips();
+  closeMobileCalendarSheet();
+  closeDayCards();
   window.requestAnimationFrame(() => {
     target.scrollIntoView({ block: "start" });
+  });
+}
+
+function setupHashCleanup() {
+  window.addEventListener("hashchange", () => {
+    closeCalendarTooltips();
+    closeMobileCalendarSheet();
+    closeDayCards();
   });
 }
 
@@ -1520,9 +1671,11 @@ setupReturnTop();
 setupActiveNav();
 setupWeekToggle();
 setupPlanGroupToggle();
+setupDayCardExpansion();
 setupActivityFeedControls();
 setupCalendarTooltips();
 setupResponsiveCharts();
+setupHashCleanup();
 
 Promise.all([loadPlan().then(normalizePlan), loadActuals()])
   .then(([plan, actuals]) => render({ plan, actuals }))

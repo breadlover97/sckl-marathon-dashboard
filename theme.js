@@ -1,6 +1,6 @@
 (function () {
   const storageKey = "sckl-dashboard-theme";
-  const themes = ["light", "dark", "editor", "cyberpunk"];
+  const themes = ["light", "dark", "editor", "cyberpunk", "glass"];
 
   function preferredTheme() {
     try {
@@ -16,7 +16,7 @@
   function applyTheme(theme) {
     const nextTheme = themes.includes(theme) ? theme : "light";
     document.documentElement.dataset.theme = nextTheme;
-    document.documentElement.style.colorScheme = nextTheme === "light" ? "light" : "dark";
+    document.documentElement.style.colorScheme = nextTheme === "light" || nextTheme === "glass" ? "light" : "dark";
     try {
       window.localStorage.setItem(storageKey, nextTheme);
     } catch (error) {

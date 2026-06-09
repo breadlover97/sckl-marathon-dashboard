@@ -176,6 +176,52 @@ html[data-theme="cyberpunk"] {
   --shadow: 0 18px 50px rgba(0, 0, 0, 0.72);
 }
 
+html[data-theme="glass"] {
+  --bg: #edf4f8;
+  --body-start: #f8fbff;
+  --body-mid: #edf6f7;
+  --body-end: #fff7ef;
+  --panel: rgba(255, 255, 255, 0.58);
+  --card: rgba(255, 255, 255, 0.64);
+  --ink: #071118;
+  --muted: #52606a;
+  --soft: rgba(255, 255, 255, 0.48);
+  --line: rgba(7, 17, 24, 0.12);
+  --subtle-line: rgba(7, 17, 24, 0.09);
+  --nav-line: rgba(255, 255, 255, 0.54);
+  --nav-bg: rgba(255, 255, 255, 0.56);
+  --inverse: #ffffff;
+  --orange: #ff6a21;
+  --orange-dark: #ba3b00;
+  --orange-soft: rgba(255, 106, 33, 0.13);
+  --teal: #007a85;
+  --teal-soft: rgba(0, 122, 133, 0.13);
+  --amber: #b87800;
+  --amber-soft: rgba(255, 193, 74, 0.16);
+  --long-bg: rgba(255, 255, 255, 0.48);
+  --complete-bg: rgba(230, 242, 238, 0.74);
+  --complete-border: rgba(0, 122, 133, 0.24);
+  --complete-mark-bg: #0b7f78;
+  --complete-mark-text: #ffffff;
+  --current-bg: rgba(255, 240, 161, 0.7);
+  --current-border: #c68a00;
+  --current-glow: rgba(198, 138, 0, 0.18);
+  --chart-grid: rgba(7, 17, 24, 0.1);
+  --chart-axis: rgba(7, 17, 24, 0.18);
+  --chart-crosshair: rgba(7, 17, 24, 0.62);
+  --chart-tooltip-bg: rgba(255, 255, 255, 0.82);
+  --chart-tooltip-border: rgba(255, 255, 255, 0.64);
+  --chart-tooltip-shadow: drop-shadow(0 20px 48px rgba(32, 56, 72, 0.18));
+  --chart-tooltip-label: #65727c;
+  --code-bg: rgba(7, 17, 24, 0.92);
+  --code-text: #ffffff;
+  --glass-highlight: rgba(255, 255, 255, 0.84);
+  --glass-edge: rgba(255, 255, 255, 0.66);
+  --glass-shadow: 0 24px 70px rgba(27, 55, 78, 0.15);
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  --shadow: var(--glass-shadow);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -193,6 +239,26 @@ body {
   color: var(--ink);
   font-family: var(--font-ui);
   line-height: 1.5;
+}
+
+html[data-theme="glass"] body {
+  min-height: 100vh;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0) 42%),
+    linear-gradient(160deg, var(--body-start) 0%, var(--body-mid) 48%, var(--body-end) 100%);
+}
+
+html[data-theme="glass"] body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(7, 17, 24, 0.028) 1px, transparent 1px),
+    linear-gradient(rgba(7, 17, 24, 0.022) 1px, transparent 1px);
+  background-size: 44px 44px;
+  content: "";
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.65), transparent 78%);
+  pointer-events: none;
 }
 
 html[data-theme="cyberpunk"] body::before {
@@ -252,6 +318,218 @@ html[data-theme="editor"] .section-heading p,
 html[data-theme="editor"] .day-card p,
 html[data-theme="editor"] .site-footer {
   color: var(--syntax-comment);
+}
+
+html[data-theme="glass"] .top-nav,
+html[data-theme="glass"] .panel,
+html[data-theme="glass"] .calendar-phase-group,
+html[data-theme="glass"] .activity-table-shell,
+html[data-theme="glass"] .day-card,
+html[data-theme="glass"] .calendar-day,
+html[data-theme="glass"] .calendar-week-meta,
+html[data-theme="glass"] .week-progress,
+html[data-theme="glass"] .week-metric,
+html[data-theme="glass"] .pace-card,
+html[data-theme="glass"] .chart-mobile-panel,
+html[data-theme="glass"] .theme-picker {
+  border-color: var(--glass-edge);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.38)),
+    var(--card);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(22px) saturate(1.18);
+}
+
+html[data-theme="glass"] .panel,
+html[data-theme="glass"] .calendar-phase-group,
+html[data-theme="glass"] .activity-table-shell {
+  border-radius: 14px;
+}
+
+html[data-theme="glass"] .panel {
+  position: relative;
+  overflow: hidden;
+}
+
+html[data-theme="glass"] .panel::before,
+html[data-theme="glass"] .day-card::before,
+html[data-theme="glass"] .calendar-day::before {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.58), transparent 42%);
+  content: "";
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+html[data-theme="glass"] .panel > *,
+html[data-theme="glass"] .day-card > *,
+html[data-theme="glass"] .calendar-day > * {
+  position: relative;
+}
+
+html[data-theme="glass"] .top-nav {
+  top: 10px;
+  width: min(1180px, calc(100% - 24px));
+  margin: 0 auto;
+  border: 1px solid var(--glass-edge);
+  border-radius: 18px;
+}
+
+html[data-theme="glass"] main {
+  gap: 18px;
+}
+
+html[data-theme="glass"] .nav-tabs {
+  border-color: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+html[data-theme="glass"] .nav-tabs a.active,
+html[data-theme="glass"] .nav-tabs a[aria-current="true"] {
+  background: rgba(7, 17, 24, 0.9);
+  color: #ffffff;
+}
+
+html[data-theme="glass"] .action-button {
+  border-color: rgba(7, 17, 24, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62);
+}
+
+html[data-theme="glass"] .action-button.primary {
+  background: linear-gradient(135deg, #071118, #273743);
+}
+
+html[data-theme="glass"] .section-heading h2 {
+  letter-spacing: 0;
+}
+
+html[data-theme="glass"] .section-heading p {
+  max-width: none;
+}
+
+html[data-theme="glass"] #week.panel {
+  background:
+    linear-gradient(135deg, rgba(255, 106, 33, 0.14), rgba(0, 122, 133, 0.12)),
+    var(--panel);
+}
+
+html[data-theme="glass"] .week-progress {
+  border: 1px solid var(--glass-edge);
+  border-radius: 12px;
+}
+
+html[data-theme="glass"] .progress-track {
+  background: rgba(7, 17, 24, 0.1);
+}
+
+html[data-theme="glass"] .progress-track span {
+  background: linear-gradient(90deg, var(--orange), var(--teal));
+}
+
+html[data-theme="glass"] .day-card,
+html[data-theme="glass"] .calendar-day {
+  border-radius: 12px;
+}
+
+html[data-theme="glass"] .day-card {
+  border: 1px solid var(--glass-edge);
+  outline: none;
+}
+
+html[data-theme="glass"] .day-card:focus-visible,
+html[data-theme="glass"] .calendar-day:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 106, 33, 0.2), var(--glass-shadow);
+}
+
+html[data-theme="glass"] .day-card-details {
+  display: none;
+  grid-column: 1 / -1;
+  gap: 10px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(7, 17, 24, 0.1);
+}
+
+html[data-theme="glass"] .day-card.detail-open .day-card-details {
+  display: grid;
+  animation: glassDetailIn 180ms ease both;
+}
+
+html[data-theme="glass"] .day-card-details span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+html[data-theme="glass"] .day-card-details p {
+  margin: 2px 0 0;
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+html[data-theme="glass"] .day-card-details ul {
+  display: grid;
+  gap: 7px;
+  margin: 7px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+html[data-theme="glass"] .day-card-details li {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  border: 1px solid rgba(7, 17, 24, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.38);
+}
+
+html[data-theme="glass"] .day-card-details li span {
+  font-size: 0.72rem;
+  text-transform: none;
+}
+
+html[data-theme="glass"] .calendar-phase-group summary {
+  border-bottom-color: rgba(255, 255, 255, 0.55);
+}
+
+html[data-theme="glass"] .calendar-day.past-day.completed-day,
+html[data-theme="glass"] .day-card.past-day,
+html[data-theme="glass"] .day-card.completed-day {
+  background:
+    linear-gradient(145deg, rgba(232, 248, 244, 0.82), rgba(255, 255, 255, 0.42)),
+    var(--complete-bg);
+}
+
+html[data-theme="glass"] .calendar-day.active-day,
+html[data-theme="glass"] .day-card.active-day {
+  background:
+    linear-gradient(145deg, rgba(255, 241, 173, 0.88), rgba(255, 255, 255, 0.48)),
+    var(--current-bg);
+}
+
+html[data-theme="glass"] .calendar-day > .calendar-tooltip {
+  position: absolute;
+}
+
+html[data-theme="glass"] .chart-shell svg {
+  border-radius: 12px;
+}
+
+@keyframes glassDetailIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 a {
@@ -1147,6 +1425,56 @@ main > .panel:first-child {
   font-weight: 750;
 }
 
+.day-card-details {
+  display: none;
+  grid-column: 1 / -1;
+  gap: 10px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--subtle-line);
+}
+
+.day-card.detail-open .day-card-details {
+  display: grid;
+  animation: glassDetailIn 180ms ease both;
+}
+
+.day-card-details span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.day-card-details p {
+  margin: 2px 0 0;
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+.day-card-details ul {
+  display: grid;
+  gap: 7px;
+  margin: 7px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.day-card-details li {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  border: 1px solid var(--subtle-line);
+  border-radius: 10px;
+  background: var(--soft);
+}
+
+.day-card-details li span {
+  font-size: 0.72rem;
+  text-transform: none;
+}
+
 .plan-list {
   display: grid;
   gap: 0;
@@ -1434,6 +1762,10 @@ main > .panel:first-child {
   font-size: 0.76rem;
   font-weight: 800;
   line-height: 1.35;
+}
+
+.mobile-calendar-sheet {
+  display: none;
 }
 
 .calendar-day:hover,
@@ -2874,6 +3206,88 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
     transform: translateY(0) scale(1) !important;
   }
 
+  .mobile-calendar-sheet {
+    position: fixed;
+    right: 14px;
+    bottom: calc(74px + env(safe-area-inset-bottom));
+    left: 14px;
+    z-index: 120;
+    display: grid;
+    gap: 8px;
+    max-height: min(52vh, 360px);
+    overflow-y: auto;
+    padding: 18px 16px 16px;
+    border: 1px solid var(--chart-tooltip-border);
+    border-radius: 18px;
+    background: var(--chart-tooltip-bg);
+    box-shadow: 0 22px 60px rgba(5, 5, 5, 0.28);
+    color: var(--ink);
+    opacity: 0;
+    overscroll-behavior: contain;
+    pointer-events: none;
+    transform: translateY(10px) scale(0.98);
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+
+  .mobile-calendar-sheet[hidden] {
+    display: none;
+  }
+
+  .mobile-calendar-sheet.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+  }
+
+  .mobile-calendar-sheet::before {
+    width: 42px;
+    height: 4px;
+    margin: 0 auto 2px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--muted) 46%, transparent);
+    content: "";
+  }
+
+  .mobile-calendar-sheet strong {
+    padding-right: 32px;
+    font-size: 0.9rem;
+    font-weight: 900;
+  }
+
+  .mobile-calendar-sheet em {
+    color: var(--orange-dark);
+    font-size: 0.7rem;
+    font-style: normal;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .mobile-calendar-sheet span,
+  .mobile-calendar-sheet small {
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 800;
+    line-height: 1.35;
+  }
+
+  .mobile-sheet-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: inline-grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--inverse);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+
   .status-pill {
     margin-top: 10px;
     max-width: 100%;
@@ -3147,5 +3561,306 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
 
   .nutrition-calendar-group summary::after {
     grid-column: 3;
+  }
+}
+
+@media (max-width: 640px) {
+  html[data-theme="glass"] body {
+    padding-top: 86px;
+    padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  }
+
+  html[data-theme="glass"] .top-nav {
+    top: 8px;
+    right: 8px;
+    left: 8px;
+    width: auto;
+    min-height: 58px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 8px 9px;
+    border-radius: 18px;
+    backdrop-filter: none;
+  }
+
+  html[data-theme="glass"] .site-mark {
+    font-size: 0.78rem;
+  }
+
+  html[data-theme="glass"] .countdown-pill {
+    background: rgba(255, 255, 255, 0.52);
+  }
+
+  html[data-theme="glass"] .nav-tabs {
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    padding: 5px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.58);
+    backdrop-filter: blur(24px) saturate(1.18);
+  }
+
+  html[data-theme="glass"] .nav-tabs a {
+    min-height: 38px;
+    border-radius: 17px;
+  }
+
+  html[data-theme="glass"] .theme-picker {
+    bottom: calc(62px + env(safe-area-inset-bottom));
+    left: 12px;
+    border-radius: 999px;
+  }
+
+  html[data-theme="glass"] main {
+    width: min(100% - 16px, 1180px);
+    gap: 12px;
+    margin-top: 6px;
+  }
+
+  html[data-theme="glass"] .panel {
+    padding: 13px;
+    border-radius: 18px;
+  }
+
+  html[data-theme="glass"] h2 {
+    font-size: 1.28rem;
+  }
+
+  html[data-theme="glass"] .section-heading {
+    display: grid;
+    gap: 8px;
+  }
+
+  html[data-theme="glass"] .section-heading p {
+    font-size: 0.8rem;
+    line-height: 1.32;
+  }
+
+  html[data-theme="glass"] .status-pill {
+    justify-self: start;
+    margin-top: 0;
+    padding: 6px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.48);
+    font-size: 0.6rem;
+  }
+
+  html[data-theme="glass"] .week-progress {
+    gap: 10px;
+    padding: 13px;
+  }
+
+  html[data-theme="glass"] .week-progress strong {
+    font-size: 1.38rem;
+  }
+
+  html[data-theme="glass"] #currentWeekPlan .daily-grid {
+    display: flex;
+    gap: 9px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-padding-left: 2px;
+    scroll-snap-type: x mandatory;
+  }
+
+  html[data-theme="glass"] #currentWeekPlan .day-card {
+    width: auto;
+    min-height: 0;
+    flex: 0 0 min(84vw, 322px);
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas:
+      "head metric"
+      "plan plan"
+      "actual actual"
+      "details details";
+    gap: 8px;
+    padding: 12px;
+    scroll-snap-align: start;
+  }
+
+  html[data-theme="glass"] #currentWeekPlan .day-card-head {
+    grid-area: head;
+    min-height: 0;
+  }
+
+  html[data-theme="glass"] #currentWeekPlan .day-card > strong {
+    grid-area: metric;
+    min-height: 0;
+    text-align: right;
+    font-size: 0.95rem;
+    line-height: 1.05;
+  }
+
+  html[data-theme="glass"] #currentWeekPlan .day-card > p {
+    grid-area: plan;
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    color: color-mix(in srgb, var(--ink) 82%, var(--muted));
+    font-size: 0.82rem;
+  }
+
+  html[data-theme="glass"] #currentWeekPlan .day-card.detail-open > p {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: initial;
+  }
+
+  html[data-theme="glass"] #currentWeekPlan .actual-line {
+    grid-area: actual;
+    margin-top: 0;
+  }
+
+  html[data-theme="glass"] #currentWeekPlan .day-card-details {
+    grid-area: details;
+  }
+
+  html[data-theme="glass"] .calendar-phase-group {
+    overflow: hidden;
+  }
+
+  html[data-theme="glass"] .calendar-phase-group[open] .calendar-phase-body {
+    animation: glassDetailIn 180ms ease both;
+  }
+
+  html[data-theme="glass"] .calendar-phase-group summary {
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  html[data-theme="glass"] .phase-mileage {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  html[data-theme="glass"] .phase-mileage-item {
+    min-width: 0;
+    padding: 7px 5px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.38);
+  }
+
+  html[data-theme="glass"] .phase-mileage-item small {
+    font-size: 0.48rem;
+  }
+
+  html[data-theme="glass"] .phase-mileage-item strong {
+    font-size: 0.72rem;
+  }
+
+  html[data-theme="glass"] .calendar-week-meta {
+    margin-bottom: 7px;
+    padding: 11px;
+    border-radius: 14px;
+  }
+
+  html[data-theme="glass"] .calendar-days {
+    display: flex;
+    max-width: 100%;
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-padding-left: 2px;
+    scroll-snap-type: x mandatory;
+  }
+
+  html[data-theme="glass"] .calendar-day {
+    width: 108px;
+    min-width: 0;
+    min-height: 82px;
+    flex: 0 0 108px;
+    gap: 3px;
+    padding: 7px 5px;
+    border-radius: 12px;
+    scroll-snap-align: start;
+    backdrop-filter: none;
+  }
+
+  html[data-theme="glass"] .calendar-day-head {
+    display: grid;
+    gap: 1px;
+  }
+
+  html[data-theme="glass"] .calendar-day-head span {
+    font-size: 0.52rem;
+  }
+
+  html[data-theme="glass"] .calendar-day-head strong {
+    font-size: 0.54rem;
+    text-align: left;
+  }
+
+  html[data-theme="glass"] .calendar-day-main span,
+  html[data-theme="glass"] .calendar-day-main small,
+  html[data-theme="glass"] .calendar-day-actual {
+    display: none;
+  }
+
+  html[data-theme="glass"] .calendar-day-main strong {
+    font-size: 0.68rem;
+    line-height: 1.05;
+  }
+
+  html[data-theme="glass"] .calendar-day > .calendar-tooltip {
+    position: fixed;
+    right: 10px;
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    left: 10px;
+    width: auto;
+    max-width: none;
+    border-color: var(--glass-edge);
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(24px) saturate(1.2);
+  }
+
+  html[data-theme="glass"] .mobile-calendar-sheet {
+    right: 10px;
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    left: 10px;
+    border-color: var(--glass-edge);
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(24px) saturate(1.2);
+  }
+
+  html[data-theme="glass"] .trend-grid {
+    gap: 12px;
+  }
+
+  html[data-theme="glass"] .chart-shell svg {
+    height: clamp(184px, 54vw, 210px);
+  }
+
+  html[data-theme="glass"] .chart-mobile-panel {
+    border-radius: 14px;
+  }
+
+  html[data-theme="glass"] .activity-table-scroll {
+    overflow: visible;
+  }
+
+  html[data-theme="glass"] .activity-table {
+    border-spacing: 0 8px;
+  }
+
+  html[data-theme="glass"] .activity-table tbody tr {
+    border: 1px solid var(--glass-edge);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.46);
+    box-shadow: 0 10px 30px rgba(27, 55, 78, 0.1);
+  }
+
+  html[data-theme="glass"] .activity-table td {
+    padding: 7px 9px;
+  }
+
+  html[data-theme="glass"] .activity-summary-stats span {
+    border-color: rgba(255, 255, 255, 0.62);
+    background: rgba(255, 255, 255, 0.42);
+  }
+
+  html[data-theme="glass"] .site-footer {
+    padding-bottom: 96px;
   }
 }
