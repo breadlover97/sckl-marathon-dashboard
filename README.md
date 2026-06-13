@@ -4,6 +4,8 @@ A lightweight static dashboard for the Standard Chartered Kuala Lumpur Marathon 
 
 The site is intentionally simple: Google Sheets is the editable plan, Strava is the running log, a Cloudflare Worker keeps live actuals fresh from Strava webhooks, GitHub Actions syncs sheet data into generated JSON, and Cloudflare Pages serves the dashboard.
 
+GitHub Pages has been disabled. GitHub is still used for source control, repository secrets, and GitHub Actions automation.
+
 ## What The Dashboard Shows
 
 - This week’s planned sessions and actual Strava mileage.
@@ -192,6 +194,8 @@ CLOUDFLARE_API_TOKEN
 
 The Worker deployment workflow is `.github/workflows/deploy-strava-worker.yml`. Run it manually with `register_webhook=true` to create or validate the Strava webhook subscription. Use `replace_existing_webhook=true` only when Strava already has a subscription for the same API app and you want to switch it to this Worker.
 
+The Cloudflare API token used for Worker deployment must include Worker permissions. If the token only has Cloudflare Pages permission, the dashboard deployment can still pass, but `.github/workflows/deploy-strava-worker.yml` will fail at the Wrangler deploy step with a Cloudflare authentication error.
+
 The Worker has a manual full-sync endpoint:
 
 ```bash
@@ -267,7 +271,7 @@ Use `--delete-stale` only when you want the sync to delete previously managed tr
 
 ## Cloudflare Pages Deployment
 
-The site is deployed to Cloudflare Pages by `.github/workflows/deploy-pages.yml`. GitHub remains the code repository and automation runner, but it no longer hosts the public dashboard.
+The site is deployed to Cloudflare Pages by `.github/workflows/deploy-pages.yml`. GitHub remains the code repository and automation runner, but it no longer hosts the public dashboard. The old GitHub Pages URL is expected to return `404`.
 
 The workflow:
 
@@ -320,18 +324,25 @@ TRAINING_CALENDAR_TIMEZONE=Asia/Singapore
 TRAINING_CALENDAR_COLOR_ID=11
 ```
 
-To enable Cloudflare Pages and Worker deployment:
+To enable Cloudflare Pages deployment:
 
 1. Create a Cloudflare Pages project named `sckl-marathon-dashboard`, or set `CLOUDFLARE_PAGES_PROJECT_NAME` to the project name you choose.
-2. Create a Cloudflare API token with these permissions:
+2. Create a Cloudflare API token with this permission:
    - `Account > Cloudflare Pages > Edit`
-   - `Account > Workers Scripts > Edit`
-   - `Account > Workers KV Storage > Edit`
 3. Add `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as GitHub Actions secrets.
 4. Go to **Actions** in GitHub.
 5. Run **Sync data and deploy Cloudflare Pages** manually once.
 
 The workflow also runs daily at 12:15am Singapore time and whenever `main` is pushed.
+
+To enable or update the Strava Worker, the same `CLOUDFLARE_API_TOKEN` must also have:
+
+```text
+Account > Workers Scripts > Edit
+Account > Workers KV Storage > Edit
+```
+
+Then run **Deploy Strava Worker** manually. Use `register_webhook=false` when only redeploying Worker code or config. Use `register_webhook=true` when creating or validating the Strava webhook.
 
 Important Strava note: if a workflow run says Strava returned a rotated refresh token, generate or copy the new refresh token and update the `STRAVA_REFRESH_TOKEN` repository secret before the next sync.
 
