@@ -91,8 +91,9 @@ def is_race(session: dict[str, Any]) -> bool:
     return "race:" in text or ("marathon" in text and planned_km(session) >= 40)
 
 
-def is_monday_track(session: dict[str, Any]) -> bool:
-    if str(session.get("day") or "").strip().lower() != "monday":
+def is_track_workout(session: dict[str, Any]) -> bool:
+    day = str(session.get("day") or "").strip().lower()
+    if day not in {"monday", "tuesday"}:
         return False
     text = str(session.get("plan") or "").lower()
     if "warmup" not in text:
@@ -117,7 +118,7 @@ def is_long_run(session: dict[str, Any]) -> bool:
         return False
     text = str(session.get("plan") or "").lower()
     day = str(session.get("day") or "").strip().lower()
-    return day == "saturday" or "long run" in text
+    return "long run" in text or (day == "saturday" and planned_km(session) >= 18)
 
 
 def event_title(session: dict[str, Any]) -> str:
@@ -126,8 +127,10 @@ def event_title(session: dict[str, Any]) -> str:
 
     if is_race(session):
         return "KL Marathon"
-    if is_monday_track(session):
+    if is_track_workout(session):
         return f"{km}km intervals"
+    if "race" in text:
+        return f"{km}km race"
     if "shakeout" in text:
         return f"{km}km shakeout"
     if is_long_run(session):
@@ -184,7 +187,10 @@ def choose_times(
     if is_long_run(session):
         start = local_dt(session_date, 6, 30, timezone)
         return start, start + timedelta(hours=2)
-    if is_monday_track(session):
+    if is_track_workout(session):
+        start = local_dt(session_date, 19, 0, timezone)
+        return start, start + timedelta(hours=2)
+    if "pm" in str(session.get("plan") or "").lower():
         start = local_dt(session_date, 19, 0, timezone)
         return start, start + timedelta(hours=2)
     if date_key in dates_with_late_commitments:
