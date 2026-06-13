@@ -46,7 +46,7 @@
     <header class="site-header setup-header">
       <div class="header-copy">
         <h1>How the backend works</h1>
-        <p class="date-range wide-copy">Google Sheets is the editable training plan, supplement tracker, and nutrition log; Strava is the running log; Cloudflare Worker handles live Strava webhooks; and GitHub Pages plus Cloudflare Pages serve the static dashboard during the transition.</p>
+        <p class="date-range wide-copy">Google Sheets is the editable training plan, supplement tracker, and nutrition log; Strava is the running log; Cloudflare Worker handles live Strava webhooks; and Cloudflare Pages serves the static dashboard.</p>
       </div>
     </header>
 
@@ -60,7 +60,7 @@
           <div class="flow-step"><strong>4</strong><span>GitHub Actions still runs the Sheet sync workflow on schedule, on code changes, or when you press the Sync data button and manually run the workflow.</span></div>
           <div class="flow-step"><strong>5</strong><span>If raw nutrition rows are waiting, GitHub Actions calls OpenAI privately, writes macro estimates back into Google Sheets, then runs the normal Sheet sync.</span></div>
           <div class="flow-step"><strong>6</strong><span>The workflow reads private credentials from GitHub secrets, fetches the Sheet, and prepares one static output folder with Google Sheets, Supplements, Nutrition, and fallback Strava JSON.</span></div>
-          <div class="flow-step"><strong>7</strong><span>GitHub Pages and Cloudflare Pages host the same static site during the migration. The dashboard loads live actuals from the Worker first, then falls back to <code>data/strava-activities.json</code>.</span></div>
+          <div class="flow-step"><strong>7</strong><span>Cloudflare Pages hosts the static site. The dashboard loads live actuals from the Worker first, then falls back to <code>data/strava-activities.json</code>.</span></div>
         </div>
       </section>
 
@@ -71,7 +71,7 @@
         <p><strong>Cloudflare Worker</strong> is the live Strava sync worker. It receives Strava webhook events, refreshes Strava tokens privately, fetches changed activities, and stores sanitized actual-run JSON in Workers KV.</p>
         <p><strong>GitHub Actions</strong> is the private Sheet and deployment worker. It reads the Google service account secret, optionally calls OpenAI for nutrition estimates, fetches the Sheet, and prepares the static deployment output.</p>
         <p><strong>OpenAI API</strong> is used only by the private workflow script when an <code>OPENAI_API_KEY</code> secret is configured. The public site never calls OpenAI directly.</p>
-        <p><strong>GitHub Pages and Cloudflare Pages</strong> are public static hosts. They have no API secrets in frontend JavaScript.</p>
+        <p><strong>Cloudflare Pages</strong> is the public static host. It has no API secrets in frontend JavaScript.</p>
       </section>
 
       <section class="info-section">
@@ -126,7 +126,7 @@
           </article>
           <article>
             <h3>Pages deployment</h3>
-            <p><code>deploy-pages.yml</code> copies HTML, CSS, JavaScript, and generated JSON into one output folder, then deploys that same folder to Cloudflare Pages and GitHub Pages.</p>
+            <p><code>deploy-pages.yml</code> copies HTML, CSS, JavaScript, and generated JSON into one output folder, then deploys that folder to Cloudflare Pages.</p>
           </article>
           <article>
             <h3>Manual refresh</h3>

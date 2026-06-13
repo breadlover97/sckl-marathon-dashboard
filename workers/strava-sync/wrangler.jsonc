@@ -10,7 +10,7 @@
 	},
 	"vars": {
 		"BOOTSTRAP_ACTIVITIES_URL": "https://sckl-marathon-dashboard.pages.dev/data/strava-activities.json",
-		"CORS_ORIGINS": "https://sckl-marathon-dashboard.pages.dev,https://breadlover97.github.io"
+		"CORS_ORIGINS": "https://sckl-marathon-dashboard.pages.dev"
 	},
 	"kv_namespaces": [
 		{

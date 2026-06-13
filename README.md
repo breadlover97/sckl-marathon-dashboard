@@ -2,7 +2,7 @@
 
 A lightweight static dashboard for the Standard Chartered Kuala Lumpur Marathon 2026 build.
 
-The site is intentionally simple: Google Sheets is the editable plan, Strava is the running log, a Cloudflare Worker keeps live actuals fresh from Strava webhooks, GitHub Actions syncs sheet data into generated JSON, and Cloudflare/GitHub Pages serve the dashboard.
+The site is intentionally simple: Google Sheets is the editable plan, Strava is the running log, a Cloudflare Worker keeps live actuals fresh from Strava webhooks, GitHub Actions syncs sheet data into generated JSON, and Cloudflare Pages serves the dashboard.
 
 ## What The Dashboard Shows
 
@@ -169,7 +169,7 @@ Published Strava JSON intentionally includes only the public training metrics us
 
 ### Live Strava Worker
 
-The Worker in `workers/strava-sync` makes Strava display independent of the scheduled GitHub Pages sync:
+The Worker in `workers/strava-sync` makes Strava display independent of the scheduled Cloudflare Pages sync:
 
 1. Strava sends create/update/delete webhook events to `/api/strava/webhook`.
 2. The Worker acknowledges the webhook immediately.
@@ -265,9 +265,9 @@ python scripts/sync_training_calendar.py --apply --preview-limit 120
 
 Use `--delete-stale` only when you want the sync to delete previously managed training events that no longer exist in the Sheet. The manual GitHub Actions workflow is `.github/workflows/sync-calendar.yml`; start with `preview`, then run `apply` once the output looks right.
 
-## Pages Deployment
+## Cloudflare Pages Deployment
 
-The site is currently deployed to both GitHub Pages and Cloudflare Pages by `.github/workflows/deploy-pages.yml`. This keeps the existing GitHub Pages URL online while the project transitions to Cloudflare Pages.
+The site is deployed to Cloudflare Pages by `.github/workflows/deploy-pages.yml`. GitHub remains the code repository and automation runner, but it no longer hosts the public dashboard.
 
 The workflow:
 
@@ -276,7 +276,7 @@ The workflow:
 3. Fetches Strava run activities from 1 May 2026 onward.
 4. Writes Strava actuals into the daily actual columns in the `Training Plan` tab.
 5. Fetches the latest planned training, supplement history, and nutrition history from Google Sheets.
-6. Publishes the same static site files and generated dashboard JSON files to Cloudflare Pages and GitHub Pages.
+6. Publishes the static site files and generated dashboard JSON files to Cloudflare Pages.
 
 Required repository secrets:
 
@@ -320,7 +320,7 @@ TRAINING_CALENDAR_TIMEZONE=Asia/Singapore
 TRAINING_CALENDAR_COLOR_ID=11
 ```
 
-To enable Cloudflare Pages and Worker deployment alongside GitHub Pages:
+To enable Cloudflare Pages and Worker deployment:
 
 1. Create a Cloudflare Pages project named `sckl-marathon-dashboard`, or set `CLOUDFLARE_PAGES_PROJECT_NAME` to the project name you choose.
 2. Create a Cloudflare API token with these permissions:
@@ -329,7 +329,7 @@ To enable Cloudflare Pages and Worker deployment alongside GitHub Pages:
    - `Account > Workers KV Storage > Edit`
 3. Add `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as GitHub Actions secrets.
 4. Go to **Actions** in GitHub.
-5. Run **Sync data and deploy Pages** manually once.
+5. Run **Sync data and deploy Cloudflare Pages** manually once.
 
 The workflow also runs daily at 12:15am Singapore time and whenever `main` is pushed.
 
