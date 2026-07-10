@@ -4226,22 +4226,6 @@ html[data-theme="glass"] .top-nav {
   text-decoration: none;
 }
 
-.site-logo {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 12px;
-  background: var(--ink);
-  box-shadow: var(--shadow-xs);
-  color: var(--inverse);
-  font-size: 0.83rem;
-  font-weight: 850;
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
-
 .site-countdown {
   display: inline-flex;
   min-height: 30px;
@@ -4877,18 +4861,6 @@ html[data-theme="glass"] .site-header {
     #121d2a;
   box-shadow: var(--shadow-lg);
   color: #ffffff;
-}
-
-.race-target-lockup::after {
-  position: absolute;
-  right: -48px;
-  bottom: -74px;
-  color: rgba(255, 255, 255, 0.045);
-  content: "42";
-  font-size: 13rem;
-  font-weight: 800;
-  letter-spacing: -0.1em;
-  line-height: 1;
 }
 
 .race-target-lockup > span,
@@ -6038,13 +6010,11 @@ html[data-theme="cyberpunk"] .activity-feed {
   }
 
   .brand-copy {
-    display: none;
+    display: grid;
   }
 
-  .site-logo {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
+  .brand-copy small {
+    display: none;
   }
 
   .section-nav-shell {
@@ -6329,6 +6299,20 @@ html[data-theme="cyberpunk"] .activity-feed {
     overscroll-behavior: none;
   }
 
+  body.calendar-sheet-open {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  body.calendar-sheet-open::after {
+    position: fixed;
+    z-index: 200;
+    inset: 0;
+    background: rgba(8, 15, 24, 0.48);
+    content: "";
+    backdrop-filter: blur(3px);
+  }
+
   .top-nav,
   html[data-theme="glass"] .top-nav {
     padding-top: env(safe-area-inset-top);
@@ -6337,6 +6321,22 @@ html[data-theme="cyberpunk"] .activity-feed {
   .nav-shell {
     min-height: 58px;
     gap: 12px;
+  }
+
+  .site-brand {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .brand-copy {
+    min-width: 0;
+  }
+
+  .brand-copy strong {
+    overflow: hidden;
+    font-size: 0.86rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .nav-menu-button {
@@ -6752,6 +6752,10 @@ html[data-theme="cyberpunk"] .activity-feed {
 }
 
 @media (max-width: 380px) {
+  .brand-copy strong {
+    font-size: 0.8rem;
+  }
+
   .race-nav-meta {
     max-width: calc(100vw - 126px);
   }

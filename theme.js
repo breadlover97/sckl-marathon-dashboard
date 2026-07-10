@@ -92,11 +92,20 @@
     const scrim = document.querySelector("[data-nav-scrim]");
     if (!toggle || !menu || !scrim) return;
 
+    const isDrawer = () => window.innerWidth <= 860;
+    const setMenuAvailability = (isOpen) => {
+      const shouldHide = isDrawer() && !isOpen;
+      menu.inert = shouldHide;
+      if (shouldHide) menu.setAttribute("aria-hidden", "true");
+      else menu.removeAttribute("aria-hidden");
+    };
+
     const close = ({ restoreFocus = false } = {}) => {
       toggle.setAttribute("aria-expanded", "false");
       menu.classList.remove("is-open");
       scrim.classList.remove("visible");
       document.body.classList.remove("nav-open");
+      setMenuAvailability(false);
       window.setTimeout(() => {
         if (!menu.classList.contains("is-open")) scrim.hidden = true;
       }, 180);
@@ -105,6 +114,7 @@
 
     const open = () => {
       scrim.hidden = false;
+      setMenuAvailability(true);
       toggle.setAttribute("aria-expanded", "true");
       menu.classList.add("is-open");
       document.body.classList.add("nav-open");
@@ -121,11 +131,32 @@
       if (event.target.closest("a")) close();
     });
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && menu.classList.contains("is-open")) close({ restoreFocus: true });
+      if (!menu.classList.contains("is-open")) return;
+      if (event.key === "Escape") {
+        close({ restoreFocus: true });
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = [
+        toggle,
+        ...menu.querySelectorAll("a, button, select, input, [tabindex]:not([tabindex='-1'])")
+      ].filter((element) => !element.disabled && element.getAttribute("aria-hidden") !== "true");
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     });
     window.addEventListener("resize", () => {
       if (window.innerWidth > 860 && menu.classList.contains("is-open")) close();
+      setMenuAvailability(menu.classList.contains("is-open"));
     });
+    setMenuAvailability(false);
   }
 
   function setupSectionNavigation() {
@@ -135,6 +166,7 @@
       .filter(Boolean);
     if (!links.length || !sections.length) return;
 
+    let activeId = "";
     const update = () => {
       const marker = window.scrollY + (document.querySelector(".top-nav")?.offsetHeight || 0) + 120;
       let active = sections[0];
@@ -146,7 +178,13 @@
         link.classList.toggle("active", isActive);
         if (isActive) link.setAttribute("aria-current", "true");
         else link.removeAttribute("aria-current");
+        if (isActive && activeId !== active.id && window.innerWidth <= 600) {
+          const track = link.parentElement;
+          const target = Math.max(0, link.offsetLeft - ((track.clientWidth - link.offsetWidth) / 2));
+          track.scrollTo({ left: target, behavior: activeId ? "smooth" : "auto" });
+        }
       });
+      activeId = active.id;
     };
     window.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);

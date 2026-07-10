@@ -972,8 +972,12 @@ function ensureMobileCalendarSheet() {
 function closeMobileCalendarSheet() {
   const sheet = document.getElementById("mobileCalendarSheet");
   if (!sheet) return;
+  const wasOpen = !sheet.hidden;
+  const trigger = document.querySelector("[data-calendar-day].tooltip-open");
   sheet.classList.remove("visible");
   sheet.hidden = true;
+  document.body.classList.remove("calendar-sheet-open");
+  if (wasOpen) trigger?.focus({ preventScroll: true });
 }
 
 function showMobileCalendarSheet(day) {
@@ -986,7 +990,11 @@ function showMobileCalendarSheet(day) {
     <small>${escapeHtml(day.dataset.tooltipActual)}</small>
   `;
   sheet.hidden = false;
-  window.requestAnimationFrame(() => sheet.classList.add("visible"));
+  document.body.classList.add("calendar-sheet-open");
+  window.requestAnimationFrame(() => {
+    sheet.classList.add("visible");
+    sheet.querySelector("[data-mobile-sheet-close]")?.focus({ preventScroll: true });
+  });
 }
 
 function closeDayCards(except = null) {
@@ -1032,15 +1040,15 @@ function setupCalendarTooltips() {
   document.addEventListener("click", (event) => {
     if (event.target.closest("[data-day-card]")) return;
     if (event.target.closest("[data-mobile-sheet-close]")) {
-      closeCalendarTooltips();
       closeMobileCalendarSheet();
+      closeCalendarTooltips();
       return;
     }
     if (event.target.closest(".mobile-calendar-sheet")) return;
     const day = event.target.closest("[data-calendar-day]");
     if (!day) {
-      closeCalendarTooltips();
       closeMobileCalendarSheet();
+      closeCalendarTooltips();
       return;
     }
     const isOpen = day.classList.contains("tooltip-open");
@@ -1062,9 +1070,24 @@ function setupCalendarTooltips() {
   });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") return;
-    closeCalendarTooltips();
-    closeMobileCalendarSheet();
+    const sheet = document.getElementById("mobileCalendarSheet");
+    const sheetOpen = sheet && !sheet.hidden;
+    if (event.key === "Tab" && sheetOpen) {
+      event.preventDefault();
+      sheet.querySelector("[data-mobile-sheet-close]")?.focus({ preventScroll: true });
+      return;
+    }
+    if (event.key === "Escape") {
+      closeMobileCalendarSheet();
+      closeCalendarTooltips();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (!isMobileInteractionMode()) {
+      closeMobileCalendarSheet();
+      closeCalendarTooltips();
+    }
   });
 }
 
