@@ -4226,19 +4226,34 @@ html[data-theme="glass"] .top-nav {
   text-decoration: none;
 }
 
+.site-logo {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--ink);
+  box-shadow: var(--shadow-xs);
+  color: var(--inverse);
+  font-size: 0.83rem;
+  font-weight: 850;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
 .site-countdown {
   display: inline-flex;
-  min-height: 38px;
+  min-height: 30px;
   flex: 0 0 auto;
   align-items: center;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: 1px solid color-mix(in srgb, var(--blue) 20%, var(--line));
-  border-radius: 12px;
+  border-radius: 999px;
   background: var(--blue-soft);
-  box-shadow: var(--shadow-xs);
   color: var(--blue-strong);
-  font-size: 0.74rem;
-  font-weight: 740;
+  font-size: 0.68rem;
+  font-weight: 720;
   letter-spacing: -0.01em;
   line-height: 1;
   white-space: nowrap;
@@ -4439,6 +4454,14 @@ html[data-theme="glass"] .top-nav .nav-tabs a {
   color: var(--muted);
   font-size: 0.7rem;
   font-weight: 650;
+}
+
+.race-nav-meta {
+  display: flex;
+  min-width: max-content;
+  flex: 0 0 auto;
+  gap: 10px;
+  align-items: center;
 }
 
 .race-date-short > span {
@@ -5926,6 +5949,12 @@ html[data-theme="cyberpunk"] .activity-feed {
 
   .section-nav-shell {
     min-height: 50px;
+    gap: 14px;
+  }
+
+  .section-nav-shell .nav-tabs {
+    min-width: 0;
+    flex: 1 1 auto;
   }
 
   .top-nav .nav-tabs,
@@ -6012,11 +6041,10 @@ html[data-theme="cyberpunk"] .activity-feed {
     display: none;
   }
 
-  .site-countdown {
-    min-height: 36px;
-    padding: 7px 10px;
+  .site-logo {
+    width: 34px;
+    height: 34px;
     border-radius: 10px;
-    font-size: 0.68rem;
   }
 
   .section-nav-shell {
@@ -6030,7 +6058,7 @@ html[data-theme="cyberpunk"] .activity-feed {
     bottom: auto;
     left: auto;
     display: flex;
-    width: 100%;
+    width: auto;
     gap: 18px;
     padding: 0;
     border-radius: 0;
