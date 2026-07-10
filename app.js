@@ -1350,6 +1350,7 @@ function renderPaceGuide() {
     </article>
   `).join("");
   container.innerHTML = `<div class="pace-card-grid">${cards}</div>`;
+  const supportsHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
   container.querySelectorAll(".pace-card").forEach((card) => {
     const show = () => {
       card.classList.add("is-tooltip-visible");
@@ -1359,8 +1360,10 @@ function renderPaceGuide() {
       card.classList.remove("is-tooltip-visible");
       card.setAttribute("aria-expanded", "false");
     };
-    card.addEventListener("pointerenter", show);
-    card.addEventListener("pointerleave", hide);
+    if (supportsHover) {
+      card.addEventListener("pointerenter", show);
+      card.addEventListener("pointerleave", hide);
+    }
     card.addEventListener("focus", show);
     card.addEventListener("blur", hide);
     card.addEventListener("click", () => {

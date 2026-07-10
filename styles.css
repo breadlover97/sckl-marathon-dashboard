@@ -6317,3 +6317,451 @@ html[data-theme="cyberpunk"] .activity-feed {
     transition-duration: 0.01ms;
   }
 }
+
+/* Mobile ergonomics: these rules intentionally stop at the phone breakpoint. */
+@media (max-width: 600px) {
+  html {
+    scroll-padding-top: calc(116px + env(safe-area-inset-top));
+  }
+
+  body.nav-open {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  .top-nav,
+  html[data-theme="glass"] .top-nav {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .nav-shell {
+    min-height: 58px;
+    gap: 12px;
+  }
+
+  .nav-menu-button {
+    position: relative;
+    z-index: 120;
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+    padding: 9px 12px;
+  }
+
+  .nav-menu-button[aria-expanded="true"] {
+    border-color: color-mix(in srgb, var(--blue) 30%, var(--line));
+    background: var(--blue-soft);
+    color: var(--blue-strong);
+  }
+
+  .nav-menu {
+    width: min(360px, calc(100vw - 12px));
+    gap: 22px;
+    overflow-y: auto;
+    padding: calc(74px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));
+    overscroll-behavior: contain;
+  }
+
+  .page-tabs a,
+  .nav-actions .action-button {
+    min-height: 48px;
+  }
+
+  .section-nav-shell {
+    min-height: 48px;
+    gap: 9px;
+  }
+
+  .section-nav-shell .nav-tabs {
+    gap: 18px;
+    scroll-padding-inline: 2px;
+    scroll-snap-type: x proximity;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .section-nav-shell .nav-tabs a {
+    min-height: 48px;
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  .race-nav-meta {
+    max-width: calc(100vw - 142px);
+    gap: 0;
+  }
+
+  .site-countdown {
+    max-width: 100%;
+    min-height: 28px;
+    padding: 5px 8px;
+    overflow: hidden;
+    font-size: 0.62rem;
+    text-overflow: ellipsis;
+  }
+
+  .toast-region {
+    top: calc(116px + env(safe-area-inset-top));
+    right: 8px;
+    width: calc(100vw - 16px);
+  }
+
+  .nav-shell,
+  .section-nav-shell,
+  .site-header,
+  html[data-theme="glass"] .site-header,
+  main,
+  html[data-theme="glass"] main,
+  .site-footer {
+    width: min(100% - 16px, var(--page-width));
+  }
+
+  main,
+  html[data-theme="glass"] main {
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .anchor-section {
+    scroll-margin-top: calc(116px + env(safe-area-inset-top));
+  }
+
+  .panel,
+  .info-section,
+  html[data-theme="glass"] .panel {
+    padding: 17px 14px;
+    border-radius: 16px;
+  }
+
+  .section-heading,
+  .compact-heading {
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .section-heading h2,
+  .compact-heading h2,
+  .info-section h2 {
+    font-size: clamp(1.35rem, 6.5vw, 1.62rem);
+  }
+
+  .section-heading p,
+  .compact-heading p,
+  .info-section p {
+    font-size: 0.84rem;
+    line-height: 1.48;
+  }
+
+  .action-button,
+  .compact-action {
+    min-height: 44px;
+  }
+
+  .plan-heading-actions {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .plan-heading-actions .status-pill {
+    grid-column: 1 / -1;
+  }
+
+  .plan-heading-actions .action-button {
+    width: 100%;
+  }
+
+  #currentWeekPlan .daily-grid,
+  html[data-theme="glass"] #currentWeekPlan .daily-grid {
+    scroll-padding-inline: 1px;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #currentWeekPlan .day-card,
+  html[data-theme="glass"] #currentWeekPlan .day-card {
+    min-height: 0;
+    flex-basis: min(calc(100vw - 44px), 340px);
+    scroll-snap-stop: always;
+  }
+
+  .pace-card {
+    min-height: 0;
+    padding: 16px;
+  }
+
+  .pace-card:hover,
+  .pace-card:focus-visible,
+  .pace-card.is-tooltip-visible {
+    transform: none;
+  }
+
+  .pace-tooltip {
+    position: static;
+    display: none;
+    width: auto;
+    margin-top: 12px;
+    padding: 12px;
+    box-shadow: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .pace-tooltip::after {
+    display: none;
+  }
+
+  .pace-card.is-tooltip-visible .pace-tooltip {
+    display: block;
+    animation: detail-reveal 160ms ease both;
+  }
+
+  .calendar-phase-group summary {
+    grid-template-columns: minmax(0, 1fr) 36px;
+    grid-template-rows: auto auto auto;
+    gap: 8px 10px;
+    min-height: 0;
+    padding: 13px;
+  }
+
+  .calendar-phase-group summary::after {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: start;
+    width: 32px;
+    height: 32px;
+  }
+
+  .phase-title {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .phase-count {
+    display: inline-flex;
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+    width: auto;
+    margin: 0;
+  }
+
+  .phase-mileage {
+    width: 100%;
+    min-width: 0;
+    grid-column: 1 / -1;
+    grid-row: 3;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 2px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+
+  .phase-mileage-item {
+    min-width: 0;
+    padding: 8px;
+    border-radius: 10px;
+    background: var(--soft);
+  }
+
+  .nutrition-calendar-group .phase-stat {
+    grid-column: 1;
+    grid-row: 2;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  .nutrition-day-group summary > span {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .nutrition-day-group summary > strong {
+    grid-column: 1;
+    grid-row: 2;
+    text-align: left;
+  }
+
+  .calendar-phase-body {
+    width: 100%;
+    overflow: visible;
+    padding: 0 10px 10px;
+  }
+
+  .calendar-day-labels {
+    display: none;
+    min-width: 0;
+  }
+
+  .calendar-week {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .calendar-week-meta {
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 12px;
+  }
+
+  .calendar-days {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    grid-column: auto;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 1px 1px 7px;
+    scroll-padding-inline: 1px;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .calendar-days::-webkit-scrollbar {
+    display: none;
+  }
+
+  .calendar-day {
+    width: 124px;
+    min-height: 124px;
+    flex: 0 0 124px;
+    padding: 11px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .calendar-tooltip {
+    display: none;
+  }
+
+  .mobile-calendar-sheet {
+    right: 0;
+    bottom: 0;
+    left: 0;
+    max-height: min(66dvh, 520px);
+    padding: 24px 18px calc(20px + env(safe-area-inset-bottom));
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 22px 22px 0 0;
+  }
+
+  .mobile-sheet-close {
+    width: 44px;
+    height: 44px;
+  }
+
+  .chart-shell {
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .chart-shell svg {
+    width: 100%;
+    max-width: 100%;
+    height: clamp(196px, 58vw, 220px);
+  }
+
+  .chart-mobile-panel {
+    padding: 13px;
+  }
+
+  .chart-mobile-actions .action-button {
+    min-height: 44px;
+  }
+
+  .activity-table-shell {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .activity-table-summary {
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--soft);
+  }
+
+  .activity-summary-stats {
+    gap: 6px;
+  }
+
+  .activity-summary-stats span {
+    padding: 5px 8px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--card);
+    font-size: 0.68rem;
+  }
+
+  .activity-summary-stats span + span::before {
+    display: none;
+  }
+
+  .activity-table tbody {
+    gap: 10px;
+  }
+
+  .activity-table tr {
+    padding: 13px;
+    border-radius: 14px;
+    box-shadow: var(--shadow-xs);
+  }
+
+  .activity-feed-actions {
+    padding: 12px 0 0;
+    border-top: 0;
+  }
+
+  .calculator-grid input {
+    min-height: 50px;
+    font-size: 1rem;
+  }
+
+  .split-table-shell {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .code-block {
+    padding: 15px;
+    font-size: 0.72rem;
+  }
+
+  .return-top {
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    width: 48px;
+    height: 48px;
+  }
+
+  .site-footer,
+  html[data-theme="glass"] .site-footer {
+    gap: 8px;
+    padding: 20px 0 calc(80px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 380px) {
+  .race-nav-meta {
+    max-width: calc(100vw - 126px);
+  }
+
+  .site-countdown {
+    padding-inline: 7px;
+    font-size: 0.59rem;
+  }
+
+  .section-nav-shell .nav-tabs {
+    gap: 15px;
+  }
+}
