@@ -4226,19 +4226,22 @@ html[data-theme="glass"] .top-nav {
   text-decoration: none;
 }
 
-.site-logo {
-  display: grid;
-  width: 38px;
-  height: 38px;
+.site-countdown {
+  display: inline-flex;
+  min-height: 38px;
   flex: 0 0 auto;
-  place-items: center;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--blue) 20%, var(--line));
   border-radius: 12px;
-  background: var(--ink);
+  background: var(--blue-soft);
   box-shadow: var(--shadow-xs);
-  color: var(--inverse);
-  font-size: 0.83rem;
-  font-weight: 850;
-  letter-spacing: -0.04em;
+  color: var(--blue-strong);
+  font-size: 0.74rem;
+  font-weight: 740;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .brand-copy {
@@ -4924,7 +4927,7 @@ html[data-theme="glass"] main {
   display: grid;
   width: min(var(--page-width), calc(100% - 48px));
   gap: 24px;
-  margin: 0 auto 72px;
+  margin: 32px auto 72px;
 }
 
 .anchor-section {
@@ -6005,14 +6008,15 @@ html[data-theme="cyberpunk"] .activity-feed {
     width: min(100% - 24px, var(--page-width));
   }
 
-  .brand-copy small {
+  .brand-copy {
     display: none;
   }
 
-  .site-logo {
-    width: 34px;
-    height: 34px;
+  .site-countdown {
+    min-height: 36px;
+    padding: 7px 10px;
     border-radius: 10px;
+    font-size: 0.68rem;
   }
 
   .section-nav-shell {
@@ -6129,6 +6133,7 @@ html[data-theme="cyberpunk"] .activity-feed {
   main,
   html[data-theme="glass"] main {
     gap: 14px;
+    margin-top: 16px;
     margin-bottom: 46px;
   }
 
@@ -6254,6 +6259,17 @@ html[data-theme="cyberpunk"] .activity-feed {
   .toast-region {
     top: 122px;
     right: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .site-countdown {
+    padding-inline: 8px;
+    font-size: 0.63rem;
+  }
+
+  .nav-menu-button > span {
+    display: none;
   }
 }
 

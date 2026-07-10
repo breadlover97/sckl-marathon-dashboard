@@ -15,6 +15,38 @@
     cyberpunk: "#0b0812",
     glass: "#eaf2f8"
   };
+  const trainingStartDate = "2026-05-11";
+  const raceDate = "2026-10-04";
+  const totalTrainingWeeks = 21;
+
+  function utcDateValue(value) {
+    const [year, month, day] = String(value).split("-").map(Number);
+    return Date.UTC(year, month - 1, day);
+  }
+
+  function singaporeDateKey() {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      day: "2-digit",
+      month: "2-digit",
+      timeZone: "Asia/Singapore",
+      year: "numeric"
+    }).formatToParts(new Date());
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}`;
+  }
+
+  function setupRaceCountdown() {
+    const countdown = document.getElementById("raceCountdown");
+    if (!countdown) return;
+    const dayMs = 24 * 60 * 60 * 1000;
+    const start = utcDateValue(trainingStartDate);
+    const race = utcDateValue(raceDate);
+    const today = utcDateValue(singaporeDateKey());
+    const totalDays = Math.round((race - start) / dayMs) + 1;
+    const currentDay = Math.min(Math.max(Math.round((today - start) / dayMs) + 1, 1), totalDays);
+    const currentWeek = Math.min(Math.floor((currentDay - 1) / 7) + 1, totalTrainingWeeks);
+    countdown.textContent = `Day ${currentDay} of ${totalDays} · Week ${currentWeek} of ${totalTrainingWeeks}`;
+  }
 
   function preferredTheme() {
     try {
@@ -124,6 +156,7 @@
   applyTheme(preferredTheme());
 
   window.addEventListener("DOMContentLoaded", () => {
+    setupRaceCountdown();
     document.querySelectorAll("[data-theme-select]").forEach((select) => {
       select.value = document.documentElement.dataset.theme || "light";
       select.addEventListener("change", (event) => applyTheme(event.target.value, true));
