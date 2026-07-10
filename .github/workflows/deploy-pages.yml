@@ -110,7 +110,7 @@ jobs:
       - name: Prepare Cloudflare Pages output
         run: |
           mkdir -p _site/data
-          cp index.html backend.html race.html nutrition.html styles.css app.js race.js nutrition.js theme.js _site/
+          cp index.html backend.html race.html nutrition.html styles.css app.js race.js nutrition.js theme.js og-performance.png _site/
           cp _headers _site/
           cp data/training-plan.json _site/data/
           cp data/strava-activities.json _site/data/

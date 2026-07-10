@@ -813,7 +813,7 @@ function renderCurrentWeek(plan, actuals) {
   const actual = summarizeWeekActual(week, actuals);
   const status = document.getElementById("trackStatus");
   status.textContent = lastSyncedText("Strava", actuals.metadata?.generated_at, "Strava not synced");
-  status.className = "status-pill";
+  status.className = "status-pill is-ready";
   const planned = Number(week.target_weekly_mileage_km || 0);
   const progress = planned > 0 ? Math.min((actual.distance_km / planned) * 100, 140) : 0;
 
@@ -854,7 +854,7 @@ function renderPlanTable(plan, actuals) {
   const planStatus = document.getElementById("planSyncStatus");
   if (planStatus) {
     planStatus.textContent = lastSyncedText("Sheet", plan.metadata?.generated_at, "Sheet not synced");
-    planStatus.className = "status-pill";
+    planStatus.className = "status-pill is-ready";
   }
   const currentPlanGroups = document.querySelectorAll(".calendar-phase-group");
   const openGroups = openPlanGroupKeys();
@@ -962,6 +962,8 @@ function ensureMobileCalendarSheet() {
   sheet.className = "mobile-calendar-sheet";
   sheet.hidden = true;
   sheet.setAttribute("role", "dialog");
+  sheet.setAttribute("aria-modal", "true");
+  sheet.setAttribute("aria-label", "Training day details");
   sheet.setAttribute("aria-live", "polite");
   document.body.append(sheet);
   return sheet;
@@ -1334,7 +1336,7 @@ function renderPaceGuide() {
   const container = document.getElementById("paceGuide");
   if (!container) return;
   const cards = paceZones.map((zone) => `
-    <article class="pace-card" tabindex="0" aria-label="${escapeHtml(`${zone.label}: ${zone.range}. ${zone.description}`)}">
+    <article class="pace-card" tabindex="0" aria-expanded="false" aria-label="${escapeHtml(`${zone.label}: ${zone.range}. ${zone.description}`)}">
       <div class="pace-card-topline">
         <span>${escapeHtml(zone.label)}</span>
         <small>${escapeHtml(zone.use)}</small>
@@ -1349,12 +1351,36 @@ function renderPaceGuide() {
   `).join("");
   container.innerHTML = `<div class="pace-card-grid">${cards}</div>`;
   container.querySelectorAll(".pace-card").forEach((card) => {
-    const show = () => card.classList.add("is-tooltip-visible");
-    const hide = () => card.classList.remove("is-tooltip-visible");
+    const show = () => {
+      card.classList.add("is-tooltip-visible");
+      card.setAttribute("aria-expanded", "true");
+    };
+    const hide = () => {
+      card.classList.remove("is-tooltip-visible");
+      card.setAttribute("aria-expanded", "false");
+    };
     card.addEventListener("pointerenter", show);
     card.addEventListener("pointerleave", hide);
     card.addEventListener("focus", show);
     card.addEventListener("blur", hide);
+    card.addEventListener("click", () => {
+      const shouldShow = !card.classList.contains("is-tooltip-visible");
+      container.querySelectorAll(".pace-card").forEach((item) => {
+        if (item !== card) {
+          item.classList.remove("is-tooltip-visible");
+          item.setAttribute("aria-expanded", "false");
+        }
+      });
+      if (shouldShow) show();
+      else hide();
+    });
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        card.click();
+      }
+      if (event.key === "Escape") hide();
+    });
   });
 }
 
@@ -1385,7 +1411,7 @@ function chartHoverMarkup(left, top, plotWidth, plotHeight, baseline) {
         <text class="chart-tooltip-actual" data-hover-actual x="${chartTooltipSize.width - 16}" y="109" text-anchor="end"></text>
       </g>
     </g>
-    <rect class="chart-hit-area" x="${left}" y="${top}" width="${plotWidth}" height="${plotHeight}"></rect>
+    <rect class="chart-hit-area" x="${left}" y="${top}" width="${plotWidth}" height="${plotHeight}" tabindex="0" role="slider" aria-label="Explore training chart by week"></rect>
   `;
 }
 
@@ -1476,6 +1502,10 @@ function setupChartHover(container, points, dims) {
     phaseText.textContent = point.phase || "-";
     valueText.textContent = oneDecimalKm(point.value);
     actualText.textContent = point.actualValue === null || point.actualValue === undefined ? "-" : oneDecimalKm(point.actualValue);
+    hitArea.setAttribute("aria-valuemin", "1");
+    hitArea.setAttribute("aria-valuemax", String(points.length));
+    hitArea.setAttribute("aria-valuenow", String(points.indexOf(point) + 1));
+    hitArea.setAttribute("aria-valuetext", `${point.label}, ${point.phase || "phase not set"}, ${oneDecimalKm(point.value)} planned, ${point.actualValue === null || point.actualValue === undefined ? "no actual distance" : `${oneDecimalKm(point.actualValue)} actual`}`);
     updateMobilePanel(point);
   };
 
@@ -1517,6 +1547,23 @@ function setupChartHover(container, points, dims) {
 
   hitArea.addEventListener("pointerleave", () => {
     if (!mobileMode()) hover.style.opacity = "0";
+  });
+
+  hitArea.addEventListener("focus", () => {
+    const point = selectedPoint || points[0];
+    showPoint(point, point.x);
+  });
+
+  hitArea.addEventListener("blur", () => {
+    if (!mobileMode()) hover.style.opacity = "0";
+  });
+
+  hitArea.addEventListener("keydown", (event) => {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight" && event.key !== "Home" && event.key !== "End") return;
+    event.preventDefault();
+    if (event.key === "Home") showPoint(points[0], points[0].x);
+    else if (event.key === "End") showPoint(points[points.length - 1], points[points.length - 1].x);
+    else moveSelection(event.key === "ArrowLeft" ? -1 : 1);
   });
 
   const moveSelection = (direction) => {
@@ -1682,6 +1729,8 @@ Promise.all([loadPlan().then(normalizePlan), loadActuals()])
   .catch((error) => {
     console.error(error);
     document.getElementById("syncStatus").textContent = "Unable to load mock training plan.";
+    document.getElementById("trackStatus")?.classList.add("is-error");
+    document.getElementById("planSyncStatus")?.classList.add("is-error");
     document.getElementById("currentWeekPlan").innerHTML =
       `<div class="empty-state">Check that data/mock-training-plan.json exists and preview through a local web server.</div>`;
   });

@@ -4,51 +4,73 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#f4f7fb">
+    <meta name="description" content="Nutrition, macro, and supplement tracking for the SCKL 2026 marathon build.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="SCKL 2026 · Nutrition &amp; Recovery">
+    <meta property="og:description" content="Fuel the work behind a sub-2:50 marathon build.">
+    <meta property="og:image" content="https://sckl-marathon-dashboard.pages.dev/og-performance.png">
+    <meta property="og:image:width" content="1731">
+    <meta property="og:image:height" content="909">
+    <meta name="twitter:card" content="summary_large_image">
     <title>Nutrition - SCKL 2026 Sub-2:50 Build</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E🏃🏻%3C/text%3E%3C/svg%3E">
-    <script src="theme.js?v=20260610-glass-ui"></script>
-    <link rel="stylesheet" href="styles.css?v=20260610-glass-ui">
+    <script src="theme.js?v=20260710-performance-ui"></script>
+    <link rel="stylesheet" href="styles.css?v=20260710-performance-ui">
   </head>
-  <body>
-    <nav class="top-nav" aria-label="Nutrition navigation">
-      <a class="site-brand" href="index.html">
-        <span class="site-mark">SCKL 2026 Sub-2:50 Build</span>
-        <span class="nav-date">
-          <span>4 Oct 2026, 3:30am</span>
-          <span class="countdown-pill">Nutrition</span>
-        </span>
-      </a>
-      <div class="nav-tabs" aria-label="Nutrition sections">
-        <a href="index.html#week">This Week</a>
-        <a href="index.html#plan">Plan</a>
-        <a href="#calendar">Calendar</a>
-        <a href="#meals">Meals</a>
+  <body class="page-nutrition">
+    <a class="skip-link" href="#mainContent">Skip to nutrition dashboard</a>
+    <nav class="top-nav" data-navigation aria-label="Nutrition navigation">
+      <div class="nav-shell">
+        <a class="site-brand" href="index.html" aria-label="SCKL 2026 dashboard home">
+          <span class="site-logo" aria-hidden="true">42</span>
+          <span class="brand-copy"><strong>SCKL 2026</strong><small>Sub-2:50 marathon build</small></span>
+        </a>
+        <button class="nav-menu-button" type="button" data-nav-toggle aria-expanded="false" aria-controls="siteMenu"><span>Menu</span><i aria-hidden="true"></i></button>
+        <div id="siteMenu" class="nav-menu" data-nav-menu>
+          <div class="page-tabs" aria-label="Tracker pages">
+            <a href="index.html"><span aria-hidden="true">⌂</span>Dashboard</a>
+            <a class="active" href="nutrition.html" aria-current="page"><span aria-hidden="true">◒</span>Nutrition</a>
+            <a href="race.html"><span aria-hidden="true">⚑</span>Race day</a>
+            <a href="backend.html"><span aria-hidden="true">◇</span>System</a>
+          </div>
+          <div class="nav-actions">
+            <label class="theme-picker" for="themeSelect">
+              <span>Appearance</span>
+              <select id="themeSelect" data-theme-select aria-label="Select site theme">
+                <option value="light">Classic</option><option value="dark">Night</option><option value="editor">Focus</option><option value="cyberpunk">Neon</option><option value="glass">Glass</option>
+              </select>
+            </label>
+            <a class="action-button primary nav-sync" data-feedback-message="Opening data sync in GitHub Actions" href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">↻</span>Sync data</a>
+          </div>
+        </div>
       </div>
-      <div class="nav-actions">
-        <a class="action-button secondary nav-sync" href="index.html">Dashboard</a>
-        <label class="theme-picker" for="themeSelect">
-          <span>Theme</span>
-          <select id="themeSelect" data-theme-select aria-label="Select site theme">
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="editor">IDE editor</option>
-            <option value="cyberpunk">Cyberpunk</option>
-            <option value="glass">Glass UI</option>
-          </select>
-        </label>
-        <a class="action-button secondary nav-sync race-action" href="race.html" title="Race execution">Race</a>
-        <a class="action-button primary nav-sync" href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer">Sync data</a>
+      <div class="section-nav-shell">
+        <div class="nav-tabs" aria-label="Nutrition sections"><a href="#overview">Overview</a><a href="#calendar">Calendar</a><a href="#meals">Meals</a></div>
+        <span class="race-date-short"><span aria-hidden="true">●</span> Fuel the work</span>
       </div>
     </nav>
+    <div class="nav-scrim" data-nav-scrim hidden></div>
+    <div class="toast-region" data-toast-region aria-live="polite" aria-atomic="true"></div>
 
-    <main>
-      <section class="panel anchor-section nutrition-overview">
+    <header class="site-header subpage-hero nutrition-hero">
+      <div class="header-copy">
+        <span class="eyebrow"><i aria-hidden="true"></i>Fuel &amp; recovery</span>
+        <h1>Nutrition that supports<br><span>the work you’re doing.</span></h1>
+        <p class="date-range">See daily energy, protein, meals, and supplement consistency without losing sight of the training goal.</p>
+      </div>
+      <div class="hero-stat-strip" aria-label="Nutrition priorities"><span><small>Priority 01</small><strong>Energy</strong></span><span><small>Priority 02</small><strong>Protein</strong></span><span><small>Priority 03</small><strong>Consistency</strong></span></div>
+    </header>
+
+    <main id="mainContent">
+      <section id="overview" class="panel anchor-section nutrition-overview">
         <div class="section-heading">
           <div>
-            <h2>Nutrition tracker</h2>
-            <p>Food, macros, and supplements.</p>
+            <span class="section-kicker">Latest signal</span>
+            <h2>Nutrition overview</h2>
+            <p>The latest day and rolling seven-day picture.</p>
           </div>
-          <span id="nutritionStatus" class="status-pill">Nutrition sync loading</span>
+          <span id="nutritionStatus" class="status-pill is-loading" role="status">Nutrition sync loading</span>
         </div>
         <div id="nutritionSummary" class="race-card-grid"></div>
       </section>
@@ -56,8 +78,9 @@
       <section id="calendar" class="panel anchor-section">
         <div class="section-heading compact-heading">
           <div>
-            <h2>Calendar</h2>
-            <p>Daily macros and supplement completion.</p>
+            <span class="section-kicker">Consistency</span>
+            <h2>Daily calendar</h2>
+            <p>Macros, meals, and supplement completion by day.</p>
           </div>
         </div>
         <div id="nutritionCalendar" class="nutrition-section-body"></div>
@@ -66,8 +89,9 @@
       <section id="meals" class="panel anchor-section">
         <div class="section-heading compact-heading">
           <div>
+            <span class="section-kicker">Detail</span>
             <h2>Meal breakdown</h2>
-            <p>Meal rows by date.</p>
+            <p>Every synced meal, grouped by date.</p>
           </div>
         </div>
         <div id="nutritionMeals" class="nutrition-section-body"></div>
@@ -77,10 +101,10 @@
     <footer class="site-footer">
       <span>SCKL 2026 nutrition</span>
       <span><span id="nutritionSyncStatus">Loading nutrition...</span> · <a href="backend.html">How the backend works</a></span>
-      <span class="site-version">v2026.06.10 · Latest update: mobile Glass UI redesign, tap-open training cards, and mobile calendar sheets.</span>
+      <span class="site-version">v2026.07.10 · Performance UI system</span>
     </footer>
 
     <button id="returnTop" class="return-top" type="button" aria-label="Return to top">↑</button>
-    <script src="nutrition.js?v=20260610-glass-ui"></script>
+    <script src="nutrition.js?v=20260710-performance-ui"></script>
   </body>
 </html>

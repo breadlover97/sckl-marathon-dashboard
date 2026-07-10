@@ -252,6 +252,7 @@ function renderSummary(payload) {
   const syncedText = lastSyncedText(syncLabel, payload.metadata?.generated_at, `${syncLabel} not synced`);
   const model = nutritionModel(payload);
   status.textContent = syncedText;
+  status.className = "status-pill is-ready";
   syncStatus.textContent = `${syncedText} · ${payload.days.length} day${payload.days.length === 1 ? "" : "s"}`;
   container.innerHTML = `
     <article class="week-metric"><span>Latest date</span><strong>${escapeHtml(day ? prettyDate(day.date) : "-")}</strong></article>
@@ -413,6 +414,7 @@ Promise.all([loadNutrition(), loadSupplements()])
   .catch((error) => {
     console.error(error);
     document.getElementById("nutritionStatus").textContent = "Nutrition unavailable";
+    document.getElementById("nutritionStatus").className = "status-pill is-error";
     document.getElementById("nutritionCalendar").innerHTML = `<div class="empty-state">Unable to load nutrition calendar.</div>`;
     document.getElementById("nutritionMeals").innerHTML = `<div class="empty-state">Unable to load meal-level nutrition data.</div>`;
   });

@@ -4,55 +4,53 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#f4f7fb">
+    <meta name="description" content="System architecture and data-flow notes for the SCKL 2026 marathon tracker.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="SCKL 2026 · System Notes">
+    <meta property="og:description" content="A transparent path from training plan to performance dashboard.">
+    <meta property="og:image" content="https://sckl-marathon-dashboard.pages.dev/og-performance.png">
+    <meta property="og:image:width" content="1731">
+    <meta property="og:image:height" content="909">
+    <meta name="twitter:card" content="summary_large_image">
     <title>How the Backend Works - SCKL 2026 Sub-2:50 Build</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E🏃🏻%3C/text%3E%3C/svg%3E">
-    <script src="theme.js?v=20260610-glass-ui"></script>
-    <link rel="stylesheet" href="styles.css?v=20260610-glass-ui">
+    <script src="theme.js?v=20260710-performance-ui"></script>
+    <link rel="stylesheet" href="styles.css?v=20260710-performance-ui">
   </head>
-  <body>
-    <nav class="top-nav" aria-label="Marathon dashboard navigation">
-      <a class="site-brand" href="index.html">
-        <span class="site-mark">SCKL 2026 Sub-2:50 Build</span>
-        <span class="nav-date">
-          <span>4 Oct 2026, 3:30am</span>
-          <span class="countdown-pill">Backend notes</span>
-        </span>
-      </a>
-      <div class="nav-tabs" aria-label="Backend navigation">
-        <a href="index.html#week">This Week</a>
-        <a href="index.html#plan">Weekly Plan</a>
-        <a href="index.html#trends">Trends</a>
-        <a href="index.html#pace">Pace</a>
-        <a href="index.html#activity">Activities</a>
+  <body class="page-system">
+    <a class="skip-link" href="#mainContent">Skip to system notes</a>
+    <nav class="top-nav" data-navigation aria-label="Marathon dashboard navigation">
+      <div class="nav-shell">
+        <a class="site-brand" href="index.html" aria-label="SCKL 2026 dashboard home"><span class="site-logo" aria-hidden="true">42</span><span class="brand-copy"><strong>SCKL 2026</strong><small>Sub-2:50 marathon build</small></span></a>
+        <button class="nav-menu-button" type="button" data-nav-toggle aria-expanded="false" aria-controls="siteMenu"><span>Menu</span><i aria-hidden="true"></i></button>
+        <div id="siteMenu" class="nav-menu" data-nav-menu>
+          <div class="page-tabs" aria-label="Tracker pages">
+            <a href="index.html"><span aria-hidden="true">⌂</span>Dashboard</a><a href="nutrition.html"><span aria-hidden="true">◒</span>Nutrition</a><a href="race.html"><span aria-hidden="true">⚑</span>Race day</a><a class="active" href="backend.html" aria-current="page"><span aria-hidden="true">◇</span>System</a>
+          </div>
+          <div class="nav-actions">
+            <label class="theme-picker" for="themeSelect"><span>Appearance</span><select id="themeSelect" data-theme-select aria-label="Select site theme"><option value="light">Classic</option><option value="dark">Night</option><option value="editor">Focus</option><option value="cyberpunk">Neon</option><option value="glass">Glass</option></select></label>
+            <a class="action-button primary nav-sync" data-feedback-message="Opening data sync in GitHub Actions" href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">↻</span>Sync data</a>
+          </div>
+        </div>
       </div>
-      <div class="nav-actions">
-        <a class="action-button secondary nav-sync" href="index.html">Dashboard</a>
-        <label class="theme-picker" for="themeSelect">
-          <span>Theme</span>
-          <select id="themeSelect" data-theme-select aria-label="Select site theme">
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="editor">IDE editor</option>
-            <option value="cyberpunk">Cyberpunk</option>
-            <option value="glass">Glass UI</option>
-          </select>
-        </label>
-        <a class="action-button secondary nav-sync" href="nutrition.html">Nutrition</a>
-        <a class="action-button secondary nav-sync race-action" href="race.html" title="Race execution">Race</a>
-        <a class="action-button primary nav-sync" href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer">Sync data</a>
-      </div>
+      <div class="section-nav-shell"><div class="nav-tabs" aria-label="System navigation"><a href="#information-flow">Data flow</a><a href="#services">Services</a><a href="#pace-derivation">Pace method</a><a href="#resources">Resources</a></div><span class="race-date-short"><span aria-hidden="true">●</span> System healthy</span></div>
     </nav>
+    <div class="nav-scrim" data-nav-scrim hidden></div>
+    <div class="toast-region" data-toast-region aria-live="polite" aria-atomic="true"></div>
 
-    <header class="site-header setup-header">
+    <header class="site-header subpage-hero system-hero setup-header">
       <div class="header-copy">
         <h1>How the backend works</h1>
         <p class="date-range wide-copy">Google Sheets is the editable training plan, supplement tracker, and nutrition log; Strava is the running log; Cloudflare Worker handles live Strava webhooks; Cloudflare Pages serves the static dashboard; and GitHub runs the private automation.</p>
       </div>
+      <div class="system-flow-preview" aria-label="System data flow"><span>Google Sheets</span><i aria-hidden="true">→</i><span>Sync pipeline</span><i aria-hidden="true">→</i><span>Dashboard</span></div>
     </header>
 
-    <main>
-      <section class="info-section">
-        <h2>Information Flow</h2>
+    <main id="mainContent">
+      <section id="information-flow" class="info-section anchor-section">
+        <span class="section-kicker">Architecture</span>
+        <h2>Information flow</h2>
         <div class="flow-list">
           <div class="flow-step"><strong>1</strong><span>You edit the marathon plan in Google Sheets. The sheet stays the source of truth for planned weeks, dates, daily mileage, notes, and weekly summaries.</span></div>
           <div class="flow-step"><strong>2</strong><span>You record runs normally through Strava. The dashboard only needs Strava API access; it does not need Strava data typed into the sheet.</span></div>
@@ -64,8 +62,9 @@
         </div>
       </section>
 
-      <section class="info-section">
-        <h2>What Each Service Does</h2>
+      <section id="services" class="info-section anchor-section">
+        <span class="section-kicker">Responsibilities</span>
+        <h2>What each service does</h2>
         <p><strong>Google Sheets</strong> stores the planned marathon build, Strava actual writeback fields, supplement checkbox history, and nutrition history. You can adjust daily estimated mileage, session notes, weekly summaries, phase details, supplement checkboxes, and meal-level nutrition rows there.</p>
         <p><strong>Strava API</strong> provides actual runs: distance, time, pace, elevation, heart rate and cadence when Strava includes them, activity names, dates, and Strava links.</p>
         <p><strong>Cloudflare Worker</strong> is the live Strava sync worker. It receives Strava webhook events, refreshes Strava tokens privately, fetches changed activities, and stores sanitized actual-run JSON in Workers KV.</p>
@@ -75,7 +74,8 @@
       </section>
 
       <section class="info-section">
-        <h2>Repository Map</h2>
+        <span class="section-kicker">Reference</span>
+        <h2>Repository map</h2>
         <pre class="code-block"><code>sckl-marathon-dashboard/
 |-- index.html                    # Main static dashboard
 |-- nutrition.html                # Standalone nutrition tracker
@@ -112,7 +112,8 @@
       </section>
 
       <section class="info-section">
-        <h2>Workflow Responsibilities</h2>
+        <span class="section-kicker">Automation</span>
+        <h2>Workflow responsibilities</h2>
         <div class="tech-grid">
           <article>
             <h3>Google Sheets sync</h3>
@@ -157,8 +158,9 @@
         </div>
       </section>
 
-      <section id="pace-derivation" class="info-section">
-        <h2>Pace Range Derivation</h2>
+      <section id="pace-derivation" class="info-section anchor-section">
+        <span class="section-kicker">Method</span>
+        <h2>Pace range derivation</h2>
         <p>The pace table is a practical coaching estimate, not a lab result. It starts from recent performance anchors, converts those into equivalent training intensities, then widens the final ranges for Singapore heat, humidity, hills, and day-to-day fatigue.</p>
         <div class="tech-grid">
           <article>
@@ -198,7 +200,7 @@
         </div>
       </section>
 
-      <section class="info-section">
+      <section id="resources" class="info-section anchor-section">
         <h2>Secrets And Runtime Config</h2>
         <div class="tech-grid">
           <article>
@@ -266,7 +268,7 @@
     <footer class="site-footer">
       <span>SCKL 2026 backend notes</span>
       <span><a href="index.html">Return to dashboard</a></span>
-      <span class="site-version">v2026.06.10 · Latest update: mobile Glass UI redesign, tap-open training cards, and mobile calendar sheets.</span>
+      <span class="site-version">v2026.07.10 · Performance UI system</span>
     </footer>
   </body>
 </html>

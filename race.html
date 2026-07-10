@@ -4,51 +4,55 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#f4f7fb">
+    <meta name="description" content="Race-day pacing, split, fuel, and execution planning for SCKL 2026.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="SCKL 2026 · Race Control">
+    <meta property="og:description" content="Pacing, splits, fuel, and decisions for the sub-2:50 goal.">
+    <meta property="og:image" content="https://sckl-marathon-dashboard.pages.dev/og-performance.png">
+    <meta property="og:image:width" content="1731">
+    <meta property="og:image:height" content="909">
+    <meta name="twitter:card" content="summary_large_image">
     <title>Race Execution - SCKL 2026 Sub-2:50 Build</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E🏃🏻%3C/text%3E%3C/svg%3E">
-    <script src="theme.js?v=20260610-glass-ui"></script>
-    <link rel="stylesheet" href="styles.css?v=20260610-glass-ui">
+    <script src="theme.js?v=20260710-performance-ui"></script>
+    <link rel="stylesheet" href="styles.css?v=20260710-performance-ui">
   </head>
-  <body>
-    <nav class="top-nav" aria-label="Race execution navigation">
-      <a class="site-brand" href="index.html">
-        <span class="site-mark">SCKL 2026 Sub-2:50 Build</span>
-        <span class="nav-date">
-          <span>4 Oct 2026, 3:30am</span>
-          <span class="countdown-pill">Race execution</span>
-        </span>
-      </a>
-      <div class="nav-tabs" aria-label="Race execution sections">
-        <a href="#overview">Overview</a>
-        <a href="#calculator">Calculator</a>
-        <a href="#splits">Splits</a>
-        <a href="#course">Course</a>
+  <body class="page-race">
+    <a class="skip-link" href="#mainContent">Skip to race plan</a>
+    <nav class="top-nav" data-navigation aria-label="Race execution navigation">
+      <div class="nav-shell">
+        <a class="site-brand" href="index.html" aria-label="SCKL 2026 dashboard home"><span class="site-logo" aria-hidden="true">42</span><span class="brand-copy"><strong>SCKL 2026</strong><small>Sub-2:50 marathon build</small></span></a>
+        <button class="nav-menu-button" type="button" data-nav-toggle aria-expanded="false" aria-controls="siteMenu"><span>Menu</span><i aria-hidden="true"></i></button>
+        <div id="siteMenu" class="nav-menu" data-nav-menu>
+          <div class="page-tabs" aria-label="Tracker pages">
+            <a href="index.html"><span aria-hidden="true">⌂</span>Dashboard</a><a href="nutrition.html"><span aria-hidden="true">◒</span>Nutrition</a><a class="active" href="race.html" aria-current="page"><span aria-hidden="true">⚑</span>Race day</a><a href="backend.html"><span aria-hidden="true">◇</span>System</a>
+          </div>
+          <div class="nav-actions">
+            <label class="theme-picker" for="themeSelect"><span>Appearance</span><select id="themeSelect" data-theme-select aria-label="Select site theme"><option value="light">Classic</option><option value="dark">Night</option><option value="editor">Focus</option><option value="cyberpunk">Neon</option><option value="glass">Glass</option></select></label>
+            <a class="action-button primary nav-sync" data-feedback-message="Opening data sync in GitHub Actions" href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">↻</span>Sync data</a>
+          </div>
+        </div>
       </div>
-      <div class="nav-actions">
-        <a class="action-button secondary nav-sync" href="index.html">Dashboard</a>
-        <label class="theme-picker" for="themeSelect">
-          <span>Theme</span>
-          <select id="themeSelect" data-theme-select aria-label="Select site theme">
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="editor">IDE editor</option>
-            <option value="cyberpunk">Cyberpunk</option>
-            <option value="glass">Glass UI</option>
-          </select>
-        </label>
-        <a class="action-button secondary nav-sync" href="nutrition.html">Nutrition</a>
-        <a class="action-button primary nav-sync" href="https://github.com/breadlover97/sckl-marathon-dashboard/actions/workflows/deploy-pages.yml" target="_blank" rel="noopener noreferrer">Sync data</a>
-      </div>
+      <div class="section-nav-shell"><div class="nav-tabs" aria-label="Race execution sections"><a href="#overview">Overview</a><a href="#calculator">Calculator</a><a href="#splits">Splits</a><a href="#course">Course plan</a></div><span class="race-date-short"><span aria-hidden="true">●</span> Race · 4 Oct 2026</span></div>
     </nav>
+    <div class="nav-scrim" data-nav-scrim hidden></div>
+    <div class="toast-region" data-toast-region aria-live="polite" aria-atomic="true"></div>
 
-    <main>
+    <header class="site-header subpage-hero race-hero">
+      <div class="header-copy"><span class="eyebrow"><i aria-hidden="true"></i>Race control</span><h1>Make the hard decisions<br><span>before race morning.</span></h1><p class="date-range">Lock the pace, splits, fuelling, and decision rules now—then keep execution simple when it matters.</p></div>
+      <div class="race-target-lockup"><span>Goal</span><strong>2:50:00</strong><small>4:02 /km · 42.195 km</small></div>
+    </header>
+
+    <main id="mainContent">
       <section id="overview" class="panel anchor-section">
         <div class="section-heading">
           <div>
+            <span class="section-kicker">The objective</span>
             <h2>Race execution</h2>
-            <p>A working page for pacing, splits, fuel, hydration, and course notes once the SCKL details are final.</p>
+            <p>The key facts that every race-day decision should protect.</p>
           </div>
-          <span class="status-pill">Draft plan</span>
+          <span class="status-pill watch">Draft plan</span>
         </div>
         <div class="race-card-grid">
           <article class="week-metric"><span>Race</span><strong>Standard Chartered KL Marathon 2026</strong></article>
@@ -61,6 +65,7 @@
       <section id="calculator" class="panel anchor-section">
         <div class="section-heading compact-heading">
           <div>
+            <span class="section-kicker">Scenario tool</span>
             <h2>Pace calculator</h2>
             <p>Estimate finish time from pace, or update the goal time and generate checkpoint splits.</p>
           </div>
@@ -89,6 +94,7 @@
       <section id="splits" class="panel anchor-section">
         <div class="section-heading compact-heading">
           <div>
+            <span class="section-kicker">Race card</span>
             <h2>Checkpoint splits</h2>
             <p>Auto-generated from the pace calculator for fast race-morning checking.</p>
           </div>
@@ -126,10 +132,10 @@
     <footer class="site-footer">
       <span>SCKL 2026 Sub-2:50 Build</span>
       <span><a href="index.html">Dashboard</a> · <a href="nutrition.html">Nutrition</a> · <a href="backend.html">How the backend works</a></span>
-      <span class="site-version">v2026.06.10 · Latest update: mobile Glass UI redesign, tap-open training cards, and mobile calendar sheets.</span>
+      <span class="site-version">v2026.07.10 · Performance UI system</span>
     </footer>
 
     <button id="returnTop" class="return-top" type="button" aria-label="Return to top">↑</button>
-    <script src="race.js?v=20260610-glass-ui"></script>
+    <script src="race.js?v=20260710-performance-ui"></script>
   </body>
 </html>
