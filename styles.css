@@ -2332,6 +2332,40 @@ html[data-theme="cyberpunk"] .chart-tooltip-bg {
   margin-top: 14px;
 }
 
+@media (min-width: 861px) {
+  #trends .chart-label,
+  #trends .chart-now-label {
+    font-size: 1.2rem;
+  }
+
+  #trends .chart-legend {
+    gap: 12px 18px;
+    font-size: 1rem;
+  }
+
+  #trends .chart-tooltip text {
+    font-size: 1rem;
+  }
+
+  #trends .chart-tooltip text.chart-tooltip-title {
+    font-size: 1.2rem;
+  }
+
+  #trends .chart-tooltip text.chart-tooltip-date,
+  #trends .chart-tooltip text.chart-tooltip-label {
+    font-size: 0.92rem;
+  }
+
+  #trends .chart-tooltip text.chart-tooltip-phase {
+    font-size: 0.95rem;
+  }
+
+  #trends .chart-tooltip text.chart-tooltip-planned,
+  #trends .chart-tooltip text.chart-tooltip-actual {
+    font-size: 1.05rem;
+  }
+}
+
 .legend-line {
   display: inline-block;
   width: 11px;

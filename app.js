@@ -1257,7 +1257,7 @@ function chartLayout() {
     bottom: compact ? 32 : desktop ? 48 : 42,
     height: compact ? 220 : desktop ? 360 : 284,
     labelEvery: compact ? 5 : 2,
-    left: compact ? 34 : 48,
+    left: compact ? 34 : desktop ? 76 : 48,
     plannedDot: compact ? 4.2 : 5.2,
     right: compact ? 10 : 18,
     top: compact ? 20 : 24,
