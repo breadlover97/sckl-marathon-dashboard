@@ -439,6 +439,7 @@ function renderDayActivityDetails(dayActivities, actualKm) {
 function renderDayCard(session, actuals, options = {}) {
   const dayActivities = activitiesForDate(actuals.activities || [], session.date);
   const actualKm = dayActivities.reduce((sum, activity) => sum + Number(activity.distance_km || 0), 0);
+  const planSummary = dayCardPlanSummary(session);
   const todayKey = dateKey(singaporeToday());
   const isActive = session.date === todayKey;
   const isPast = Boolean(options.markPast) && String(session.date) < todayKey;
@@ -462,7 +463,7 @@ function renderDayCard(session, actuals, options = {}) {
         <span>${escapeHtml(session.day)} · ${escapeHtml(shortDate(session.date))}</span>
         ${completedMark}
       </div>
-      <strong>${oneDecimalKm(session.planned_km)}<br>plan</strong>
+      <strong>${escapeHtml(planSummary.primary)}<br>${escapeHtml(planSummary.secondary)}</strong>
       <p>${escapeHtml(session.plan)}</p>
       ${actualLine}
       <div class="day-card-details" id="${detailId}">
@@ -566,11 +567,10 @@ function averageDistance(totalDistance, count) {
 
 function planDayTooltip(week, session, dayActivities, actualKm) {
   const activityNames = dayActivities.map((activity) => activity.name).filter(Boolean).join(", ");
-  const plannedKm = Number(session.planned_km || 0);
   const details = [
     `Week ${week.week_number} · ${week.phase}`,
     `${session.day}, ${prettyDate(session.date)}`,
-    `Planned: ${plannedKm > 0 ? oneDecimalKm(plannedKm) : "Rest"}`,
+    `Planned: ${plannedSessionDescription(session)}`,
     `Actual: ${dayActivities.length ? `${oneDecimalKm(actualKm)} from ${dayActivities.length} run${dayActivities.length === 1 ? "" : "s"}` : "No run logged"}`,
     `Session: ${session.plan || "No planned session"}`
   ];
@@ -578,12 +578,61 @@ function planDayTooltip(week, session, dayActivities, actualKm) {
   return details.join("\n");
 }
 
+function hasStrengthSession(session) {
+  const plan = String(session.plan || "").toLowerCase();
+  return /\bpt\b/.test(plan) || plan.includes("strength");
+}
+
+function strengthSessionLabel(session) {
+  const plan = String(session.plan || "").toLowerCase();
+  return /\bpt\b/.test(plan) ? "PT" : "Strength";
+}
+
+function isRestSession(session) {
+  return Number(session.planned_km || 0) <= 0 && !hasStrengthSession(session);
+}
+
+function plannedSessionLabel(session) {
+  const plannedKm = Number(session.planned_km || 0);
+  if (plannedKm > 0) return oneDecimalKm(plannedKm);
+  if (hasStrengthSession(session)) return "No run";
+  return "Rest";
+}
+
+function plannedSessionDescription(session) {
+  const plannedKm = Number(session.planned_km || 0);
+  const strengthLabel = strengthSessionLabel(session);
+  if (hasStrengthSession(session) && plannedKm > 0) {
+    return `${strengthLabel} + ${oneDecimalKm(plannedKm)} run`;
+  }
+  if (hasStrengthSession(session)) return strengthLabel;
+  return plannedKm > 0 ? oneDecimalKm(plannedKm) : "Rest";
+}
+
+function dayCardPlanSummary(session) {
+  const plannedKm = Number(session.planned_km || 0);
+  if (hasStrengthSession(session) && plannedKm > 0) {
+    return {
+      primary: oneDecimalKm(plannedKm),
+      secondary: `${strengthSessionLabel(session)} + Run`,
+    };
+  }
+  if (hasStrengthSession(session)) {
+    return { primary: strengthSessionLabel(session), secondary: "planned" };
+  }
+  if (plannedKm > 0) return { primary: oneDecimalKm(plannedKm), secondary: "plan" };
+  return { primary: "Rest", secondary: "planned" };
+}
+
 function sessionType(session) {
   const plannedKm = Number(session.planned_km || 0);
   const plan = String(session.plan || "").toLowerCase();
-  if (plannedKm <= 0 || plan.includes("rest")) return "Rest";
+  if (hasStrengthSession(session)) {
+    const strengthLabel = strengthSessionLabel(session);
+    return plannedKm > 0 ? `${strengthLabel} + Run` : strengthLabel;
+  }
+  if (isRestSession(session)) return "Rest";
   if (plan.includes("long run")) return "Long";
-  if (plan.includes("strength") || plan.includes("pt ")) return "PT";
   if (plan.includes("hill")) return "Hills";
   if (plan.includes("400") || plan.includes("600") || plan.includes("800") || plan.includes("1k") || plan.includes("interval")) return "Workout";
   if (plan.includes("recovery")) return "Recovery";
@@ -603,7 +652,7 @@ function renderCalendarDay(week, session, actuals) {
   const tooltip = planDayTooltip(week, session, dayActivities, actualKm);
   const tooltipId = `calendar-tip-${safeDomId(`${week.week_number}-${session.date}`)}`;
   const type = sessionType(session);
-  const plannedLabel = plannedKm > 0 ? oneDecimalKm(plannedKm) : "Rest";
+  const plannedLabel = plannedSessionLabel(session);
   const tooltipTitle = `${session.day} · ${prettyDate(session.date)}`;
   const tooltipMeta = `${type} · ${plannedLabel} planned`;
   const tooltipPlan = session.plan || "No planned session";
@@ -615,7 +664,7 @@ function renderCalendarDay(week, session, actuals) {
     isActive ? "active-day" : "",
     isPast ? "past-day" : "",
     isCompleted ? "completed-day" : "",
-    plannedKm <= 0 ? "rest-day" : "",
+    isRestSession(session) ? "rest-day" : "",
   ].filter(Boolean).join(" ");
 
   return `
