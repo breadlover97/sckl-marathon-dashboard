@@ -1251,10 +1251,11 @@ function linePath(points) {
 
 function chartLayout() {
   const compact = window.matchMedia("(max-width: 640px)").matches;
+  const desktop = window.matchMedia("(min-width: 861px)").matches;
   return {
-    baseline: compact ? 188 : 242,
-    bottom: compact ? 32 : 42,
-    height: compact ? 220 : 284,
+    baseline: compact ? 188 : desktop ? 312 : 242,
+    bottom: compact ? 32 : desktop ? 48 : 42,
+    height: compact ? 220 : desktop ? 360 : 284,
     labelEvery: compact ? 5 : 2,
     left: compact ? 34 : 48,
     plannedDot: compact ? 4.2 : 5.2,
