@@ -223,7 +223,8 @@ The Google Sheet remains the source of truth for planned training, while Google 
 
 The sync rules currently match your preferred calendar setup:
 
-- Wednesday runs are skipped by default because the recurring RD Wed run already exists in Google Calendar.
+- Wednesday runs are skipped by default because the recurring RD Wed run already exists in Google Calendar; any PT session in the same Sheet cell is still synced separately at 11:00am-12:00pm.
+- Standalone Swoosh/community runs are left to their dedicated Calendar events, while long runs that finish with a community run remain managed by the training sync.
 - Monday interval workouts are scheduled 7:00pm-9:00pm.
 - Easy, recovery, relaxed, rolling, and medium runs are scheduled 9:30pm-10:30pm unless another timed calendar event ends after 9:00pm, then the run moves to 7:30am-8:30am.
 - Long runs are scheduled 6:30am-8:30am.

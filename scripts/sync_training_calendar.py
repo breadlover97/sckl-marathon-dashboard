@@ -86,6 +86,24 @@ def is_wednesday(session: dict[str, Any]) -> bool:
     return str(session.get("day") or "").strip().lower() == "wednesday"
 
 
+def pt_title(session: dict[str, Any]) -> str | None:
+    text = str(session.get("plan") or "").lower()
+    if "pt" not in text:
+        return None
+    if "lower body" in text:
+        return "PT (LB)"
+    if "upper body" in text:
+        return "PT (UB)"
+    if "strength" in text:
+        return "PT Strength"
+    return "PT"
+
+
+def is_standalone_community_run(session: dict[str, Any]) -> bool:
+    text = str(session.get("plan") or "").lower()
+    return planned_km(session) <= 10 and "swoosh" in text and "long run" not in text
+
+
 def is_race(session: dict[str, Any]) -> bool:
     text = str(session.get("plan") or "").lower()
     return "race:" in text or ("marathon" in text and planned_km(session) >= 40)
@@ -164,6 +182,10 @@ def plan_id_for(session: dict[str, Any]) -> str:
     source_date = str(session.get("date") or "").strip()
     day = re.sub(r"[^a-z0-9]+", "-", str(session.get("day") or "").strip().lower()).strip("-")
     return f"sckl-{source_date}-{day}"
+
+
+def pt_plan_id_for(session: dict[str, Any]) -> str:
+    return f"sckl-{str(session.get('date') or '').strip()}-pt"
 
 
 def local_dt(day: date, hour: int, minute: int, timezone: ZoneInfo) -> datetime:
@@ -336,12 +358,29 @@ def build_desired_events(
     for week in plan.get("weeks", []):
         for session in week.get("daily_sessions", []):
             source_date = str(session.get("date") or "").strip()
-            if not source_date or planned_km(session) <= 0:
+            if not source_date:
                 continue
             session_day = date.fromisoformat(source_date)
             if start_date and session_day < start_date:
                 continue
             if end_date and session_day > end_date:
+                continue
+
+            strength_title = pt_title(session)
+            if strength_title:
+                strength_start = local_dt(session_day, 11, 0, timezone)
+                events.append(
+                    DesiredEvent(
+                        plan_id=pt_plan_id_for(session),
+                        title=strength_title,
+                        start=strength_start,
+                        end=strength_start + timedelta(hours=1),
+                        source_date=source_date,
+                        source_day=f"{str(session.get('day') or '').strip()} PT",
+                    )
+                )
+
+            if planned_km(session) <= 0 or is_standalone_community_run(session):
                 continue
             if is_wednesday(session) and not include_wednesdays:
                 continue
