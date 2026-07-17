@@ -147,8 +147,6 @@ def event_title(session: dict[str, Any]) -> str:
         return "KL Marathon"
     if is_track_workout(session):
         return f"{km}km intervals"
-    if "race" in text:
-        return f"{km}km race"
     if "shakeout" in text:
         return f"{km}km shakeout"
     if is_long_run(session):
@@ -161,6 +159,8 @@ def event_title(session: dict[str, Any]) -> str:
         return f"{km}km easy + Cross Team Run"
     if "race-pace" in text or "race pace" in text:
         return f"{km}km easy + race-pace touches"
+    if re.search(r"\brace\b", text):
+        return f"{km}km race"
     if "medium" in text and "stride" in text:
         return f"{km}km medium + strides"
     if "stride" in text:
